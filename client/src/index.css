@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-maroon: #641B32;
+  --color-maroon-dark: #4e1225;
+  --color-burgundy: #7B1E35;
+  --color-gold: #C5A05A;
+  --color-gold-light: #E4C88A;
+  --color-gold-dark: #A37E3A;
+  --color-ivory: #FFF9F0;
+  --color-ivory-light: #FFFCF7;
+  --color-dark: #292323;
+  --color-dark-muted: #594E4E;
+
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-dark);
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFF9F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C5A05A;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #641B32;
+}
+
+/* Gold shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #C5A05A 0%, #E4C88A 50%, #A37E3A 100%);
+}
+
+.maroon-gradient {
+  background: linear-gradient(135deg, #641B32 0%, #7B1E35 60%, #4e1225 100%);
+}
+
+.gold-shimmer {
+  background: linear-gradient(90deg, rgba(197, 160, 90, 0.1) 0%, rgba(197, 160, 90, 0.3) 50%, rgba(197, 160, 90, 0.1) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}
