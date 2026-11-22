@@ -18,6 +18,7 @@ import { Badge } from '../components/ui/Badge';
 import productService from '../services/productService';
 import ProductCard from '../components/product/ProductCard';
 import { useCart } from '../context/CartContext';
+import api from '../services/api';
 
 export const ProductPage = () => {
   const { slug } = useParams();
@@ -32,6 +33,25 @@ export const ProductPage = () => {
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isZoomed, setIsZoomed] = useState(false);
+
+  // Delivery Pincode Checker
+  const [pincode, setPincode] = useState('');
+  const [pincodeResult, setPincodeResult] = useState(null);
+  const [checkingPincode, setCheckingPincode] = useState(false);
+
+  const handleCheckPincode = async (e) => {
+    e.preventDefault();
+    if (!pincode || pincode.length !== 6) return;
+    setCheckingPincode(true);
+    try {
+      const res = await api.get(`/shipping/serviceability?pincode=${pincode}`);
+      setPincodeResult(res.data.data);
+    } catch (err) {
+      setPincodeResult({ serviceable: false, message: 'Unable to check delivery status.' });
+    } finally {
+      setCheckingPincode(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -342,6 +362,56 @@ export const ProductPage = () => {
                 <RotateCcw className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
                 <span>7-Day Return Guarantee</span>
               </div>
+            </div>
+
+            {/* Pincode & Delivery Time Estimator */}
+            <div className="pt-4 border-t border-neutral-200">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-600 block mb-2">
+                Check Estimated Delivery to Your Pincode:
+              </span>
+              <form onSubmit={handleCheckPincode} className="flex gap-2">
+                <input
+                  type="text"
+                  maxLength="6"
+                  placeholder="Enter 6-digit PIN code (e.g. 416002)"
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                  className="w-full max-w-xs px-3 py-1.5 border border-neutral-300 rounded text-xs focus:outline-none focus:border-[#641B32]"
+                />
+                <Button
+                  type="submit"
+                  variant="outline"
+                  size="sm"
+                  disabled={checkingPincode || pincode.length !== 6}
+                  className="text-xs border-[#641B32] text-[#641B32]"
+                >
+                  {checkingPincode ? 'Checking...' : 'Check'}
+                </Button>
+              </form>
+
+              {pincodeResult && (
+                <div
+                  className={`mt-2 p-2.5 rounded text-xs ${
+                    pincodeResult.serviceable
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-800 border border-rose-200'
+                  }`}
+                >
+                  {pincodeResult.serviceable ? (
+                    <div>
+                      <div className="font-semibold flex items-center space-x-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Available for Express Delivery to {pincodeResult.pincode}!</span>
+                      </div>
+                      <div className="text-[11px] text-emerald-700 mt-0.5">
+                        Delivered via {pincodeResult.courier} in {pincodeResult.estimatedDays}. Cash on Delivery eligible.
+                      </div>
+                    </div>
+                  ) : (
+                    <div>{pincodeResult.message}</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
