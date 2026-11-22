@@ -50,6 +50,16 @@ export const orderService = {
     const res = await api.delete(`/wishlist/items/${productId}`);
     return res.data.data.items;
   },
+
+  async initiatePayment(orderId) {
+    const res = await api.post('/payment/initiate', { orderId });
+    return res.data.data;
+  },
+
+  async verifyPayment(verificationData) {
+    const res = await api.post('/payment/verify', verificationData);
+    return res.data;
+  },
 };
 
 export default orderService;

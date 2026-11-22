@@ -9,6 +9,7 @@ const wishlistRoutes = require('./wishlistRoutes');
 const customerRoutes = require('./customerRoutes');
 const couponRoutes = require('./couponRoutes');
 const adminRoutes = require('./adminRoutes');
+const paymentRoutes = require('./paymentRoutes');
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ router.use('/wishlist', wishlistRoutes);
 router.use('/customer', customerRoutes);
 router.use('/coupons', couponRoutes);
 router.use('/admin', adminRoutes);
+router.use('/payment', paymentRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
