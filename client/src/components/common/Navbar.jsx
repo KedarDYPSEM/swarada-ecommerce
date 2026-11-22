@@ -191,7 +191,21 @@ export const Navbar = () => {
                         onClick={() => setAccountMenuOpen(false)}
                         className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
                       >
-                        Dashboard & Orders
+                        My Dashboard
+                      </Link>
+                      <Link
+                        to="/account/profile"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                      >
+                        My Profile
+                      </Link>
+                      <Link
+                        to="/account/orders"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                      >
+                        My Orders
                       </Link>
                       <Link
                         to="/account/wishlist"
@@ -206,6 +220,13 @@ export const Navbar = () => {
                         className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
                       >
                         Saved Addresses
+                      </Link>
+                      <Link
+                        to="/account/password"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                      >
+                        Change Password
                       </Link>
                       {isAdmin && (
                         <Link
@@ -433,6 +454,63 @@ export const Navbar = () => {
                     </li>
                   ))}
                 </ul>
+
+                {isAuthenticated && (
+                  <div className="mt-4 pt-4 border-t border-neutral-200">
+                    <p className="text-[11px] font-bold text-[#C5A05A] uppercase tracking-wider mb-2">
+                      My Account
+                    </p>
+                    <ul className="space-y-1.5 text-xs">
+                      <li>
+                        <Link
+                          to="/account/profile"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-[#292323] hover:text-[#641B32] block py-1 font-medium"
+                        >
+                          My Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/account/orders"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-[#292323] hover:text-[#641B32] block py-1 font-medium"
+                        >
+                          My Orders
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/account/addresses"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-[#292323] hover:text-[#641B32] block py-1 font-medium"
+                        >
+                          Saved Addresses
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/account/password"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-[#292323] hover:text-[#641B32] block py-1 font-medium"
+                        >
+                          Change Password
+                        </Link>
+                      </li>
+                      <li>
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="text-red-600 hover:text-red-700 block py-1 text-left w-full cursor-pointer font-medium"
+                        >
+                          Log Out
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Drawer Footer */}

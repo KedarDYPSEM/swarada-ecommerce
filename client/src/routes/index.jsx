@@ -26,6 +26,8 @@ import CustomerDashboard from '../customer/Dashboard';
 import CustomerOrders from '../customer/Orders';
 import CustomerAddresses from '../customer/Addresses';
 import CustomerWishlist from '../customer/Wishlist';
+import CustomerProfile from '../customer/Profile';
+import CustomerPassword from '../customer/Password';
 
 // Admin Portal
 import AdminLogin from '../admin/AdminLogin';
@@ -78,8 +80,8 @@ export const AppRoutes = () => {
           <Route path="orders" element={<CustomerOrders />} />
           <Route path="wishlist" element={<CustomerWishlist />} />
           <Route path="addresses" element={<CustomerAddresses />} />
-          <Route path="profile" element={<CustomerDashboard />} />
-          <Route path="password" element={<CustomerDashboard />} />
+          <Route path="profile" element={<CustomerProfile />} />
+          <Route path="password" element={<CustomerPassword />} />
         </Route>
       </Route>
 

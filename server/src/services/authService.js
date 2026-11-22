@@ -208,10 +208,108 @@ const getCurrentUser = async (userId) => {
   return user;
 };
 
+/**
+ * Update user profile
+ */
+const updateProfile = async (userId, data) => {
+  const { firstName, lastName, displayName, phone, gender, dateOfBirth, avatarUrl } = data;
+
+  // Check if phone is already used by another user
+  if (phone) {
+    const existingPhone = await prisma.user.findFirst({
+      where: {
+        phone,
+        NOT: { id: userId },
+      },
+    });
+    if (existingPhone) {
+      throw new AppError('This mobile number is already linked to another account.', 409);
+    }
+  }
+
+  // Parse dateOfBirth safely
+  let parsedDob = null;
+  if (dateOfBirth) {
+    const d = new Date(dateOfBirth);
+    if (!isNaN(d.getTime())) {
+      parsedDob = d;
+    }
+  }
+
+  const validGender = gender && ['MALE', 'FEMALE', 'OTHER'].includes(gender) ? gender : null;
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Update phone on User model
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        phone: phone || null,
+      },
+    });
+
+    // 2. Upsert CustomerProfile
+    await tx.customerProfile.upsert({
+      where: { userId },
+      update: {
+        firstName,
+        lastName,
+        displayName: displayName || `${firstName} ${lastName}`.trim(),
+        gender: validGender,
+        dateOfBirth: parsedDob,
+        ...(avatarUrl !== undefined && { avatarUrl }),
+      },
+      create: {
+        userId,
+        firstName,
+        lastName,
+        displayName: displayName || `${firstName} ${lastName}`.trim(),
+        gender: validGender,
+        dateOfBirth: parsedDob,
+        avatarUrl: avatarUrl || null,
+      },
+    });
+  });
+
+  return getCurrentUser(userId);
+};
+
+/**
+ * Change password
+ */
+const changePassword = async (userId, currentPassword, newPassword) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError('User not found.', 404);
+  }
+
+  const isMatch = await argon2.verify(user.passwordHash, currentPassword);
+  if (!isMatch) {
+    throw new AppError('The current password you entered is incorrect.', 400);
+  }
+
+  if (currentPassword === newPassword) {
+    throw new AppError('New password cannot be the same as your current password.', 400);
+  }
+
+  const passwordHash = await argon2.hash(newPassword);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash },
+  });
+
+  return { message: 'Password changed successfully.' };
+};
+
 module.exports = {
   generateTokens,
   register,
   login,
   refresh,
   getCurrentUser,
+  updateProfile,
+  changePassword,
 };

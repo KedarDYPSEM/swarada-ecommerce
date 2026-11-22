@@ -44,6 +44,74 @@ const addAddress = async (userId, data) => {
 };
 
 /**
+ * Update existing address
+ */
+const updateAddress = async (userId, addressId, data) => {
+  const id = parseInt(addressId, 10);
+  const { label, fullName, phone, addressLine1, addressLine2, landmark, city, state, pincode, isDefault } = data;
+
+  const existing = await prisma.customerAddress.findFirst({
+    where: { id, userId },
+  });
+
+  if (!existing) {
+    throw new AppError('Address not found.', 404);
+  }
+
+  if (isDefault) {
+    await prisma.customerAddress.updateMany({
+      where: { userId },
+      data: { isDefault: false },
+    });
+  }
+
+  await prisma.customerAddress.update({
+    where: { id },
+    data: {
+      label: label !== undefined ? label : existing.label,
+      fullName: fullName !== undefined ? fullName : existing.fullName,
+      phone: phone !== undefined ? phone : existing.phone,
+      addressLine1: addressLine1 !== undefined ? addressLine1 : existing.addressLine1,
+      addressLine2: addressLine2 !== undefined ? addressLine2 : existing.addressLine2,
+      landmark: landmark !== undefined ? landmark : existing.landmark,
+      city: city !== undefined ? city : existing.city,
+      state: state !== undefined ? state : existing.state,
+      pincode: pincode !== undefined ? pincode : existing.pincode,
+      ...(isDefault !== undefined && { isDefault }),
+    },
+  });
+
+  return getAddresses(userId);
+};
+
+/**
+ * Set address as default
+ */
+const setDefaultAddress = async (userId, addressId) => {
+  const id = parseInt(addressId, 10);
+
+  const existing = await prisma.customerAddress.findFirst({
+    where: { id, userId },
+  });
+
+  if (!existing) {
+    throw new AppError('Address not found.', 404);
+  }
+
+  await prisma.customerAddress.updateMany({
+    where: { userId },
+    data: { isDefault: false },
+  });
+
+  await prisma.customerAddress.update({
+    where: { id },
+    data: { isDefault: true },
+  });
+
+  return getAddresses(userId);
+};
+
+/**
  * Delete address
  */
 const deleteAddress = async (userId, addressId) => {
@@ -57,5 +125,7 @@ const deleteAddress = async (userId, addressId) => {
 module.exports = {
   getAddresses,
   addAddress,
+  updateAddress,
+  setDefaultAddress,
   deleteAddress,
 };

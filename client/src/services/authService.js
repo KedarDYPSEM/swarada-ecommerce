@@ -25,6 +25,16 @@ export const authService = {
     const res = await api.post('/auth/refresh');
     return res.data;
   },
+
+  async updateProfile(data) {
+    const res = await api.put('/auth/profile', data);
+    return res.data;
+  },
+
+  async changePassword(data) {
+    const res = await api.put('/auth/change-password', data);
+    return res.data;
+  },
 };
 
 export default authService;

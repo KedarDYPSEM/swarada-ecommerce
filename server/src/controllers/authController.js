@@ -103,10 +103,46 @@ const getMe = async (req, res, next) => {
   }
 };
 
+/**
+ * Update Profile Controller
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const user = await authService.updateProfile(req.user.id, req.body);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile updated successfully.',
+      data: { user },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Change Password Controller
+ */
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const result = await authService.changePassword(req.user.id, currentPassword, newPassword);
+
+    res.status(200).json({
+      status: 'success',
+      message: result.message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
   refresh,
   logout,
   getMe,
+  updateProfile,
+  changePassword,
 };

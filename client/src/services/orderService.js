@@ -36,6 +36,16 @@ export const orderService = {
     return res.data.data.addresses;
   },
 
+  async updateAddress(id, data) {
+    const res = await api.put(`/customer/addresses/${id}`, data);
+    return res.data.data.addresses;
+  },
+
+  async setDefaultAddress(id) {
+    const res = await api.patch(`/customer/addresses/${id}/default`);
+    return res.data.data.addresses;
+  },
+
   async getWishlist() {
     const res = await api.get('/wishlist');
     return res.data.data.items;

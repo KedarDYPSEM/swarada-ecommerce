@@ -61,6 +61,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = async (profileData) => {
+    setError(null);
+    try {
+      const response = await authService.updateProfile(profileData);
+      if (response && response.data && response.data.user) {
+        setUser(response.data.user);
+        return response.data.user;
+      }
+      return response;
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to update profile';
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
+  const changePassword = async (passwords) => {
+    setError(null);
+    try {
+      const response = await authService.changePassword(passwords);
+      return response;
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to change password';
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
   const isAuthenticated = Boolean(user);
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
@@ -77,6 +105,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateProfile,
+    changePassword,
     setAuthenticatedUser,
   };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
+  LayoutDashboard,
   User,
   ShoppingBag,
   Heart,
@@ -20,11 +21,11 @@ export const CustomerLayout = () => {
   };
 
   const navItems = [
-    { label: 'My Dashboard', path: '/account/dashboard', icon: User },
+    { label: 'My Dashboard', path: '/account/dashboard', icon: LayoutDashboard },
     { label: 'My Orders', path: '/account/orders', icon: ShoppingBag },
     { label: 'Wishlist', path: '/account/wishlist', icon: Heart },
     { label: 'Saved Addresses', path: '/account/addresses', icon: MapPin },
-    { label: 'Account Profile', path: '/account/profile', icon: User },
+    { label: 'My Profile', path: '/account/profile', icon: User },
     { label: 'Change Password', path: '/account/password', icon: Lock },
   ];
 

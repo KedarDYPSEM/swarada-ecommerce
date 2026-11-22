@@ -38,8 +38,36 @@ const deleteAddress = async (req, res, next) => {
   }
 };
 
+const updateAddress = async (req, res, next) => {
+  try {
+    const addresses = await customerAddressService.updateAddress(req.user.id, req.params.id, req.body);
+    res.status(200).json({
+      status: 'success',
+      message: 'Address updated successfully.',
+      data: { addresses },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const setDefaultAddress = async (req, res, next) => {
+  try {
+    const addresses = await customerAddressService.setDefaultAddress(req.user.id, req.params.id);
+    res.status(200).json({
+      status: 'success',
+      message: 'Default address updated.',
+      data: { addresses },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAddresses,
   addAddress,
+  updateAddress,
+  setDefaultAddress,
   deleteAddress,
 };
