@@ -118,9 +118,9 @@ export const ProductPage = () => {
     : ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80'];
 
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
-  const isVariantOutOfStock = selectedVariant
-    ? (selectedVariant.stockQuantity || 0) <= 0
-    : (product.stockQuantity || 0) <= 0;
+  const isProductOutOfStock = (product.stockQuantity || 0) <= 0;
+  const isVariantOutOfStock =
+    isProductOutOfStock || (selectedVariant && (selectedVariant.stockQuantity || 0) <= 0);
 
   const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku})${selectedVariant ? ` in color ${selectedVariant.variantValue}` : ''}. Please let me know if it is available for video call consultation.`;
   const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
@@ -250,9 +250,7 @@ export const ProductPage = () => {
                       ? 'Out of Stock'
                       : selectedVariant
                       ? `In Stock (${selectedVariant.stockQuantity} Remaining)`
-                      : product.stockQuantity > 0
-                      ? `In Stock (${product.stockQuantity} Pieces Remaining)`
-                      : 'Made to Order'}
+                      : `In Stock (${product.stockQuantity} Pieces Remaining)`}
                   </span>
                 </span>
               </div>
@@ -341,7 +339,7 @@ export const ProductPage = () => {
                           : 'text-emerald-700 bg-emerald-50 border-emerald-200'
                       }`}
                     >
-                      {isVariantOutOfStock ? 'Sold Out' : `${selectedVariant.stockQuantity} in stock`}
+                      {isVariantOutOfStock ? 'Out of Stock' : `${selectedVariant.stockQuantity} in stock`}
                     </span>
                   )}
                 </div>
@@ -350,7 +348,7 @@ export const ProductPage = () => {
                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 gap-2.5 sm:gap-3 pt-1">
                   {product.variants.map((variant) => {
                     const isSelected = selectedVariant?.id === variant.id;
-                    const isOutOfStock = (variant.stockQuantity || 0) <= 0;
+                    const isOutOfStock = isProductOutOfStock || (variant.stockQuantity || 0) <= 0;
                     const variantThumb = variant.imageUrl || images[0];
 
                     return (

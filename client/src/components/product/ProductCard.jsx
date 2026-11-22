@@ -13,6 +13,7 @@ export const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
+  const isOutOfStock = (product.stockQuantity || 0) <= 0;
   const primaryImage =
     product.images?.find((img) => img.isPrimary)?.url ||
     product.images?.[0]?.url ||
@@ -54,15 +55,25 @@ export const ProductCard = ({ product }) => {
             <img
               src={primaryImage}
               alt={product.name}
-              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+              className={`w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 ${
+                isOutOfStock ? 'grayscale contrast-125 opacity-70' : ''
+              }`}
             />
           </Link>
 
           {/* Badges Overlay */}
           <div className="absolute top-2.5 left-2.5 flex flex-col space-y-1.5 z-10 pointer-events-none">
-            {product.isNewArrival && <Badge variant="new">New</Badge>}
-            {product.isBestSeller && <Badge variant="bestseller">Best Seller</Badge>}
-            {discount > 0 && <Badge variant="discount">{discount}% Off</Badge>}
+            {isOutOfStock ? (
+              <span className="bg-neutral-900/90 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs shadow-xs">
+                Sold Out
+              </span>
+            ) : (
+              <>
+                {product.isNewArrival && <Badge variant="new">New</Badge>}
+                {product.isBestSeller && <Badge variant="bestseller">Best Seller</Badge>}
+                {discount > 0 && <Badge variant="discount">{discount}% Off</Badge>}
+              </>
+            )}
           </div>
 
           {/* SKU Badge */}
@@ -137,12 +148,16 @@ export const ProductCard = ({ product }) => {
 
             <button
               onClick={handleAddToCart}
-              aria-label="Add to cart"
-              className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
-                addedToCart
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-[#FFF9F0] text-[#641B32] border border-[#C5A05A] hover:bg-[#641B32] hover:text-white'
+              disabled={isOutOfStock}
+              aria-label={isOutOfStock ? 'Out of stock' : 'Add to cart'}
+              className={`p-2 rounded-full transition-all duration-200 ${
+                isOutOfStock
+                  ? 'bg-neutral-100 text-neutral-400 border border-neutral-200 cursor-not-allowed opacity-60'
+                  : addedToCart
+                  ? 'bg-emerald-600 text-white cursor-pointer'
+                  : 'bg-[#FFF9F0] text-[#641B32] border border-[#C5A05A] hover:bg-[#641B32] hover:text-white cursor-pointer'
               }`}
+              title={isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             >
               <ShoppingBag className="w-4 h-4" />
             </button>

@@ -94,21 +94,36 @@ export const ProductQuickView = ({ product, isOpen, onClose }) => {
             <div className="text-xs space-y-1.5 border-t border-neutral-100 pt-3">
               <p><strong className="text-neutral-600">Fabric:</strong> {product.fabric || 'Pure Silk'}</p>
               <p><strong className="text-neutral-600">Colour:</strong> {product.colour || 'Maroon & Gold'}</p>
-              <p><strong className="text-neutral-600">Availability:</strong> <span className="text-emerald-700 font-semibold">In Stock</span></p>
+              <p>
+                <strong className="text-neutral-600">Availability:</strong>{' '}
+                {(product.stockQuantity || 0) > 0 ? (
+                  <span className="text-emerald-700 font-semibold">In Stock ({product.stockQuantity} Remaining)</span>
+                ) : (
+                  <span className="text-rose-600 font-semibold">Out of Stock</span>
+                )}
+              </p>
             </div>
           </div>
 
           <div className="pt-6 space-y-2.5">
             <Button
               onClick={() => {
+                if ((product.stockQuantity || 0) <= 0) return;
                 setAdded(true);
                 setTimeout(() => setAdded(false), 2000);
               }}
-              variant="primary"
+              disabled={(product.stockQuantity || 0) <= 0}
+              variant={(product.stockQuantity || 0) <= 0 ? 'outline' : 'primary'}
               className="w-full py-2.5 text-xs font-semibold"
             >
               <ShoppingBag className="w-4 h-4 mr-1.5" />
-              <span>{added ? 'Added to Cart ✓' : 'Add to Cart'}</span>
+              <span>
+                {(product.stockQuantity || 0) <= 0
+                  ? 'Out of Stock'
+                  : added
+                  ? 'Added to Cart ✓'
+                  : 'Add to Cart'}
+              </span>
             </Button>
 
             <div className="flex space-x-2">
