@@ -68,9 +68,9 @@ export const SettingsManager = () => {
 
   // Razorpay Settings
   const [razorpaySettings, setRazorpaySettings] = useState({
-    keyId: 'rzp_test_swarada2026',
-    keySecret: '••••••••••••••••••••••••',
-    webhookSecret: '••••••••••••••••',
+    keyId: '',
+    keySecret: '',
+    webhookSecret: '',
     mode: 'test',
   });
 
@@ -103,13 +103,12 @@ export const SettingsManager = () => {
             standardShippingFee: map.standard_shipping_charge || prev.standardShippingFee,
           }));
 
-          setRazorpaySettings((prev) => ({
-            ...prev,
-            keyId: map.razorpay_key_id || prev.keyId || '',
-            keySecret: map.razorpay_key_secret || prev.keySecret || '',
-            webhookSecret: map.razorpay_webhook_secret || prev.webhookSecret || '',
-            mode: map.razorpay_mode || prev.mode || 'test',
-          }));
+          setRazorpaySettings({
+            keyId: map.razorpay_key_id || '',
+            keySecret: map.razorpay_key_secret || '',
+            webhookSecret: map.razorpay_webhook_secret || '',
+            mode: map.razorpay_mode || 'test',
+          });
 
           if (map.nav_menus) {
             try {
@@ -471,10 +470,25 @@ export const SettingsManager = () => {
         {/* Tab 3: Razorpay */}
         {activeTab === 'payments' && (
           <div className="space-y-4">
-            <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
-              <CreditCard className="w-4 h-4 text-[#C5A05A]" />
-              <span>Razorpay Payment Gateway Credentials</span>
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
+                <CreditCard className="w-4 h-4 text-[#C5A05A]" />
+                <span>Razorpay Payment Gateway Credentials</span>
+              </h3>
+              {razorpaySettings.keyId && razorpaySettings.keyId.startsWith('rzp_') ? (
+                <span className="text-[11px] bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Live Credentials Linked
+                </span>
+              ) : (
+                <span className="text-[11px] bg-amber-100 text-amber-800 font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Test Sandbox Simulation Mode
+                </span>
+              )}
+            </div>
+
+            <p className="text-[11px] text-neutral-500">
+              Enter your official Razorpay Test Key ID & Key Secret below to process real test cards and UPI. If left blank, checkout automatically uses smooth local sandbox simulation so testing never breaks.
+            </p>
 
             <div className="space-y-3">
               <div>

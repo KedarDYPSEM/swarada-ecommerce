@@ -153,9 +153,18 @@ export const Checkout = () => {
       // Handle Online Razorpay Payment
       if (paymentMethod === 'RAZORPAY') {
         const paymentSession = await orderService.initiatePayment(order.id);
-        const scriptLoaded = await loadRazorpayScript();
+        const isSimulation = Boolean(
+          paymentSession.isMock ||
+            !paymentSession.keyId ||
+            paymentSession.keyId.includes('placeholder') ||
+            paymentSession.keyId === 'rzp_test_swarada2026' ||
+            paymentSession.razorpayOrderId?.startsWith('order_mock_')
+        );
 
-        if (scriptLoaded && window.Razorpay) {
+        const scriptLoaded = !isSimulation ? await loadRazorpayScript() : false;
+
+        // If real Razorpay keys are configured and script is available
+        if (!isSimulation && scriptLoaded && window.Razorpay) {
           const options = {
             key: paymentSession.keyId,
             amount: paymentSession.amountPaise,
@@ -203,7 +212,7 @@ export const Checkout = () => {
           rzpInstance.open();
           return;
         } else {
-          // Fallback verification for sandbox testing
+          // Seamless sandbox / test payment simulation (prevents Razorpay CDN rejection on fake keys)
           try {
             await orderService.verifyPayment({
               orderId: order.id,
@@ -212,7 +221,7 @@ export const Checkout = () => {
               razorpaySignature: 'mock_valid_signature',
             });
           } catch (e) {
-            // Quiet proceed
+            console.warn('Sandbox verification note:', e.message);
           }
           clearLocalCart();
           navigate(`/order-success?order=${order.orderNumber}`);

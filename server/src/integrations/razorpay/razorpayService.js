@@ -77,6 +77,8 @@ const createRazorpayOrder = async (orderId, userId = null) => {
     },
   });
 
+  const isMock = Boolean(!config.isRealKey || !config.razorpay || razorpayOrder.id.startsWith('order_mock_'));
+
   return {
     razorpayOrderId: razorpayOrder.id,
     amount: parseFloat(order.totalAmount),
@@ -85,6 +87,7 @@ const createRazorpayOrder = async (orderId, userId = null) => {
     keyId: config.keyId,
     orderNumber: order.orderNumber,
     paymentId: payment.id,
+    isMock,
     customer: {
       name: order.shippingName,
       email: order.shippingEmail,

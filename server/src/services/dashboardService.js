@@ -151,20 +151,28 @@ const getDashboardStats = async () => {
     sales: Math.round(salesByDay[date]),
   }));
 
+  const totalRev = parseFloat(revenueAgg._sum.totalAmount) || 0;
+  const todayRev = parseFloat(todayRevenueAgg._sum.totalAmount) || 0;
+  const monthRev = parseFloat(monthlyRevenueAgg._sum.totalAmount) || 0;
+
+  const metricsData = {
+    totalRevenue: totalRev,
+    todayRevenue: todayRev,
+    monthlyRevenue: monthRev,
+    totalOrders: totalOrdersCount,
+    pendingOrders: pendingOrdersCount,
+    deliveredOrders: deliveredOrdersCount,
+    cancelledOrders: cancelledOrdersCount,
+    totalCustomers: totalCustomersCount,
+    totalProducts: totalProductsCount,
+    lowStockProductsCount: lowStockProducts.length,
+    outOfStock: outOfStockCount,
+    outOfStockCount,
+  };
+
   return {
-    metrics: {
-      totalRevenue: parseFloat(revenueAgg._sum.totalAmount) || 0,
-      todayRevenue: parseFloat(todayRevenueAgg._sum.totalAmount) || 0,
-      monthlyRevenue: parseFloat(monthlyRevenueAgg._sum.totalAmount) || 0,
-      totalOrders: totalOrdersCount,
-      pendingOrders: pendingOrdersCount,
-      deliveredOrders: deliveredOrdersCount,
-      cancelledOrders: cancelledOrdersCount,
-      totalCustomers: totalCustomersCount,
-      totalProducts: totalProductsCount,
-      lowStockProductsCount: lowStockProducts.length,
-      outOfStockCount,
-    },
+    ...metricsData,
+    metrics: metricsData,
     lowStockProducts,
     recentOrders,
     bestSellingProducts,

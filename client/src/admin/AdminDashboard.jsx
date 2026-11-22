@@ -48,31 +48,42 @@ export const AdminDashboard = () => {
     fetchStats();
   };
 
+  const totalRev = data?.totalRevenue ?? data?.metrics?.totalRevenue ?? 0;
+  const todayRev = data?.todayRevenue ?? data?.metrics?.todayRevenue ?? 0;
+  const totalOrd = data?.totalOrders ?? data?.metrics?.totalOrders ?? 0;
+  const pendingOrd = data?.pendingOrders ?? data?.metrics?.pendingOrders ?? 0;
+  const totalProd = data?.totalProducts ?? data?.metrics?.totalProducts ?? 0;
+  const outOfStk = data?.outOfStock ?? data?.metrics?.outOfStock ?? data?.outOfStockCount ?? data?.metrics?.outOfStockCount ?? 0;
+  const totalCust = data?.totalCustomers ?? data?.metrics?.totalCustomers ?? 0;
+  const deliveredOrd = data?.deliveredOrders ?? data?.metrics?.deliveredOrders ?? 0;
+  const cancelledOrd = data?.cancelledOrders ?? data?.metrics?.cancelledOrders ?? 0;
+  const monthlyRev = data?.monthlyRevenue ?? data?.metrics?.monthlyRevenue ?? 0;
+
   const statsCards = [
     {
       title: 'Total Revenue',
-      value: data ? formatPrice(data.totalRevenue || 0) : '₹0',
-      subtitle: data ? `Today: ${formatPrice(data.todayRevenue || 0)}` : 'Loading...',
+      value: data ? formatPrice(totalRev) : '₹0',
+      subtitle: data ? `Today: ${formatPrice(todayRev)}` : 'Loading...',
       icon: DollarSign,
       color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
     },
     {
       title: 'Total Orders',
-      value: data ? data.totalOrders : '0',
-      subtitle: data ? `${data.pendingOrders} pending dispatch` : 'Loading...',
+      value: data ? totalOrd : '0',
+      subtitle: data ? `${pendingOrd} pending dispatch` : 'Loading...',
       icon: ShoppingBag,
       color: 'text-[#641B32] bg-[#641B32]/10 border-[#641B32]/20',
     },
     {
       title: 'Active Products',
-      value: data ? data.totalProducts : '0',
-      subtitle: data ? `${data.outOfStock} out of stock` : 'Loading...',
+      value: data ? totalProd : '0',
+      subtitle: data ? `${outOfStk} out of stock` : 'Loading...',
       icon: Package,
       color: 'text-[#C5A05A] bg-[#C5A05A]/15 border-[#C5A05A]/30',
     },
     {
       title: 'Registered Customers',
-      value: data ? data.totalCustomers : '0',
+      value: data ? totalCust : '0',
       subtitle: 'Verified customer accounts',
       icon: Users,
       color: 'text-blue-700 bg-blue-50 border-blue-200',
@@ -151,28 +162,28 @@ export const AdminDashboard = () => {
                 <Clock className="w-3.5 h-3.5" />
                 <span>Pending / Processing</span>
               </div>
-              <div className="text-xl font-bold text-amber-900 mt-1">{data.pendingOrders}</div>
+              <div className="text-xl font-bold text-amber-900 mt-1">{pendingOrd}</div>
             </div>
             <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
               <div className="flex items-center justify-center space-x-1.5 text-emerald-700 text-xs font-medium">
                 <CheckCircle className="w-3.5 h-3.5" />
                 <span>Delivered</span>
               </div>
-              <div className="text-xl font-bold text-emerald-900 mt-1">{data.deliveredOrders}</div>
+              <div className="text-xl font-bold text-emerald-900 mt-1">{deliveredOrd}</div>
             </div>
             <div className="p-3 bg-rose-50 rounded-lg border border-rose-200">
               <div className="flex items-center justify-center space-x-1.5 text-rose-700 text-xs font-medium">
                 <XCircle className="w-3.5 h-3.5" />
                 <span>Cancelled / Refunded</span>
               </div>
-              <div className="text-xl font-bold text-rose-900 mt-1">{data.cancelledOrders}</div>
+              <div className="text-xl font-bold text-rose-900 mt-1">{cancelledOrd}</div>
             </div>
             <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
               <div className="flex items-center justify-center space-x-1.5 text-neutral-700 text-xs font-medium">
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>This Month Sales</span>
               </div>
-              <div className="text-xl font-bold text-[#641B32] mt-1">{formatPrice(data.monthlyRevenue || 0)}</div>
+              <div className="text-xl font-bold text-[#641B32] mt-1">{formatPrice(monthlyRev)}</div>
             </div>
           </div>
         </div>
