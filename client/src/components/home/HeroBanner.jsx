@@ -36,27 +36,42 @@ const SLIDES = [
   },
 ];
 
-export const HeroBanner = () => {
+export const HeroBanner = ({ banners }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  const activeSlides = (banners && banners.length > 0)
+    ? banners.map((b, i) => ({
+        id: b.id || i,
+        title: b.title,
+        subtitle: b.subtitle || '',
+        description: b.description || 'Authentic handloom sarees with signature motifs directly from our master weavers in Kolhapur.',
+        image: b.imageUrl || b.image || SLIDES[0].image,
+        ctaText: b.buttonText || 'Explore Collection',
+        ctaLink: b.linkUrl || '/shop',
+        badge: 'Certified Handloom',
+      }))
+    : SLIDES;
+
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || activeSlides.length <= 1) return;
 
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
     }, 6000);
 
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, activeSlides.length]);
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+    setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
   };
+
+  const currentIdx = currentSlide >= activeSlides.length ? 0 : currentSlide;
 
   return (
     <section
@@ -65,8 +80,8 @@ export const HeroBanner = () => {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Slides */}
-      {SLIDES.map((slide, index) => {
-        const isActive = index === currentSlide;
+      {activeSlides.map((slide, index) => {
+        const isActive = index === currentIdx;
         return (
           <div
             key={slide.id}
@@ -157,13 +172,13 @@ export const HeroBanner = () => {
 
       {/* Dot Indicators */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2.5">
-        {SLIDES.map((_, idx) => (
+        {activeSlides.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentSlide(idx)}
             aria-label={`Go to slide ${idx + 1}`}
             className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
-              idx === currentSlide ? 'w-8 bg-[#C5A05A]' : 'w-2 bg-white/50 hover:bg-white'
+              idx === currentIdx ? 'w-8 bg-[#C5A05A]' : 'w-2 bg-white/50 hover:bg-white'
             }`}
           />
         ))}

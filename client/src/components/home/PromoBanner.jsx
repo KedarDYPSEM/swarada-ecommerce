@@ -3,7 +3,15 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Tag, Clock } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-export const PromoBanner = () => {
+export const PromoBanner = ({ banners }) => {
+  const promo = banners && banners.length > 0 ? banners[0] : null;
+
+  const title = promo?.title || 'Flat 10% Off on Your First Saree Order';
+  const subtitle = promo?.subtitle || 'Experience the magic of authentic hand-woven silks. Use code FIRST10 at checkout. Applicable on all certified Yeola Paithanis, Banarasi silks, and Nauvaris.';
+  const imageUrl = promo?.imageUrl || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80';
+  const linkUrl = promo?.linkUrl || '/shop';
+  const buttonText = promo?.buttonText || 'Claim Your Privilege';
+
   return (
     <section className="py-12 bg-[#FFF9F0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,25 +25,21 @@ export const PromoBanner = () => {
               </div>
 
               <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-[#FFF9F0]">
-                Flat 10% Off on Your First Saree Order
+                {title}
               </h2>
 
               <p className="text-sm sm:text-base text-neutral-200 leading-relaxed max-w-xl">
-                Experience the magic of authentic hand-woven silks. Use code{' '}
-                <span className="font-mono font-bold text-[#C5A05A] bg-black/30 px-2 py-0.5 rounded border border-[#C5A05A]/40">
-                  FIRST10
-                </span>{' '}
-                at checkout. Applicable on all certified Yeola Paithanis, Banarasi silks, and Nauvaris.
+                {subtitle}
               </p>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Link to="/shop">
+                <Link to={linkUrl}>
                   <Button
                     variant="gold"
                     size="lg"
                     className="shadow-lg group text-[#292323] font-semibold"
                   >
-                    <span>Claim Your Privilege</span>
+                    <span>{buttonText}</span>
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -49,8 +53,8 @@ export const PromoBanner = () => {
             {/* Right Image Column */}
             <div className="lg:col-span-5 h-72 sm:h-96 lg:h-full relative overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80"
-                alt="Festive Paithani Saree Splendour"
+                src={imageUrl}
+                alt={title}
                 className="w-full h-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#641B32] via-transparent to-transparent opacity-80" />
