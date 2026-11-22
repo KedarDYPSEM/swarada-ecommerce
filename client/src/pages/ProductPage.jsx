@@ -1,112 +1,188 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
   ShoppingBag,
-  Share2,
   Check,
   ShieldCheck,
   Truck,
   RotateCcw,
   MessageCircle,
+  Star,
+  ChevronRight,
+  ZoomIn,
 } from 'lucide-react';
 import { formatPrice, calculateDiscount } from '../lib/utils';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-
-const PRODUCT_DATA = {
-  name: 'Maharani Yeola Pure Silk Paithani Saree in Royal Maroon',
-  slug: 'maharani-yeola-pure-silk-paithani-saree-royal-maroon',
-  sku: 'S7B3',
-  mrp: 18500,
-  sellingPrice: 14999,
-  fabric: 'Pure Mulberry Silk',
-  colour: 'Royal Maroon & Antique Gold',
-  sareeLength: '6.3 Meters (Includes 0.8m Blouse Piece)',
-  blouseDetails: 'Unstitched Running Brocade Silk Blouse Piece with Zari Border',
-  washingInstructions: 'Strictly Dry Clean Only. Store wrapped in pure cotton or muslin cloth.',
-  stockQuantity: 12,
-  description:
-    'Handwoven in pure mulberry silk with rich Tested Gold Zari. Features an elaborate Mayur (Peacock) and Asawali motif on the heavy pallu with signature Narali borders. A timeless heirloom piece from Swarada Saree Center, Kolhapur.',
-  images: [
-    'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=1000&q=80',
-  ],
-  attributes: [
-    { name: 'Weave Type', value: 'Handloom Yeola Weave' },
-    { name: 'Zari Type', value: 'Tested Antique Gold Zari' },
-    { name: 'Occasion', value: 'Bridal, Weddings, Maharashtrian Festivals' },
-    { name: 'Origin', value: 'Yeola & Kolhapur Master Artisans' },
-  ],
-};
+import productService from '../services/productService';
+import ProductCard from '../components/product/ProductCard';
 
 export const ProductPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
+
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isZoomed, setIsZoomed] = useState(false);
 
-  const product = PRODUCT_DATA; // Fallback to rich data for preview
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const data = await productService.getProductBySlug(slug);
+        if (isMounted && data) {
+          setProduct(data.product);
+          setRelatedProducts(data.relatedProducts || []);
+          setSelectedImage(0);
+        }
+      } catch (err) {
+        // Fallback or not found
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchProduct();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20">
+        <div className="w-12 h-12 border-4 border-[#C5A05A] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-heading text-lg text-[#641B32]">Opening Handloom Vault...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 text-center px-4">
+        <h2 className="text-3xl font-heading font-bold text-[#641B32]">Saree Not Found</h2>
+        <p className="text-xs text-[#594E4E] mt-2 mb-6">The requested saree piece may have been purchased or relocated.</p>
+        <Link to="/shop">
+          <Button variant="primary">Return to Saree Catalog</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const images = product.images?.length
+    ? product.images.map((img) => img.url)
+    : ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80'];
+
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
 
-  const whatsappMessage = `Hello Swarada Saree Center! I am interested in: ${product.name} (SKU: ${product.sku}). Please let me know if it is available for video call consultation.`;
+  const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku}). Please let me know if it is available for video call consultation.`;
   const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
+
+  const handleAddToCart = () => {
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    navigate('/checkout');
+  };
 
   return (
     <div className="py-8 sm:py-12 bg-[#FFF9F0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="text-xs text-neutral-500 mb-6 flex items-center space-x-2">
+        {/* Breadcrumb Navigation */}
+        <nav className="text-xs text-neutral-500 mb-6 flex items-center space-x-2 flex-wrap">
           <Link to="/" className="hover:text-[#641B32]">Home</Link>
-          <span>/</span>
-          <Link to="/shop?category=sarees" className="hover:text-[#641B32]">Sarees</Link>
-          <span>/</span>
-          <span className="text-[#292323] font-medium truncate max-w-xs">{product.name}</span>
+          <ChevronRight className="w-3 h-3 text-neutral-400" />
+          <Link to="/shop" className="hover:text-[#641B32]">Catalog</Link>
+          <ChevronRight className="w-3 h-3 text-neutral-400" />
+          {product.categories?.[0] && (
+            <>
+              <Link
+                to={`/shop?category=${product.categories[0].category.slug}`}
+                className="hover:text-[#641B32]"
+              >
+                {product.categories[0].category.name}
+              </Link>
+              <ChevronRight className="w-3 h-3 text-neutral-400" />
+            </>
+          )}
+          <span className="text-[#292323] font-semibold truncate max-w-xs sm:max-w-md">
+            {product.name}
+          </span>
         </nav>
 
+        {/* Main Product Card */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 bg-white p-6 sm:p-10 border border-[#C5A05A]/30 rounded-xs shadow-xs">
-          {/* Left Column: Image Gallery */}
+          {/* Left Column: Image Gallery with Zoom */}
           <div className="lg:col-span-6 space-y-4">
-            {/* Primary Main Image */}
-            <div className="aspect-3/4 overflow-hidden rounded-xs bg-neutral-100 border border-neutral-200 relative">
+            <div
+              className="aspect-3/4 overflow-hidden rounded-xs bg-neutral-100 border border-neutral-200 relative cursor-crosshair group"
+              onMouseEnter={() => setIsZoomed(true)}
+              onMouseLeave={() => setIsZoomed(false)}
+            >
               <img
-                src={product.images[selectedImage]}
+                src={images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover object-center"
+                className={`w-full h-full object-cover object-center transition-transform duration-500 ${
+                  isZoomed ? 'scale-125' : 'scale-100'
+                }`}
               />
-              <div className="absolute top-3 left-3 flex flex-col space-y-1">
+
+              <div className="absolute top-3 left-3 flex flex-col space-y-1.5 pointer-events-none z-10">
                 <Badge variant="gold">Silk Mark Certified</Badge>
                 {discount > 0 && <Badge variant="discount">{discount}% Off</Badge>}
               </div>
+
+              <div className="absolute bottom-3 right-3 bg-black/50 text-white p-1.5 rounded-full backdrop-blur-xs pointer-events-none">
+                <ZoomIn className="w-4 h-4" />
+              </div>
             </div>
 
-            {/* Thumbnail selector */}
-            <div className="flex space-x-3 overflow-x-auto pb-2">
-              {product.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`w-20 h-24 rounded-xs overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
-                    selectedImage === idx ? 'border-[#641B32] shadow-sm' : 'border-neutral-200 opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {/* Thumbnail Selector */}
+            {images.length > 1 && (
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(idx)}
+                    className={`w-20 h-24 rounded-xs overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
+                      selectedImage === idx
+                        ? 'border-[#641B32] shadow-sm scale-102'
+                        : 'border-neutral-200 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Right Column: Product Information */}
+          {/* Right Column: Product Details & Purchase Actions */}
           <div className="lg:col-span-6 space-y-6">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono bg-[#641B32]/10 text-[#641B32] px-2.5 py-0.5 rounded font-semibold">
+                <span className="text-xs font-mono bg-[#641B32]/10 text-[#641B32] px-2.5 py-0.5 rounded font-semibold tracking-wider">
                   SKU: {product.sku}
                 </span>
+
                 <span className="text-xs text-emerald-700 font-semibold flex items-center space-x-1">
                   <Check className="w-3.5 h-3.5" />
-                  <span>In Stock ({product.stockQuantity} Left)</span>
+                  <span>
+                    {product.stockQuantity > 0
+                      ? `In Stock (${product.stockQuantity} Pieces Remaining)`
+                      : 'Made to Order'}
+                  </span>
                 </span>
               </div>
 
@@ -114,63 +190,85 @@ export const ProductPage = () => {
                 {product.name}
               </h1>
 
-              <p className="mt-2 text-xs text-[#594E4E] leading-relaxed">
-                {product.description}
+              <p className="mt-2 text-xs sm:text-sm text-[#594E4E] leading-relaxed">
+                {product.shortDescription || product.description}
               </p>
             </div>
 
-            {/* Price Box */}
+            {/* Pricing Box */}
             <div className="p-4 bg-[#FFF9F0] border border-[#C5A05A]/30 rounded-xs flex items-baseline space-x-3">
               <span className="text-3xl font-bold text-[#641B32]">
                 {formatPrice(product.sellingPrice)}
               </span>
-              <span className="text-sm text-neutral-400 line-through">
-                {formatPrice(product.mrp)}
-              </span>
-              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                You Save {formatPrice(product.mrp - product.sellingPrice)} ({discount}%)
-              </span>
+              {product.mrp > product.sellingPrice && (
+                <span className="text-sm text-neutral-400 line-through">
+                  {formatPrice(product.mrp)}
+                </span>
+              )}
+              {discount > 0 && (
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Save {formatPrice(product.mrp - product.sellingPrice)} ({discount}%)
+                </span>
+              )}
             </div>
 
-            {/* Saree Specifications Table */}
+            {/* Saree Attributes Specification Table */}
             <div className="border border-neutral-200 rounded-xs divide-y divide-neutral-100 text-xs">
-              <div className="grid grid-cols-3 p-2.5">
-                <span className="font-semibold text-neutral-600">Fabric</span>
-                <span className="col-span-2 text-[#292323]">{product.fabric}</span>
-              </div>
-              <div className="grid grid-cols-3 p-2.5">
-                <span className="font-semibold text-neutral-600">Colour</span>
-                <span className="col-span-2 text-[#292323]">{product.colour}</span>
-              </div>
-              <div className="grid grid-cols-3 p-2.5">
-                <span className="font-semibold text-neutral-600">Saree Length</span>
-                <span className="col-span-2 text-[#292323]">{product.sareeLength}</span>
-              </div>
-              <div className="grid grid-cols-3 p-2.5">
-                <span className="font-semibold text-neutral-600">Blouse Piece</span>
-                <span className="col-span-2 text-[#292323]">{product.blouseDetails}</span>
-              </div>
-              <div className="grid grid-cols-3 p-2.5">
-                <span className="font-semibold text-neutral-600">Care Instructions</span>
-                <span className="col-span-2 text-[#292323]">{product.washingInstructions}</span>
-              </div>
+              {product.fabric && (
+                <div className="grid grid-cols-3 p-2.5">
+                  <span className="font-semibold text-neutral-600">Fabric</span>
+                  <span className="col-span-2 text-[#292323]">{product.fabric}</span>
+                </div>
+              )}
+              {product.colour && (
+                <div className="grid grid-cols-3 p-2.5">
+                  <span className="font-semibold text-neutral-600">Colour Palette</span>
+                  <span className="col-span-2 text-[#292323]">{product.colour}</span>
+                </div>
+              )}
+              {product.sareeLength && (
+                <div className="grid grid-cols-3 p-2.5">
+                  <span className="font-semibold text-neutral-600">Saree Length</span>
+                  <span className="col-span-2 text-[#292323]">{product.sareeLength}</span>
+                </div>
+              )}
+              {product.blouseDetails && (
+                <div className="grid grid-cols-3 p-2.5">
+                  <span className="font-semibold text-neutral-600">Blouse Details</span>
+                  <span className="col-span-2 text-[#292323]">{product.blouseDetails}</span>
+                </div>
+              )}
+              {product.washingInstructions && (
+                <div className="grid grid-cols-3 p-2.5">
+                  <span className="font-semibold text-neutral-600">Care Instructions</span>
+                  <span className="col-span-2 text-[#292323]">{product.washingInstructions}</span>
+                </div>
+              )}
+              {product.attributes?.map((attr) => (
+                <div key={attr.id} className="grid grid-cols-3 p-2.5">
+                  <span className="font-semibold text-neutral-600">{attr.name}</span>
+                  <span className="col-span-2 text-[#292323]">{attr.value}</span>
+                </div>
+              ))}
             </div>
 
-            {/* Quantity and Actions */}
+            {/* Quantity Selector and Buttons */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center space-x-4">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#292323]">Quantity</span>
-                <div className="flex items-center border border-neutral-300 rounded">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#292323]">
+                  Quantity
+                </span>
+                <div className="flex items-center border border-neutral-300 rounded bg-white">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-1 text-sm hover:bg-neutral-100"
+                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer"
                   >
                     -
                   </button>
                   <span className="px-4 py-1 text-xs font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-1 text-sm hover:bg-neutral-100"
+                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer"
                   >
                     +
                   </button>
@@ -179,10 +277,7 @@ export const ProductPage = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={() => {
-                    setAdded(true);
-                    setTimeout(() => setAdded(false), 2000);
-                  }}
+                  onClick={handleAddToCart}
                   variant="primary"
                   className="flex-1 py-3 text-sm flex items-center justify-center space-x-2"
                 >
@@ -190,11 +285,13 @@ export const ProductPage = () => {
                   <span>{added ? 'Added to Cart ✓' : 'Add to Cart'}</span>
                 </Button>
 
-                <Link to="/checkout" className="flex-1">
-                  <Button variant="gold" className="w-full py-3 text-sm font-semibold text-[#292323]">
-                    Buy Now
-                  </Button>
-                </Link>
+                <Button
+                  onClick={handleBuyNow}
+                  variant="gold"
+                  className="flex-1 py-3 text-sm font-semibold text-[#292323]"
+                >
+                  Buy Now
+                </Button>
 
                 <a
                   href={whatsappUrl}
@@ -205,14 +302,26 @@ export const ProductPage = () => {
                 >
                   <MessageCircle className="w-5 h-5" />
                 </a>
+
+                <button
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  aria-label="Wishlist"
+                  className="p-3 border border-neutral-300 rounded-sm hover:border-[#641B32] transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  <Heart
+                    className={`w-5 h-5 ${
+                      isWishlisted ? 'fill-red-600 text-red-600' : 'text-neutral-500'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
 
-            {/* Trust Markers */}
+            {/* Trust Assurances */}
             <div className="grid grid-cols-3 gap-3 pt-4 border-t border-neutral-200 text-center text-[11px] text-[#594E4E]">
               <div className="p-2">
                 <ShieldCheck className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
-                <span>100% Handloom Pure Silk</span>
+                <span>100% Authentic Yeola Silk</span>
               </div>
               <div className="p-2">
                 <Truck className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
@@ -220,11 +329,64 @@ export const ProductPage = () => {
               </div>
               <div className="p-2">
                 <RotateCcw className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
-                <span>7-Day Return Policy</span>
+                <span>7-Day Return Guarantee</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Customer Reviews Section */}
+        <div className="mt-12 bg-white p-6 sm:p-10 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-6">
+          <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
+            <div>
+              <h2 className="text-xl font-heading font-bold text-[#641B32]">
+                Customer Reviews & Handloom Feedback
+              </h2>
+              <div className="flex items-center space-x-1 mt-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                ))}
+                <span className="text-xs text-neutral-500 ml-2">5.0 Star Rating (Verified Purchases)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-[#FFF9F0]/60 border border-[#C5A05A]/20 rounded-xs">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-[#292323]">Sneha M. (Pune)</span>
+                <span className="text-[10px] text-neutral-400">Verified Buyer</span>
+              </div>
+              <div className="flex space-x-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-amber-500 text-amber-500" />
+                ))}
+              </div>
+              <p className="text-xs text-[#594E4E]">
+                "The zari shine and peacock pallu are even more magnificent in person! Perfectly packed in the signature Swarada keepsake box. Truly made my festival celebration memorable."
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Products Recommendation */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <div className="text-center mb-8">
+              <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
+                You May Also Admire
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-[#641B32] mt-1">
+                Related Handloom Sarees
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import ProductCard from '../product/ProductCard';
 
-const SAMPLE_PRODUCTS = [
+const FALLBACK_PRODUCTS = [
   {
     id: 1,
     name: 'Maharani Yeola Pure Silk Paithani Saree in Royal Maroon',
@@ -134,13 +134,21 @@ const SAMPLE_PRODUCTS = [
   },
 ];
 
-export const FeaturedProducts = ({ title = 'Featured Collections', defaultTab = 'all' }) => {
+export const FeaturedProducts = ({ title = 'Featured Collections', defaultTab = 'all', products = null }) => {
   const [activeTab, setActiveTab] = useState(defaultTab);
+
+  const displayList = products && products.length > 0 ? products : FALLBACK_PRODUCTS;
 
   const filteredProducts =
     activeTab === 'all'
-      ? SAMPLE_PRODUCTS
-      : SAMPLE_PRODUCTS.filter((p) => p.tab === activeTab || (activeTab === 'new' && p.isNewArrival) || (activeTab === 'bestseller' && p.isBestSeller));
+      ? displayList
+      : displayList.filter(
+          (p) =>
+            p.tab === activeTab ||
+            (activeTab === 'new' && p.isNewArrival) ||
+            (activeTab === 'bestseller' && p.isBestSeller) ||
+            (activeTab === 'bridal' && p.sellingPrice >= 10000)
+        );
 
   return (
     <section className="py-16 sm:py-24 bg-white border-y border-neutral-150">

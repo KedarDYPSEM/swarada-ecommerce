@@ -1,10 +1,16 @@
 const express = require('express');
 const authRoutes = require('./authRoutes');
+const productRoutes = require('./productRoutes');
+const categoryRoutes = require('./categoryRoutes');
+const homepageRoutes = require('./homepageRoutes');
 
 const router = express.Router();
 
-// Mount sub-routers
+// Mount API sub-routers
 router.use('/auth', authRoutes);
+router.use('/products', productRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/homepage', homepageRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {

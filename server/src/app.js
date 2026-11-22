@@ -60,8 +60,10 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 // ─── Start Server ───────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  });
+}
 
 module.exports = app;

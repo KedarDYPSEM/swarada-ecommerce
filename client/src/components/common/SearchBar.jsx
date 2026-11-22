@@ -1,57 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, ArrowRight } from 'lucide-react';
+import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
 import { formatPrice } from '../../lib/utils';
-
-// Static preview catalog for instant client-side search autocomplete
-const SEARCH_INDEX = [
-  {
-    name: 'Maharani Yeola Pure Silk Paithani Saree in Royal Maroon',
-    sku: 'S7B3',
-    slug: 'maharani-yeola-pure-silk-paithani-saree-royal-maroon',
-    category: 'Paithani Sarees',
-    price: 14999,
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    name: 'Peshwai Kathpadar Double Pallu Paithani in Emerald Green',
-    sku: 'S8C4',
-    slug: 'peshwai-kathpadar-double-pallu-paithani-emerald-green',
-    category: 'Paithani Sarees',
-    price: 17499,
-    image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    name: 'Regal Banarasi Katan Silk Brocade Saree in Deep Burgundy',
-    sku: 'B101',
-    slug: 'regal-banarasi-katan-silk-brocade-saree-deep-burgundy',
-    category: 'Banarasi Silk',
-    price: 12950,
-    image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    name: 'Traditional Kolhapuri Nauvari Silk Saree in Mustard Yellow',
-    sku: 'N901',
-    slug: 'traditional-kolhapuri-nauvari-silk-saree-mustard-yellow',
-    category: 'Nauvari Sarees',
-    price: 11200,
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=200&q=80',
-  },
-  {
-    name: 'Royal Magenta Zari Woven Silk Saree with Temple Border',
-    sku: 'S5A2',
-    slug: 'royal-magenta-zari-woven-silk-saree-temple-border',
-    category: 'Silk Sarees',
-    price: 6999,
-    image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=200&q=80',
-  },
-];
+import productService from '../../services/productService';
 
 export const SearchBar = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const inputRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -60,26 +19,40 @@ export const SearchBar = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   useEffect(() => {
-    const trimmed = query.trim().toLowerCase();
+    const trimmed = query.trim();
     if (!trimmed) {
       setResults([]);
+      setIsLoading(false);
       return;
     }
 
-    const matched = SEARCH_INDEX.filter(
-      (item) =>
-        item.name.toLowerCase().includes(trimmed) ||
-        item.sku.toLowerCase().includes(trimmed) ||
-        item.category.toLowerCase().includes(trimmed)
-    );
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-    setResults(matched);
+    setIsLoading(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const products = await productService.searchProducts(trimmed, 8);
+        setResults(products || []);
+      } catch (err) {
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, [query]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      navigate(`/shop?search=${encodeURIComponent(query.trim())}`);
       if (onClose) onClose();
     }
   };
@@ -101,19 +74,22 @@ export const SearchBar = ({ isOpen, onClose }) => {
           className="w-full bg-[#FFF9F0]/80 border border-[#C5A05A]/40 rounded-full py-2.5 pl-11 pr-10 text-sm text-[#292323] placeholder:text-neutral-400 focus:bg-white focus:outline-none focus:border-[#641B32] focus:ring-1 focus:ring-[#641B32] transition-all"
         />
         <Search className="w-4 h-4 text-[#C5A05A] absolute left-4 pointer-events-none" />
-        {query && (
+
+        {isLoading ? (
+          <Loader2 className="w-4 h-4 text-[#641B32] animate-spin absolute right-3.5" />
+        ) : query ? (
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="absolute right-3.5 text-neutral-400 hover:text-neutral-700"
+            className="absolute right-3.5 text-neutral-400 hover:text-neutral-700 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
-        )}
+        ) : null}
       </form>
 
-      {/* Instant Suggestions Dropdown */}
-      {query.trim().length > 0 && (
+      {/* Autocomplete / Instant Suggestions Dropdown */}
+      {query.trim().length > 0 && !isLoading && (
         <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-[#C5A05A]/30 rounded-sm shadow-xl z-50 overflow-hidden max-h-96 overflow-y-auto">
           {results.length > 0 ? (
             <div>
@@ -121,36 +97,41 @@ export const SearchBar = ({ isOpen, onClose }) => {
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-[#641B32]">
                   Products Found ({results.length})
                 </span>
-                <span className="text-[10px] text-neutral-400">Press enter to view all</span>
+                <span className="text-[10px] text-neutral-400">Press enter for all results</span>
               </div>
               <div className="divide-y divide-neutral-100">
-                {results.map((item) => (
-                  <div
-                    key={item.sku}
-                    onClick={() => handleSelect(item.slug)}
-                    className="p-3 hover:bg-[#FFF9F0]/60 flex items-center space-x-3 cursor-pointer transition-colors"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-12 h-14 object-cover rounded-xs border border-neutral-200 shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-[#292323] truncate hover:text-[#641B32]">
-                        {item.name}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className="text-[10px] bg-[#641B32]/10 text-[#641B32] px-1.5 py-0.5 rounded font-mono font-semibold">
-                          SKU: {item.sku}
-                        </span>
-                        <span className="text-xs font-semibold text-[#641B32]">
-                          {formatPrice(item.price)}
-                        </span>
+                {results.map((item) => {
+                  const thumbnail =
+                    item.images?.[0]?.url ||
+                    'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=200&q=80';
+                  return (
+                    <div
+                      key={item.sku}
+                      onClick={() => handleSelect(item.slug)}
+                      className="p-3 hover:bg-[#FFF9F0]/60 flex items-center space-x-3 cursor-pointer transition-colors"
+                    >
+                      <img
+                        src={thumbnail}
+                        alt={item.name}
+                        className="w-12 h-14 object-cover rounded-xs border border-neutral-200 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[#292323] truncate hover:text-[#641B32]">
+                          {item.name}
+                        </p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-[10px] bg-[#641B32]/10 text-[#641B32] px-1.5 py-0.5 rounded font-mono font-semibold">
+                            SKU: {item.sku}
+                          </span>
+                          <span className="text-xs font-semibold text-[#641B32]">
+                            {formatPrice(item.sellingPrice)}
+                          </span>
+                        </div>
                       </div>
+                      <ArrowRight className="w-4 h-4 text-neutral-300" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-neutral-300" />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : (
