@@ -73,6 +73,7 @@ const getOrderDetails = async (id) => {
           product: {
             include: { images: true },
           },
+          variant: true,
         },
       },
       shipment: true,

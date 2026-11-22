@@ -26,6 +26,14 @@ const calculateCartTotals = async (items, couponCode = null, userId = null) => {
       id: item.id,
       productId: item.productId,
       variantId: item.variantId,
+      variant: item.variant ? {
+        id: item.variant.id,
+        variantName: item.variant.variantName,
+        variantValue: item.variant.variantValue,
+        colorCode: item.variant.colorCode,
+        imageUrl: item.variant.imageUrl,
+        sku: item.variant.sku,
+      } : null,
       quantity: item.quantity,
       unitPrice,
       totalPrice: itemTotal,
@@ -37,9 +45,9 @@ const calculateCartTotals = async (items, couponCode = null, userId = null) => {
         mrp: parseFloat(item.product.mrp),
         sellingPrice: parseFloat(item.product.sellingPrice),
         fabric: item.product.fabric,
-        colour: item.product.colour,
-        stockQuantity: item.product.stockQuantity,
-        primaryImage: item.product.images?.find((img) => img.isPrimary)?.url || item.product.images?.[0]?.url,
+        colour: item.variant?.variantValue || item.product.colour,
+        stockQuantity: item.variant ? item.variant.stockQuantity : item.product.stockQuantity,
+        primaryImage: item.variant?.imageUrl || item.product.images?.find((img) => img.isPrimary)?.url || item.product.images?.[0]?.url,
       },
     };
   });
@@ -100,6 +108,7 @@ const getOrCreateCart = async (userId = null, sessionId = null) => {
             product: {
               include: { images: true },
             },
+            variant: true,
           },
         },
       },
@@ -116,6 +125,7 @@ const getOrCreateCart = async (userId = null, sessionId = null) => {
             product: {
               include: { images: true },
             },
+            variant: true,
           },
         },
       },
@@ -136,6 +146,7 @@ const getOrCreateCart = async (userId = null, sessionId = null) => {
             product: {
               include: { images: true },
             },
+            variant: true,
           },
         },
       },
@@ -153,6 +164,7 @@ const getOrCreateCart = async (userId = null, sessionId = null) => {
             product: {
               include: { images: true },
             },
+            variant: true,
           },
         },
       },

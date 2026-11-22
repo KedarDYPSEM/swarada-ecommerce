@@ -220,14 +220,22 @@ export const OrderDetail = () => {
                 <div key={item.id} className="p-4 flex items-center justify-between gap-4 text-xs">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={item.productImage || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=150'}
+                      src={item.variant?.imageUrl || item.product?.images?.[0]?.url || item.productImage || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=150'}
                       alt={item.productName}
                       className="w-12 h-16 object-cover rounded border border-neutral-200"
                     />
                     <div>
                       <div className="font-semibold text-[#292323]">{item.productName}</div>
+                      {item.variant && (
+                        <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 mt-0.5">
+                          {item.variant.colorCode && (
+                            <span className="w-2.5 h-2.5 rounded-full border border-black/20" style={{ backgroundColor: item.variant.colorCode }} />
+                          )}
+                          <span>Variant: {item.variant.variantValue}</span>
+                        </div>
+                      )}
                       <div className="text-[10px] text-neutral-500 font-mono mt-0.5">
-                        SKU: {item.sku}
+                        SKU: {item.sku || item.productSku}
                       </div>
                       <div className="text-[11px] text-neutral-600 mt-0.5">
                         {formatPrice(item.unitPrice)} × {item.quantity} qty

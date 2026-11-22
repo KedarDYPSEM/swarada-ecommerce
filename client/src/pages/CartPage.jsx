@@ -133,6 +133,18 @@ export const CartPage = () => {
                         </span>
                         {item.product.fabric && <span>• {item.product.fabric}</span>}
                       </div>
+
+                      {item.variant && (
+                        <div className="flex items-center gap-1.5 text-xs text-[#641B32] font-medium mt-1">
+                          {item.variant.colorCode && (
+                            <span
+                              className="w-3 h-3 rounded-full inline-block border border-black/20"
+                              style={{ backgroundColor: item.variant.colorCode }}
+                            />
+                          )}
+                          <span>Color: {item.variant.variantValue}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between pt-3">

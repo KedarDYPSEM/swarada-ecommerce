@@ -485,6 +485,17 @@ export const Checkout = () => {
                       />
                       <div className="flex-1 min-w-0 text-xs">
                         <p className="font-semibold text-[#292323] truncate">{item.product.name}</p>
+                        {item.variant && (
+                          <p className="text-[11px] text-[#641B32] font-medium flex items-center gap-1 mt-0.5">
+                            {item.variant.colorCode && (
+                              <span
+                                className="w-2 h-2 rounded-full inline-block border border-black/20"
+                                style={{ backgroundColor: item.variant.colorCode }}
+                              />
+                            )}
+                            <span>Color: {item.variant.variantValue}</span>
+                          </p>
+                        )}
                         <p className="text-neutral-500">Qty: {item.quantity} • SKU: {item.product.sku}</p>
                         <p className="font-bold text-[#641B32]">{formatPrice(item.totalPrice)}</p>
                       </div>

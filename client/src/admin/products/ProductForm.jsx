@@ -11,6 +11,7 @@ import {
   Package,
   Layers,
   Sparkles,
+  Palette,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
@@ -61,6 +62,7 @@ export const ProductForm = () => {
         displayOrder: 0,
       },
     ],
+    variants: [],
   });
 
   useEffect(() => {
@@ -110,6 +112,14 @@ export const ProductForm = () => {
               isActive: Boolean(p.isActive),
               categoryIds: p.categories?.map((c) => c.categoryId) || [],
               images: p.images?.length > 0 ? p.images : [{ url: '', altText: '', isPrimary: true, displayOrder: 0 }],
+              variants: p.variants?.map((v) => ({
+                id: v.id,
+                variantValue: v.variantValue || '',
+                colorCode: v.colorCode || '#9B2226',
+                imageUrl: v.imageUrl || '',
+                stockQuantity: v.stockQuantity !== undefined ? v.stockQuantity.toString() : '10',
+                sku: v.sku || '',
+              })) || [],
             });
           }
         } catch (err) {
@@ -190,6 +200,37 @@ export const ProductForm = () => {
     });
   };
 
+  const handleAddVariant = () => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: [
+        ...(prev.variants || []),
+        {
+          variantValue: '',
+          colorCode: '#9B2226',
+          imageUrl: '',
+          stockQuantity: '10',
+          sku: '',
+        },
+      ],
+    }));
+  };
+
+  const handleVariantChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updated = [...(prev.variants || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, variants: updated };
+    });
+  };
+
+  const handleRemoveVariant = (index) => {
+    setFormData((prev) => {
+      const updated = (prev.variants || []).filter((_, i) => i !== index);
+      return { ...prev, variants: updated };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -204,7 +245,21 @@ export const ProductForm = () => {
         gstRate: parseFloat(formData.gstRate) || 5,
         stockQuantity: formData.stockQuantity !== '' ? (parseInt(formData.stockQuantity, 10) || 0) : 10,
         lowStockThreshold: parseInt(formData.lowStockThreshold, 10) || 3,
+        barcode: formData.barcode?.trim() || null,
         images: formData.images.filter((img) => img.url && img.url.trim() !== ''),
+        variants: formData.variants
+          ? formData.variants
+              .filter((v) => (v.variantValue && v.variantValue.trim()) || v.imageUrl)
+              .map((v) => ({
+                id: v.id,
+                variantName: 'Color',
+                variantValue: v.variantValue.trim(),
+                colorCode: v.colorCode || null,
+                imageUrl: v.imageUrl || null,
+                stockQuantity: v.stockQuantity !== '' ? parseInt(v.stockQuantity, 10) || 0 : 10,
+                sku: v.sku || undefined,
+              }))
+          : [],
       };
 
       if (isEdit) {
@@ -664,6 +719,128 @@ export const ProductForm = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* 6. Color Variants & Specific Images */}
+        <div className="bg-white p-5 rounded-lg border border-neutral-200 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-3 gap-2">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Palette className="w-4 h-4 text-[#C5A05A]" />
+                <h2 className="text-sm font-heading font-bold text-[#292323]">
+                  6. Color Variants & Separate Images
+                </h2>
+              </div>
+              <p className="text-neutral-500 text-[11px] mt-0.5">
+                Add multiple color choices with separate photos, swatch colors, and stock counts.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={handleAddVariant}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              <span>Add Color Variant</span>
+            </Button>
+          </div>
+
+          {(!formData.variants || formData.variants.length === 0) ? (
+            <div className="text-center py-6 border-2 border-dashed border-neutral-200 rounded-lg text-neutral-400 text-xs">
+              No color variants added yet. Click &quot;Add Color Variant&quot; above to add specific saree shades with distinct photos.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {formData.variants.map((v, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-amber-50/40 rounded-lg border border-amber-200/60 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className="w-4 h-4 rounded-full border border-black/20 shadow-xs inline-block"
+                        style={{ backgroundColor: v.colorCode || '#9B2226' }}
+                      />
+                      <span className="text-xs font-bold text-[#641B32]">
+                        Color Variant #{idx + 1}: {v.variantValue || 'Untitled Shade'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVariant(idx)}
+                      className="p-1 text-neutral-400 hover:text-rose-600 rounded cursor-pointer"
+                      title="Remove Color Variant"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                    <div className="sm:col-span-5">
+                      <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                        Color Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={v.variantValue}
+                        onChange={(e) => handleVariantChange(idx, 'variantValue', e.target.value)}
+                        placeholder="e.g. Peacock Blue, Rani Pink, Wine Red"
+                        className="w-full px-3 py-1.5 text-xs border border-neutral-200 rounded bg-white"
+                        required
+                      />
+                    </div>
+
+                    <div className="sm:col-span-4">
+                      <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                        Swatch Color
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="color"
+                          value={v.colorCode || '#9B2226'}
+                          onChange={(e) => handleVariantChange(idx, 'colorCode', e.target.value)}
+                          className="w-8 h-8 rounded border border-neutral-300 p-0.5 cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={v.colorCode || '#9B2226'}
+                          onChange={(e) => handleVariantChange(idx, 'colorCode', e.target.value)}
+                          placeholder="#9B2226"
+                          className="w-24 px-2 py-1.5 text-xs font-mono border border-neutral-200 rounded bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                        Stock Qty
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={v.stockQuantity}
+                        onChange={(e) => handleVariantChange(idx, 'stockQuantity', e.target.value)}
+                        placeholder="10"
+                        className="w-full px-3 py-1.5 text-xs border border-neutral-200 rounded bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <ImageUploader
+                      value={v.imageUrl}
+                      onChange={(newUrl) => handleVariantChange(idx, 'imageUrl', newUrl)}
+                      label={`Photo for ${v.variantValue || `Color #${idx + 1}`}`}
+                      placeholder="Upload photo or paste URL for this specific color..."
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Toggles & Visibility */}

@@ -194,6 +194,8 @@ model ProductVariant {
   productId       Int      @map("product_id")
   variantName     String   @map("variant_name") // e.g., "Color", "Size"
   variantValue    String   @map("variant_value") // e.g., "Wine Red", "M"
+  colorCode       String?  @map("color_code") // e.g., "#800020"
+  imageUrl        String?  @map("image_url") @db.Text // Separate image for this color
   sku             String   @unique
   priceAdjustment Decimal  @default(0.00) @db.Decimal(10, 2) @map("price_adjustment")
   stockQuantity   Int      @default(0) @map("stock_quantity")

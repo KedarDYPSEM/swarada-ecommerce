@@ -176,4 +176,5 @@ const adminService = {
   },
 };
 
+export const adminOrderService = adminService;
 export default adminService;

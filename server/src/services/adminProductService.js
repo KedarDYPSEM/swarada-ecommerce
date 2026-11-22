@@ -79,6 +79,7 @@ const getProductById = async (id) => {
       images: { orderBy: { displayOrder: 'asc' } },
       categories: { include: { category: true } },
       attributes: true,
+      variants: true,
       inventory: true,
       inventoryMovements: {
         take: 10,
@@ -122,12 +123,22 @@ const createProduct = async (data, adminId) => {
     categoryIds = [],
     images = [],
     attributes = [],
+    variants = [],
   } = data;
 
   // Verify unique SKU
   const existingSku = await prisma.product.findUnique({ where: { sku: sku.trim() } });
   if (existingSku) {
     throw new AppError(`Product SKU "${sku}" already exists. SKU must be unique.`, 400);
+  }
+
+  // Sanitize and check unique barcode if provided
+  const cleanBarcode = barcode && barcode.trim() !== '' ? barcode.trim() : null;
+  if (cleanBarcode) {
+    const existingBarcode = await prisma.product.findUnique({ where: { barcode: cleanBarcode } });
+    if (existingBarcode) {
+      throw new AppError(`Barcode "${cleanBarcode}" is already in use by product "${existingBarcode.name}".`, 400);
+    }
   }
 
   const slug = name
@@ -144,7 +155,7 @@ const createProduct = async (data, adminId) => {
         name,
         slug,
         sku: sku.trim(),
-        barcode: barcode?.trim() || null,
+        barcode: cleanBarcode,
         description: description || null,
         shortDescription: shortDescription || null,
         mrp: parseFloat(mrp),
@@ -196,10 +207,25 @@ const createProduct = async (data, adminId) => {
             value: attr.value,
           })),
         },
+        variants: variants && variants.length > 0 ? {
+          create: variants
+            .filter((v) => (v.variantValue && v.variantValue.trim()) || (v.colorName && v.colorName.trim()) || v.imageUrl)
+            .map((v, idx) => ({
+              variantName: v.variantName || 'Color',
+              variantValue: (v.variantValue || v.colorName || `Color ${idx + 1}`).trim(),
+              colorCode: v.colorCode || null,
+              imageUrl: v.imageUrl || null,
+              sku: (v.sku && v.sku.trim()) || `${sku.trim()}-CLR${idx + 1}`,
+              priceAdjustment: v.priceAdjustment ? parseFloat(v.priceAdjustment) : 0.00,
+              stockQuantity: v.stockQuantity !== undefined ? parseInt(v.stockQuantity, 10) : numStock,
+              isActive: v.isActive !== undefined ? Boolean(v.isActive) : true,
+            })),
+        } : undefined,
       },
       include: {
         images: true,
         categories: { include: { category: true } },
+        variants: true,
       },
     });
 
@@ -240,12 +266,27 @@ const updateProduct = async (id, data, adminId) => {
     isActive,
     categoryIds,
     images,
+    variants,
   } = data;
 
   if (sku && sku !== existing.sku) {
     const duplicate = await prisma.product.findUnique({ where: { sku: sku.trim() } });
     if (duplicate) {
       throw new AppError(`SKU "${sku}" is already in use by another saree.`, 400);
+    }
+  }
+
+  // Sanitize and check unique barcode if provided
+  const cleanBarcode = barcode !== undefined ? (barcode && barcode.trim() !== '' ? barcode.trim() : null) : undefined;
+  if (cleanBarcode) {
+    const duplicateBarcode = await prisma.product.findFirst({
+      where: {
+        barcode: cleanBarcode,
+        NOT: { id: productId },
+      },
+    });
+    if (duplicateBarcode) {
+      throw new AppError(`Barcode "${cleanBarcode}" is already in use by product "${duplicateBarcode.name}".`, 400);
     }
   }
 
@@ -298,12 +339,38 @@ const updateProduct = async (id, data, adminId) => {
       });
     }
 
+    // Update variants if provided
+    if (variants !== undefined) {
+      await tx.productVariant.deleteMany({ where: { productId } });
+      if (Array.isArray(variants) && variants.length > 0) {
+        const validVariants = variants.filter(
+          (v) => (v.variantValue && v.variantValue.trim()) || (v.colorName && v.colorName.trim()) || v.imageUrl
+        );
+        if (validVariants.length > 0) {
+          const baseSku = (sku ? sku.trim() : existing.sku) || `SW${productId}`;
+          await tx.productVariant.createMany({
+            data: validVariants.map((v, idx) => ({
+              productId,
+              variantName: v.variantName || 'Color',
+              variantValue: (v.variantValue || v.colorName || `Color ${idx + 1}`).trim(),
+              colorCode: v.colorCode || null,
+              imageUrl: v.imageUrl || null,
+              sku: (v.sku && v.sku.trim()) || `${baseSku}-CLR${idx + 1}-${Date.now().toString(36).slice(-3)}`,
+              priceAdjustment: v.priceAdjustment ? parseFloat(v.priceAdjustment) : 0.00,
+              stockQuantity: v.stockQuantity !== undefined ? parseInt(v.stockQuantity, 10) : (stockQuantity !== undefined ? parseInt(stockQuantity, 10) : existing.stockQuantity),
+              isActive: v.isActive !== undefined ? Boolean(v.isActive) : true,
+            })),
+          });
+        }
+      }
+    }
+
     const updated = await tx.product.update({
       where: { id: productId },
       data: {
         name: name !== undefined ? name : undefined,
         sku: sku ? sku.trim() : undefined,
-        barcode: barcode !== undefined ? barcode : undefined,
+        barcode: cleanBarcode,
         description: description !== undefined ? description : undefined,
         shortDescription: shortDescription !== undefined ? shortDescription : undefined,
         mrp: mrp !== undefined ? parseFloat(mrp) : undefined,
@@ -325,6 +392,7 @@ const updateProduct = async (id, data, adminId) => {
       include: {
         images: true,
         categories: { include: { category: true } },
+        variants: true,
       },
     });
 

@@ -28,6 +28,8 @@ export const ProductPage = () => {
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [activeImageOverride, setActiveImageOverride] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
@@ -66,6 +68,12 @@ export const ProductPage = () => {
           setProduct(data.product);
           setRelatedProducts(data.relatedProducts || []);
           setSelectedImage(0);
+          if (data.product.variants && data.product.variants.length > 0) {
+            setSelectedVariant(data.product.variants[0]);
+            if (data.product.variants[0].imageUrl) {
+              setActiveImageOverride(data.product.variants[0].imageUrl);
+            }
+          }
         }
       } catch (err) {
         // Fallback or not found
@@ -108,14 +116,14 @@ export const ProductPage = () => {
 
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
 
-  const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku}). Please let me know if it is available for video call consultation.`;
+  const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku})${selectedVariant ? ` in color ${selectedVariant.variantValue}` : ''}. Please let me know if it is available for video call consultation.`;
   const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
 
   const handleAddToCart = async () => {
     setActionError('');
     setIsAddingToCart(true);
     try {
-      await addToCart(product.id, quantity);
+      await addToCart(product.id, quantity, selectedVariant?.id || null);
       setAdded(true);
       setTimeout(() => setAdded(false), 2500);
     } catch (e) {
@@ -129,7 +137,7 @@ export const ProductPage = () => {
     setActionError('');
     setIsBuyingNow(true);
     try {
-      await addToCart(product.id, quantity);
+      await addToCart(product.id, quantity, selectedVariant?.id || null);
       navigate('/checkout');
     } catch (e) {
       setActionError(e.message || 'Could not proceed to checkout. Please try again.');
@@ -173,7 +181,7 @@ export const ProductPage = () => {
               onMouseLeave={() => setIsZoomed(false)}
             >
               <img
-                src={images[selectedImage]}
+                src={activeImageOverride || images[selectedImage]}
                 alt={product.name}
                 className={`w-full h-full object-cover object-center transition-transform duration-500 ${
                   isZoomed ? 'scale-125' : 'scale-100'
@@ -196,9 +204,12 @@ export const ProductPage = () => {
                 {images.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedImage(idx)}
+                    onClick={() => {
+                      setSelectedImage(idx);
+                      setActiveImageOverride(null);
+                    }}
                     className={`w-20 h-24 rounded-xs overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
-                      selectedImage === idx
+                      selectedImage === idx && !activeImageOverride
                         ? 'border-[#641B32] shadow-sm scale-102'
                         : 'border-neutral-200 opacity-70 hover:opacity-100'
                     }`}
@@ -293,6 +304,54 @@ export const ProductPage = () => {
                 </div>
               ))}
             </div>
+
+            {/* Color Variants Selection */}
+            {product.variants && product.variants.length > 0 && (
+              <div className="space-y-3 pb-3 border-b border-neutral-100">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-neutral-700">
+                    Available Colors:{' '}
+                    <span className="text-[#641B32] font-bold">
+                      {selectedVariant?.variantValue || 'Select a shade'}
+                    </span>
+                  </span>
+                  {selectedVariant && (
+                    <span className="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      {selectedVariant.stockQuantity > 0 ? `In Stock (${selectedVariant.stockQuantity})` : 'Made to Order'}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {product.variants.map((variant) => {
+                    const isSelected = selectedVariant?.id === variant.id;
+                    return (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVariant(variant);
+                          if (variant.imageUrl) {
+                            setActiveImageOverride(variant.imageUrl);
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-[#641B32] bg-[#641B32]/10 text-[#641B32] ring-2 ring-[#641B32]/30 font-bold shadow-xs'
+                            : 'border-neutral-200 bg-white text-neutral-700 hover:border-[#C5A05A]'
+                        }`}
+                      >
+                        <span
+                          className="w-4 h-4 rounded-full border border-black/20 shrink-0 shadow-xs"
+                          style={{ backgroundColor: variant.colorCode || '#9B2226' }}
+                        />
+                        <span>{variant.variantValue}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Quantity Selector and Buttons */}
             <div className="space-y-4 pt-2">

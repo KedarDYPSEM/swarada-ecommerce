@@ -157,6 +157,17 @@ export const CartDrawer = () => {
                     <p className="text-[10px] text-neutral-400 font-mono mt-0.5">
                       SKU: {item.product.sku}
                     </p>
+                    {item.variant && (
+                      <p className="text-[11px] text-[#641B32] font-medium flex items-center gap-1.5 mt-0.5">
+                        {item.variant.colorCode && (
+                          <span
+                            className="w-2.5 h-2.5 rounded-full inline-block border border-black/20"
+                            style={{ backgroundColor: item.variant.colorCode }}
+                          />
+                        )}
+                        <span>Color: {item.variant.variantValue}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
