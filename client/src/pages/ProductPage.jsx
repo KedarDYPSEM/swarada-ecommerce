@@ -377,9 +377,9 @@ export const ProductPage = () => {
                         title={`${variant.variantValue} (${isOutOfStock ? 'Out of Stock' : `${variant.stockQuantity} in stock`})`}
                       >
                         <div
-                          className={`w-full aspect-square bg-neutral-100 rounded-xs overflow-hidden relative transition-all duration-200 ${
+                          className={`w-full aspect-square bg-neutral-100 rounded-none overflow-hidden relative transition-all duration-200 ${
                             isSelected
-                              ? 'border-2 border-black ring-2 ring-black/15 shadow-md scale-102'
+                              ? 'border-2 border-black ring-1 ring-black shadow-sm'
                               : 'border border-neutral-300 hover:border-neutral-500'
                           }`}
                         >
@@ -388,30 +388,18 @@ export const ProductPage = () => {
                             alt={variant.variantValue}
                             className={`w-full h-full object-cover transition-all duration-300 ${
                               isOutOfStock
-                                ? 'grayscale contrast-125 brightness-95 opacity-60 group-hover:opacity-85'
+                                ? 'grayscale contrast-125 brightness-95 opacity-80'
                                 : 'group-hover:scale-105'
                             }`}
                           />
-
-                          {isOutOfStock && (
-                            <div className="absolute inset-0 bg-black/25 flex items-center justify-center p-0.5">
-                              <span className="bg-rose-700 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-xs leading-none shadow-md">
-                                Out of Stock
-                              </span>
-                            </div>
-                          )}
-
-                          {isSelected && !isOutOfStock && (
-                            <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white" />
-                          )}
                         </div>
 
                         <span
-                          className={`text-[11px] sm:text-xs text-center mt-1.5 truncate max-w-full tracking-tight transition-colors ${
+                          className={`text-[11px] sm:text-xs text-center mt-1 truncate max-w-full tracking-tight transition-colors ${
                             isSelected
                               ? 'font-bold text-black'
                               : isOutOfStock
-                              ? 'text-neutral-400 font-normal line-through'
+                              ? 'text-neutral-500 font-normal'
                               : 'text-neutral-700 font-medium group-hover:text-black'
                           }`}
                         >

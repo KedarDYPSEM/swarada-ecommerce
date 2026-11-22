@@ -38,6 +38,8 @@ router.post('/orders/:id/cancel', adminOrder.cancelOrder);
 // Customers
 router.get('/customers', adminCustomer.listCustomers);
 router.get('/customers/:id', adminCustomer.getCustomerById);
+router.put('/customers/:id', adminCustomer.updateCustomer);
+router.patch('/customers/:id/status', adminCustomer.toggleCustomerStatus);
 
 // Coupons
 router.get('/coupons', adminCoupon.listCoupons);

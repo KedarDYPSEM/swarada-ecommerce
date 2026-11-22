@@ -49,9 +49,12 @@ const listCustomers = async (query = {}) => {
         orders: {
           select: {
             id: true,
+            orderNumber: true,
             totalAmount: true,
             status: true,
+            createdAt: true,
           },
+          orderBy: { createdAt: 'desc' },
         },
       },
     }),
@@ -61,18 +64,35 @@ const listCustomers = async (query = {}) => {
   const enriched = customers.map((c) => {
     const validOrders = c.orders.filter((o) => o.status !== 'CANCELLED');
     const totalSpent = validOrders.reduce((acc, curr) => acc + parseFloat(curr.totalAmount), 0);
+    const displayName = c.profile
+      ? (`${c.profile.firstName || ''} ${c.profile.lastName || ''}`.trim() || c.profile.displayName || 'Customer')
+      : 'Customer';
+
+    const defaultAddress = c.addresses?.[0] || null;
 
     return {
       id: c.id,
-      email: c.email,
-      phone: c.phone,
-      name: c.profile ? `${c.profile.firstName} ${c.profile.lastName}` : c.email,
-      city: c.addresses[0]?.city || 'N/A',
-      state: c.addresses[0]?.state || 'N/A',
+      email:
+        c.email && !c.email.includes('@customer.swarada.com')
+          ? c.email
+          : c.phone
+          ? `${c.phone} (Phone Account)`
+          : c.email,
+      rawEmail: c.email,
+      phone: c.phone || '—',
+      name: displayName,
+      profile: c.profile || { firstName: displayName, lastName: '', displayName },
+      addresses: c.addresses || [],
+      city: defaultAddress?.city || '—',
+      state: defaultAddress?.state || '—',
       isActive: c.isActive,
       joinedAt: c.createdAt,
+      createdAt: c.createdAt,
+      orders: c.orders || [],
       totalOrders: c.orders.length,
+      totalOrdersCount: c.orders.length,
       totalSpent: Math.round(totalSpent),
+      lifetimeSpend: Math.round(totalSpent),
     };
   });
 
@@ -109,10 +129,72 @@ const getCustomerDetails = async (id) => {
     throw new AppError('Customer not found.', 404);
   }
 
-  return customer;
+  const validOrders = (customer.orders || []).filter((o) => o.status !== 'CANCELLED');
+  const totalSpent = validOrders.reduce((acc, curr) => acc + parseFloat(curr.totalAmount), 0);
+  const displayName = customer.profile
+    ? (`${customer.profile.firstName || ''} ${customer.profile.lastName || ''}`.trim() || customer.profile.displayName || 'Customer')
+    : 'Customer';
+
+  return {
+    ...customer,
+    name: displayName,
+    totalOrdersCount: customer.orders?.length || 0,
+    totalOrders: customer.orders?.length || 0,
+    lifetimeSpend: Math.round(totalSpent),
+    totalSpent: Math.round(totalSpent),
+  };
+};
+
+/**
+ * Update Customer Info
+ */
+const updateCustomer = async (id, data) => {
+  const userId = parseInt(id, 10);
+  const { firstName, lastName, phone, email, isActive } = data;
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      phone: phone !== undefined ? phone : undefined,
+      email: email !== undefined ? email : undefined,
+      isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+      profile: {
+        update: {
+          firstName: firstName !== undefined ? firstName : undefined,
+          lastName: lastName !== undefined ? lastName : undefined,
+          displayName: firstName ? `${firstName} ${lastName || ''}`.trim() : undefined,
+        },
+      },
+    },
+    include: {
+      profile: true,
+      addresses: true,
+      orders: true,
+    },
+  });
+
+  return updated;
+};
+
+/**
+ * Toggle Customer Active / Inactive
+ */
+const toggleCustomerStatus = async (id) => {
+  const userId = parseInt(id, 10);
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new AppError('Customer not found', 404);
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: { isActive: !user.isActive },
+    include: { profile: true },
+  });
 };
 
 module.exports = {
   listCustomers,
   getCustomerDetails,
+  getCustomerById: getCustomerDetails,
+  updateCustomer,
+  toggleCustomerStatus,
 };

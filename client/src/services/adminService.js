@@ -68,6 +68,14 @@ const adminService = {
     const res = await api.get(`/admin/customers/${id}`);
     return res.data;
   },
+  updateCustomer: async (id, data) => {
+    const res = await api.put(`/admin/customers/${id}`, data);
+    return res.data;
+  },
+  toggleCustomerStatus: async (id) => {
+    const res = await api.patch(`/admin/customers/${id}/status`);
+    return res.data;
+  },
 
   // Coupons
   getCoupons: async () => {

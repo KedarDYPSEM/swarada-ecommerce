@@ -44,6 +44,20 @@ const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
+  // Format Prisma Unique Constraint Violations (P2002)
+  if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint failed'))) {
+    err.statusCode = 400;
+    err.status = 'fail';
+    const target = err.meta?.target || (err.message.includes('products_barcode_key') ? 'barcode' : err.message.includes('products_sku_key') ? 'sku' : 'field');
+    if (target === 'barcode' || String(target).includes('barcode')) {
+      err.message = 'The barcode / tag ID entered is already in use by another product. Please use a unique barcode or leave it blank.';
+    } else if (target === 'sku' || String(target).includes('sku')) {
+      err.message = 'This SKU is already assigned to another product. Each product must have a unique SKU.';
+    } else {
+      err.message = `A unique constraint failed on ${Array.isArray(target) ? target.join(', ') : target}. Please provide unique values.`;
+    }
+  }
+
   if (process.env.NODE_ENV === 'development') {
     return res.status(err.statusCode).json({
       status: err.status,

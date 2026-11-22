@@ -18,7 +18,27 @@ const getCustomerById = catchAsync(async (req, res) => {
   });
 });
 
+const updateCustomer = catchAsync(async (req, res) => {
+  const updated = await adminCustomerService.updateCustomer(req.params.id, req.body);
+  res.json({
+    success: true,
+    message: 'Customer updated successfully.',
+    data: updated,
+  });
+});
+
+const toggleCustomerStatus = catchAsync(async (req, res) => {
+  const result = await adminCustomerService.toggleCustomerStatus(req.params.id);
+  res.json({
+    success: true,
+    message: `Customer marked as ${result.isActive ? 'Active' : 'Inactive'}.`,
+    data: result,
+  });
+});
+
 module.exports = {
   listCustomers,
   getCustomerById,
+  updateCustomer,
+  toggleCustomerStatus,
 };
