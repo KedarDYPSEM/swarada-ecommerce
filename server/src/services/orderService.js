@@ -226,7 +226,7 @@ const createOrder = async (orderData) => {
         throw new AppError(`The saree "${item.product.name}" is no longer available.`, 400);
       }
 
-      if (product.stockQuantity < item.quantity) {
+      if (product.stockQuantity > 0 && product.stockQuantity < item.quantity) {
         throw new AppError(
           `Insufficient stock for "${product.name}". Only ${product.stockQuantity} available.`,
           400
@@ -253,8 +253,8 @@ const createOrder = async (orderData) => {
         total: itemTotal,
       });
 
-      // Decrement stock quantity
-      const newStock = product.stockQuantity - item.quantity;
+      // Decrement stock quantity if greater than 0
+      const newStock = Math.max(0, product.stockQuantity - item.quantity);
       await tx.product.update({
         where: { id: product.id },
         data: { stockQuantity: newStock },

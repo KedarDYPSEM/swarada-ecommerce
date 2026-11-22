@@ -178,7 +178,7 @@ const addItem = async (cartIdentifier, { productId, variantId = null, quantity =
     throw new AppError('This saree is no longer available.', 404);
   }
 
-  if (product.stockQuantity < quantity) {
+  if (product.stockQuantity > 0 && product.stockQuantity < quantity) {
     throw new AppError(`Only ${product.stockQuantity} items available in stock.`, 400);
   }
 
@@ -193,7 +193,7 @@ const addItem = async (cartIdentifier, { productId, variantId = null, quantity =
 
   if (existingItem) {
     const newQty = existingItem.quantity + quantity;
-    if (product.stockQuantity < newQty) {
+    if (product.stockQuantity > 0 && product.stockQuantity < newQty) {
       throw new AppError(`Cannot add more. Only ${product.stockQuantity} in stock.`, 400);
     }
 
@@ -237,7 +237,7 @@ const updateItem = async (cartIdentifier, cartItemId, quantity) => {
     throw new AppError('Cart item not found.', 404);
   }
 
-  if (item.product.stockQuantity < quantity) {
+  if (item.product.stockQuantity > 0 && item.product.stockQuantity < quantity) {
     throw new AppError(`Only ${item.product.stockQuantity} pieces available in stock.`, 400);
   }
 

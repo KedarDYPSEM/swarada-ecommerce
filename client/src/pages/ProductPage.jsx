@@ -31,6 +31,9 @@ export const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const [actionError, setActionError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isZoomed, setIsZoomed] = useState(false);
 
@@ -109,21 +112,29 @@ export const ProductPage = () => {
   const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
 
   const handleAddToCart = async () => {
+    setActionError('');
+    setIsAddingToCart(true);
     try {
       await addToCart(product.id, quantity);
       setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
+      setTimeout(() => setAdded(false), 2500);
     } catch (e) {
-      // Handled in context
+      setActionError(e.message || 'Could not add to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
   const handleBuyNow = async () => {
+    setActionError('');
+    setIsBuyingNow(true);
     try {
       await addToCart(product.id, quantity);
       navigate('/checkout');
     } catch (e) {
-      // Handled
+      setActionError(e.message || 'Could not proceed to checkout. Please try again.');
+    } finally {
+      setIsBuyingNow(false);
     }
   };
 
@@ -291,14 +302,26 @@ export const ProductPage = () => {
                 </span>
                 <div className="flex items-center border border-neutral-300 rounded bg-white">
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    onClick={() => {
+                      if (quantity > 1) {
+                        setQuantity(quantity - 1);
+                        setActionError('');
+                      }
+                    }}
                     className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer"
                   >
                     -
                   </button>
                   <span className="px-4 py-1 text-xs font-semibold">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => {
+                      if (product.stockQuantity > 0 && quantity >= product.stockQuantity) {
+                        setActionError(`Only ${product.stockQuantity} items in stock.`);
+                        return;
+                      }
+                      setQuantity(quantity + 1);
+                      setActionError('');
+                    }}
                     className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer"
                   >
                     +
@@ -306,10 +329,17 @@ export const ProductPage = () => {
                 </div>
               </div>
 
+              {actionError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm">
+                  {actionError}
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleAddToCart}
                   variant="primary"
+                  isLoading={isAddingToCart}
                   className="flex-1 py-3 text-sm flex items-center justify-center space-x-2"
                 >
                   <ShoppingBag className="w-4 h-4" />
@@ -319,6 +349,7 @@ export const ProductPage = () => {
                 <Button
                   onClick={handleBuyNow}
                   variant="gold"
+                  isLoading={isBuyingNow}
                   className="flex-1 py-3 text-sm font-semibold text-[#292323]"
                 >
                   Buy Now
