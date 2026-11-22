@@ -16,7 +16,11 @@ const checkoutSchema = z.object({
   shippingPhone: z
     .string()
     .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian phone number (starting with 6, 7, 8, or 9)'),
-  shippingEmail: z.string().email('Please enter a valid email address'),
+  shippingEmail: z
+    .string()
+    .email('Please enter a valid email address')
+    .optional()
+    .or(z.literal('')),
   shippingAddressLine1: z.string().min(5, 'Flat / House No. & Building/Society is compulsory (min 5 characters)'),
   shippingAddressLine2: z.string().min(3, 'Area / Colony / Locality is compulsory for courier shipping labels'),
   shippingLandmark: z.string().optional(),
@@ -316,16 +320,16 @@ export const Checkout = () => {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
-                    Email Address *
+                    Email Address <span className="text-neutral-400 font-normal lowercase">(optional)</span>
                   </label>
                   <Input
                     type="email"
-                    placeholder="e.g. ananya@example.com"
+                    placeholder="e.g. ananya@example.com (optional)"
                     error={errors.shippingEmail?.message}
                     {...register('shippingEmail')}
                   />
                   <p className="text-[10px] text-neutral-400 mt-1">
-                    Your invoice, order status, and Blue Dart tracking link will be sent to this email.
+                    Optional: If provided, your order invoice and tracking updates will be sent to this email.
                   </p>
                 </div>
 

@@ -199,6 +199,13 @@ export const ProductPage = () => {
                 {discount > 0 && <Badge variant="discount">{discount}% Off</Badge>}
               </div>
 
+              {isVariantOutOfStock && (
+                <div className="absolute top-3 right-3 bg-rose-700 text-white px-3 py-1 rounded-xs text-xs font-bold uppercase tracking-wider shadow-md z-10 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white"></span>
+                  Out of Stock
+                </div>
+              )}
+
               <div className="absolute bottom-3 right-3 bg-black/50 text-white p-1.5 rounded-full backdrop-blur-xs pointer-events-none">
                 <ZoomIn className="w-4 h-4" />
               </div>
@@ -265,7 +272,7 @@ export const ProductPage = () => {
             </div>
 
             {/* Pricing Box */}
-            <div className="p-4 bg-[#FFF9F0] border border-[#C5A05A]/30 rounded-xs flex items-baseline space-x-3">
+            <div className="p-4 bg-[#FFF9F0] border border-[#C5A05A]/30 rounded-xs flex flex-wrap items-baseline gap-3">
               <span className="text-3xl font-bold text-[#641B32]">
                 {formatPrice(product.sellingPrice)}
               </span>
@@ -274,11 +281,16 @@ export const ProductPage = () => {
                   {formatPrice(product.mrp)}
                 </span>
               )}
-              {discount > 0 && (
+              {isVariantOutOfStock ? (
+                <span className="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded border border-rose-300 uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-rose-600 inline-block"></span>
+                  Out of Stock
+                </span>
+              ) : discount > 0 ? (
                 <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   Save {formatPrice(product.mrp - product.sellingPrice)} ({discount}%)
                 </span>
-              )}
+              ) : null}
             </div>
 
             {/* Saree Attributes Specification Table */}
@@ -382,9 +394,9 @@ export const ProductPage = () => {
                           />
 
                           {isOutOfStock && (
-                            <div className="absolute inset-0 bg-black/15 flex items-center justify-center p-0.5">
-                              <span className="bg-neutral-900/90 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-xs leading-none shadow-xs">
-                                Sold Out
+                            <div className="absolute inset-0 bg-black/25 flex items-center justify-center p-0.5">
+                              <span className="bg-rose-700 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-xs leading-none shadow-md">
+                                Out of Stock
                               </span>
                             </div>
                           )}
@@ -457,12 +469,12 @@ export const ProductPage = () => {
               )}
 
               {isVariantOutOfStock && (
-                <div className="p-3 bg-amber-50/90 border border-amber-200 text-amber-900 text-xs rounded-sm space-y-1">
-                  <div className="font-semibold text-rose-700 flex items-center gap-1">
-                    <span>⚠</span> This shade ({selectedVariant?.variantValue || 'Selected'}) is currently Sold Out.
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-900 text-xs rounded-sm space-y-1">
+                  <div className="font-semibold text-rose-700 flex items-center gap-1.5">
+                    <span>✕</span> This saree / shade ({selectedVariant?.variantValue || 'Selected'}) is currently Out of Stock.
                   </div>
-                  <div className="text-[11px] text-amber-800">
-                    Please click another shade above or message us on WhatsApp below for custom handloom weaving.
+                  <div className="text-[11px] text-rose-600">
+                    Please choose another available shade above, or click the WhatsApp button below to inquire about restock or custom handloom weaving.
                   </div>
                 </div>
               )}
@@ -473,7 +485,9 @@ export const ProductPage = () => {
                   variant={isVariantOutOfStock ? 'outline' : 'primary'}
                   disabled={isVariantOutOfStock || isAddingToCart}
                   isLoading={isAddingToCart}
-                  className="flex-1 py-3 text-sm flex items-center justify-center space-x-2"
+                  className={`flex-1 py-3 text-sm flex items-center justify-center space-x-2 font-bold ${
+                    isVariantOutOfStock ? 'bg-neutral-200 text-neutral-500 border border-neutral-300 cursor-not-allowed opacity-90' : ''
+                  }`}
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>

@@ -363,7 +363,7 @@ model Order {
   status               OrderStatus   @default(PENDING_PAYMENT)
   shippingName         String        @map("shipping_name")
   shippingPhone        String        @map("shipping_phone")
-  shippingEmail        String        @map("shipping_email")
+  shippingEmail        String?       @map("shipping_email")
   shippingAddressLine1 String        @map("shipping_address_line1")
   shippingAddressLine2 String?       @map("shipping_address_line2")
   shippingLandmark     String?       @map("shipping_landmark")

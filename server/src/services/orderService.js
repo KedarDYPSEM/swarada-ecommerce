@@ -70,10 +70,12 @@ const createOrder = async (orderData) => {
     shippingPincode,
   } = shippingDetails;
 
+  const cleanEmail = shippingEmail && shippingEmail.trim() ? shippingEmail.trim().toLowerCase() : null;
+  const cleanPhone = shippingPhone ? shippingPhone.trim().replace(/^\+91/, '') : '';
+
   if (
     !shippingName?.trim() ||
     !shippingPhone?.trim() ||
-    !shippingEmail?.trim() ||
     !shippingAddressLine1?.trim() ||
     !shippingAddressLine2?.trim() ||
     !shippingCity?.trim() ||
@@ -91,17 +93,19 @@ const createOrder = async (orderData) => {
   let autoCreatedUser = null;
   let authTokens = null;
 
-  if (!orderUserId && shippingEmail) {
+  if (!orderUserId) {
     try {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: shippingEmail },
-            ...(shippingPhone ? [{ phone: shippingPhone }] : []),
-          ],
-        },
-        include: { profile: true },
-      });
+      const whereConditions = [];
+      if (cleanEmail) whereConditions.push({ email: cleanEmail });
+      if (shippingPhone) whereConditions.push({ phone: shippingPhone.trim() });
+      if (cleanPhone) whereConditions.push({ phone: `+91${cleanPhone}` }, { phone: cleanPhone });
+
+      const existingUser = whereConditions.length > 0
+        ? await prisma.user.findFirst({
+            where: { OR: whereConditions },
+            include: { profile: true },
+          })
+        : null;
 
       if (existingUser) {
         orderUserId = existingUser.id;
@@ -113,11 +117,12 @@ const createOrder = async (orderData) => {
         const lastName = nameParts.slice(1).join(' ') || '';
         const autoPassword = `Swarada@${Math.floor(100000 + Math.random() * 900000)}`;
         const passwordHash = await argon2.hash(autoPassword);
+        const userEmail = cleanEmail || `${cleanPhone || Date.now()}@customer.swarada.com`;
 
         const newUser = await prisma.user.create({
           data: {
-            email: shippingEmail,
-            phone: shippingPhone || null,
+            email: userEmail,
+            phone: shippingPhone ? shippingPhone.trim() : null,
             passwordHash,
             role: 'CUSTOMER',
             profile: {
@@ -373,7 +378,7 @@ const createOrder = async (orderData) => {
         status: paymentMethod === 'COD' ? 'CONFIRMED' : 'PENDING_PAYMENT',
         shippingName,
         shippingPhone,
-        shippingEmail,
+        shippingEmail: cleanEmail,
         shippingAddressLine1,
         shippingAddressLine2: shippingAddressLine2 || null,
         shippingLandmark: shippingLandmark || null,

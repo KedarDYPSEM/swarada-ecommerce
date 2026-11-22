@@ -37,7 +37,7 @@ const getTransporter = async () => {
  * Send Order Confirmation Email
  */
 const sendOrderConfirmation = async (order) => {
-  if (!order.shippingEmail) return;
+  if (!order.shippingEmail || order.shippingEmail.includes('@customer.swarada.com')) return;
 
   const mailer = await getTransporter();
 
@@ -119,7 +119,7 @@ const sendOrderConfirmation = async (order) => {
  * Send Shipping Dispatch Email
  */
 const sendShippingDispatch = async (order, shipment) => {
-  if (!order.shippingEmail) return;
+  if (!order.shippingEmail || order.shippingEmail.includes('@customer.swarada.com')) return;
 
   const mailer = await getTransporter();
 

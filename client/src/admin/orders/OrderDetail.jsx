@@ -567,7 +567,7 @@ export const OrderDetail = () => {
                   </p>
                   <p className="text-xs text-neutral-600">
                     Phone: <span className="font-bold">+91 {order.shippingPhone}</span>
-                    {order.shippingEmail ? ` | Email: ${order.shippingEmail}` : ''}
+                    {order.shippingEmail && !order.shippingEmail.includes('@customer.swarada.com') ? ` | Email: ${order.shippingEmail}` : ''}
                   </p>
                 </div>
               </div>
