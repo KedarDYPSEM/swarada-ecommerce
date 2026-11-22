@@ -84,11 +84,19 @@ export const CustomerAddresses = () => {
       return;
     }
     if (!formData.addressLine1.trim()) {
-      setErrorMsg('Street address / Flat number is required.');
+      setErrorMsg('Flat / House No. & Building is compulsory for courier shipping labels.');
+      return;
+    }
+    if (!formData.addressLine2.trim()) {
+      setErrorMsg('Area / Colony / Locality is compulsory for courier shipping labels.');
       return;
     }
     if (!formData.city.trim() || !formData.state.trim() || !formData.pincode.trim()) {
-      setErrorMsg('City, State and Pincode are required.');
+      setErrorMsg('City, State and Pincode are compulsory.');
+      return;
+    }
+    if (!/^\d{6}$/.test(formData.pincode.trim())) {
+      setErrorMsg('Please enter a valid 6-digit postal pincode.');
       return;
     }
 
@@ -184,7 +192,7 @@ export const CustomerAddresses = () => {
 
       {/* Add / Edit Address Form */}
       {showForm && (
-        <form onSubmit={handleSave} className="p-6 bg-[#FFF9F0] border border-[#C5A05A]/40 rounded-xs space-y-4 animate-fadeIn">
+        <form onSubmit={handleSave} noValidate className="p-6 bg-[#FFF9F0] border border-[#C5A05A]/40 rounded-xs space-y-4 animate-fadeIn">
           <div className="flex items-center justify-between border-b border-[#C5A05A]/20 pb-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#641B32]">
               {editingId ? 'Edit Delivery Address' : 'Add New Delivery Address'}
@@ -252,22 +260,23 @@ export const CustomerAddresses = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                Area / Colony / Sector
+                Area / Colony / Locality / Road <span className="text-red-500">*</span>
               </label>
               <Input
+                required
                 value={formData.addressLine2}
                 onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
-                placeholder="e.g. Near Mahalaxmi Mandir (Optional)"
+                placeholder="e.g. 5th Lane Rajarampuri, Main Road"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                Landmark
+                Landmark (Optional)
               </label>
               <Input
                 value={formData.landmark}
                 onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-                placeholder="e.g. Opp. Binkhambi Ganesh Mandir (Optional)"
+                placeholder="e.g. Opp. Binkhambi Ganesh Mandir"
               />
             </div>
           </div>

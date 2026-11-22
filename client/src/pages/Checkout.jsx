@@ -12,16 +12,16 @@ import { Input } from '../components/ui/Input';
 import orderService from '../services/orderService';
 
 const checkoutSchema = z.object({
-  shippingName: z.string().min(2, 'Full name is required'),
+  shippingName: z.string().min(2, 'Full name is required for delivery recipient'),
   shippingPhone: z
     .string()
     .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian phone number (starting with 6, 7, 8, or 9)'),
   shippingEmail: z.string().email('Please enter a valid email address'),
-  shippingAddressLine1: z.string().min(5, 'Address line 1 is required'),
-  shippingAddressLine2: z.string().optional(),
+  shippingAddressLine1: z.string().min(5, 'Flat / House No. & Building/Society is compulsory (min 5 characters)'),
+  shippingAddressLine2: z.string().min(3, 'Area / Colony / Locality is compulsory for courier shipping labels'),
   shippingLandmark: z.string().optional(),
-  shippingCity: z.string().min(2, 'City is required'),
-  shippingState: z.string().min(2, 'State is required'),
+  shippingCity: z.string().min(2, 'City is compulsory'),
+  shippingState: z.string().min(2, 'State is compulsory'),
   shippingPincode: z.string().regex(/^\d{6}$/, 'Please enter a valid 6-digit Indian pincode'),
   paymentMethod: z.enum(['RAZORPAY', 'COD']),
   notes: z.string().optional(),
@@ -59,9 +59,19 @@ export const Checkout = () => {
 
   const selectedPaymentMethod = watch('paymentMethod');
 
-  // Load saved customer addresses if logged in
+  // Load saved customer addresses and profile if logged in
   useEffect(() => {
     if (isAuthenticated) {
+      if (user?.email) {
+        setValue('shippingEmail', user.email);
+      }
+      if (user?.profile?.displayName || user?.profile?.firstName) {
+        setValue('shippingName', user.profile.displayName || `${user.profile.firstName} ${user.profile.lastName || ''}`.trim());
+      }
+      if (user?.phone) {
+        setValue('shippingPhone', user.phone.replace('+91', '').trim());
+      }
+
       const fetchAddresses = async () => {
         try {
           const addrs = await orderService.getAddresses();
@@ -85,7 +95,7 @@ export const Checkout = () => {
       };
       fetchAddresses();
     }
-  }, [isAuthenticated, setValue]);
+  }, [isAuthenticated, user, setValue]);
 
   const selectSavedAddress = (addr) => {
     setValue('shippingName', addr.fullName);
@@ -321,10 +331,10 @@ export const Checkout = () => {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
-                    Flat / House No., Building Name, Street Address *
+                    Flat / House No., Building / Society Name *
                   </label>
                   <Input
-                    placeholder="e.g. 42 Rajarampuri 5th Lane, Near Mahalaxmi Area"
+                    placeholder="e.g. Flat 402, Shree Mahalaxmi Towers"
                     error={errors.shippingAddressLine1?.message}
                     {...register('shippingAddressLine1')}
                   />
@@ -333,10 +343,11 @@ export const Checkout = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
-                      Apartment / Suite (Optional)
+                      Street / Area / Locality *
                     </label>
                     <Input
-                      placeholder="e.g. Apartment 3B"
+                      placeholder="e.g. 5th Lane Rajarampuri, Main Road"
+                      error={errors.shippingAddressLine2?.message}
                       {...register('shippingAddressLine2')}
                     />
                   </div>
@@ -346,7 +357,7 @@ export const Checkout = () => {
                       Landmark (Optional)
                     </label>
                     <Input
-                      placeholder="e.g. Near Mahalaxmi Temple, Opposite City Garden"
+                      placeholder="e.g. Near Mahalaxmi Temple, Opp. Bank"
                       {...register('shippingLandmark')}
                     />
                   </div>

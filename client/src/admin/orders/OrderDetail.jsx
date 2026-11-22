@@ -180,11 +180,19 @@ export const OrderDetail = () => {
 
         <div className="flex items-center space-x-3">
           <button
+            onClick={() => setPrintSlip(true)}
+            className="inline-flex items-center space-x-1.5 px-3 py-2 bg-[#641B32] hover:bg-[#7B1E35] text-white rounded text-xs font-semibold shadow-xs transition-colors"
+          >
+            <Truck className="w-4 h-4 text-[#C5A05A]" />
+            <span>Shipping Label</span>
+          </button>
+
+          <button
             onClick={() => window.print()}
-            className="inline-flex items-center space-x-1.5 px-3 py-2 border border-neutral-300 rounded text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+            className="inline-flex items-center space-x-1.5 px-3 py-2 border border-neutral-300 rounded text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
           >
             <Printer className="w-4 h-4 text-neutral-500" />
-            <span>Print Invoice / Slip</span>
+            <span>Print Invoice</span>
           </button>
 
           {order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
@@ -270,30 +278,40 @@ export const OrderDetail = () => {
           <div className="bg-white p-5 rounded-lg border border-neutral-200 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
               <div className="flex items-center space-x-1.5 text-[#641B32] font-semibold mb-2">
-                <MapPin className="w-4 h-4" />
-                <span>Shipping & Delivery Destination</span>
+                <MapPin className="w-4 h-4 text-[#C5A05A]" />
+                <span>Full Shipping & Delivery Address</span>
               </div>
-              <div className="font-semibold text-neutral-800">{order.shippingName}</div>
-              <div className="text-neutral-600 mt-1 leading-relaxed">
-                {order.shippingAddress1}
-                {order.shippingAddress2 && <>, {order.shippingAddress2}</>}
-                {order.shippingLandmark && <><br />Landmark: {order.shippingLandmark}</>}
-                <br />
-                {order.shippingCity}, {order.shippingState} – <span className="font-mono font-semibold">{order.shippingPincode}</span>
-                <br />
-                Country: {order.shippingCountry || 'India'}
+              <div className="font-bold text-neutral-800 text-sm">{order.shippingName}</div>
+              <div className="text-neutral-600 mt-1 leading-relaxed space-y-0.5">
+                <p className="font-medium text-neutral-800">
+                  {order.shippingAddressLine1 || order.shippingAddress1}
+                </p>
+                {(order.shippingAddressLine2 || order.shippingAddress2) && (
+                  <p className="text-neutral-700">
+                    {order.shippingAddressLine2 || order.shippingAddress2}
+                  </p>
+                )}
+                {order.shippingLandmark && (
+                  <p className="text-[11px] text-neutral-500">
+                    <span className="font-semibold text-neutral-600">Landmark:</span> {order.shippingLandmark}
+                  </p>
+                )}
+                <p className="font-bold text-[#641B32] pt-0.5">
+                  {order.shippingCity}, {order.shippingState} – <span className="font-mono text-sm tracking-wider font-extrabold">{order.shippingPincode}</span>
+                </p>
+                <p className="text-[11px] text-neutral-400">Country: {order.shippingCountry || 'India'}</p>
               </div>
             </div>
 
             <div>
               <div className="flex items-center space-x-1.5 text-[#641B32] font-semibold mb-2">
-                <User className="w-4 h-4" />
+                <User className="w-4 h-4 text-[#C5A05A]" />
                 <span>Customer Contact Information</span>
               </div>
               <div className="space-y-1.5 text-neutral-600">
                 <div className="flex items-center space-x-2">
                   <Phone className="w-3.5 h-3.5 text-neutral-400" />
-                  <span className="font-mono font-medium">{order.shippingPhone}</span>
+                  <span className="font-mono font-bold text-neutral-800">+91 {order.shippingPhone}</span>
                 </div>
                 {order.shippingEmail && (
                   <div className="flex items-center space-x-2">
@@ -302,9 +320,12 @@ export const OrderDetail = () => {
                   </div>
                 )}
                 <div className="pt-2 border-t border-neutral-100 mt-2">
-                  <span className="text-[10px] uppercase font-bold text-neutral-400">Payment Gateway:</span>
-                  <div className="font-medium text-[#292323] mt-0.5">
-                    {order.paymentMethod} • <span className="text-emerald-700 font-bold uppercase">{order.paymentStatus}</span>
+                  <span className="text-[10px] uppercase font-bold text-neutral-400">Payment Method:</span>
+                  <div className="font-semibold text-[#292323] mt-0.5">
+                    {order.paymentMethod} •{' '}
+                    <span className={order.paymentMethod === 'COD' ? 'text-amber-700 font-bold' : 'text-emerald-700 font-bold'}>
+                      {order.paymentStatus}
+                    </span>
                   </div>
                   {order.paymentId && (
                     <div className="text-[10px] font-mono text-neutral-400">Ref: {order.paymentId}</div>
@@ -433,6 +454,162 @@ export const OrderDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* ─── Printable Shipping Label Modal ──────────────────────── */}
+      {printSlip && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 space-y-4 shadow-2xl relative my-8">
+            <div className="flex items-center justify-between border-b border-neutral-200 pb-3 print:hidden">
+              <div className="flex items-center space-x-2">
+                <Truck className="w-5 h-5 text-[#641B32]" />
+                <h3 className="text-base font-bold text-[#292323]">
+                  Standard Courier Shipping Label
+                </h3>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => window.print()}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-[#641B32] text-white hover:bg-[#7B1E35] rounded text-xs font-semibold"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Label</span>
+                </button>
+                <button
+                  onClick={() => setPrintSlip(false)}
+                  className="px-3 py-1.5 border border-neutral-300 rounded text-xs font-medium text-neutral-700 hover:bg-neutral-100"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Label Sheet */}
+            <div
+              id="shipping-label-printable"
+              className="border-2 border-black p-5 bg-white text-black font-sans space-y-4"
+            >
+              {/* Top Header Strip */}
+              <div className="flex items-center justify-between border-b-2 border-black pb-3">
+                <div>
+                  <h1 className="text-xl font-extrabold tracking-wider text-black uppercase">
+                    SWARADA SAREE CENTER
+                  </h1>
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-neutral-600">
+                    Authentic Yeola Paithani & Kolhapur Handloom Sarees
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-bold uppercase">
+                    Carrier: {order.shipment?.provider || 'Speed Post / Blue Dart'}
+                  </div>
+                  <div className="font-mono text-sm font-extrabold">
+                    AWB: {order.shipment?.awbNumber || 'PENDING DISPATCH'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Barcode & Routing Strip */}
+              <div className="border border-black p-2 flex items-center justify-between bg-neutral-50 text-center">
+                <div className="text-left">
+                  <div className="text-[10px] font-bold uppercase text-neutral-600">Order Reference</div>
+                  <div className="font-mono text-sm font-extrabold text-black">#{order.orderNumber}</div>
+                  <div className="text-[10px] text-neutral-500">Date: {new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
+                </div>
+
+                <div className="space-y-0.5">
+                  <div className="font-mono text-2xl tracking-[4px] font-bold select-none">
+                    ||| | |||| | ||| || |||| | ||| |
+                  </div>
+                  <div className="font-mono text-[10px] text-neutral-600">{order.orderNumber}</div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-[10px] font-bold uppercase text-neutral-600">PINCODE ROUTING</div>
+                  <div className="font-mono text-xl font-extrabold text-black tracking-widest bg-yellow-100 px-2 py-0.5 border border-black inline-block">
+                    {order.shippingPincode}
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Delivery Destination: SHIP TO */}
+              <div className="border-2 border-black p-4 space-y-2">
+                <div className="flex items-center justify-between border-b border-black pb-1">
+                  <span className="text-xs font-extrabold uppercase tracking-wider bg-black text-white px-2 py-0.5">
+                    DELIVER TO (CONSIGNEE)
+                  </span>
+                  <span className="text-xs font-bold">Contact: +91 {order.shippingPhone}</span>
+                </div>
+
+                <div className="space-y-1 text-sm">
+                  <p className="text-base font-extrabold text-black uppercase">{order.shippingName}</p>
+                  <p className="font-semibold text-neutral-900">
+                    {order.shippingAddressLine1 || order.shippingAddress1}
+                  </p>
+                  <p className="font-semibold text-neutral-900">
+                    {order.shippingAddressLine2 || order.shippingAddress2}
+                  </p>
+                  {order.shippingLandmark && (
+                    <p className="text-xs text-neutral-700 italic">
+                      Landmark: {order.shippingLandmark}
+                    </p>
+                  )}
+                  <p className="text-base font-extrabold pt-1">
+                    {order.shippingCity}, {order.shippingState} –{' '}
+                    <span className="font-mono text-lg underline">{order.shippingPincode}</span>
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    Phone: <span className="font-bold">+91 {order.shippingPhone}</span>
+                    {order.shippingEmail ? ` | Email: ${order.shippingEmail}` : ''}
+                  </p>
+                </div>
+              </div>
+
+              {/* Payment Status & Instructions */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className={`border-2 p-3 font-bold text-center ${
+                  order.paymentMethod === 'COD'
+                    ? 'border-red-600 bg-red-50 text-red-800'
+                    : 'border-emerald-700 bg-emerald-50 text-emerald-900'
+                }`}>
+                  <div className="text-[10px] uppercase tracking-wider">Payment Terms</div>
+                  <div className="text-base mt-0.5">
+                    {order.paymentMethod === 'COD'
+                      ? `CASH ON DELIVERY (COLLECT ₹${order.totalAmount})`
+                      : 'PREPAID ONLINE (DO NOT COLLECT CASH)'}
+                  </div>
+                </div>
+
+                <div className="border border-black p-3 space-y-1">
+                  <div className="text-[10px] font-bold uppercase text-neutral-500">Package Items</div>
+                  <div className="font-semibold line-clamp-2">
+                    {order.items?.map((it) => `${it.productName} (x${it.quantity})`).join(', ') || 'Handloom Sarees'}
+                  </div>
+                  <div className="text-[10px] text-red-600 font-bold uppercase">
+                    ⚠ FRAGILE HANDLOOM SILK • HANDLE WITH CARE
+                  </div>
+                </div>
+              </div>
+
+              {/* Sender Info: SHIP FROM */}
+              <div className="border-t-2 border-black pt-3 flex items-start justify-between text-[11px] text-neutral-700">
+                <div>
+                  <div className="font-bold uppercase text-black">IF UNDELIVERED, RETURN TO:</div>
+                  <div className="font-bold text-black">Swarada Saree Center (Flagship Store)</div>
+                  <div>Shop 12, Mahadwar Road, Near Mahalaxmi Mandir</div>
+                  <div>Kolhapur, Maharashtra - 416012</div>
+                  <div>Helpline: +91 98220 12345 | www.swaradasarees.com</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-neutral-400">Security Seal & Verification</div>
+                  <div className="w-20 h-10 border border-dashed border-neutral-400 mt-1 flex items-center justify-center text-[9px] text-neutral-400 uppercase">
+                    QC Verified
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

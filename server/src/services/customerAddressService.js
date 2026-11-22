@@ -17,6 +17,10 @@ const getAddresses = async (userId) => {
 const addAddress = async (userId, data) => {
   const { label, fullName, phone, addressLine1, addressLine2, landmark, city, state, pincode, isDefault } = data;
 
+  if (!fullName?.trim() || !phone?.trim() || !addressLine1?.trim() || !addressLine2?.trim() || !city?.trim() || !state?.trim() || !pincode?.trim()) {
+    throw new AppError('Full address is compulsory for shipping labels. Please fill in Flat/Building, Street/Area, City, State, and Pincode.', 400);
+  }
+
   if (isDefault) {
     await prisma.customerAddress.updateMany({
       where: { userId },
@@ -30,14 +34,14 @@ const addAddress = async (userId, data) => {
     data: {
       userId,
       label: label || 'Home',
-      fullName,
-      phone,
-      addressLine1,
-      addressLine2: addressLine2 || null,
-      landmark: landmark || null,
-      city,
-      state,
-      pincode,
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      addressLine1: addressLine1.trim(),
+      addressLine2: addressLine2.trim(),
+      landmark: landmark ? landmark.trim() : null,
+      city: city.trim(),
+      state: state.trim(),
+      pincode: pincode.trim(),
       isDefault: isDefault || count === 0,
     },
   });
@@ -58,6 +62,18 @@ const updateAddress = async (userId, addressId, data) => {
     throw new AppError('Address not found.', 404);
   }
 
+  if (
+    (fullName !== undefined && !fullName.trim()) ||
+    (phone !== undefined && !phone.trim()) ||
+    (addressLine1 !== undefined && !addressLine1.trim()) ||
+    (addressLine2 !== undefined && !addressLine2.trim()) ||
+    (city !== undefined && !city.trim()) ||
+    (state !== undefined && !state.trim()) ||
+    (pincode !== undefined && !pincode.trim())
+  ) {
+    throw new AppError('Full address is compulsory for shipping labels.', 400);
+  }
+
   if (isDefault) {
     await prisma.customerAddress.updateMany({
       where: { userId },
@@ -69,14 +85,14 @@ const updateAddress = async (userId, addressId, data) => {
     where: { id },
     data: {
       label: label !== undefined ? label : existing.label,
-      fullName: fullName !== undefined ? fullName : existing.fullName,
-      phone: phone !== undefined ? phone : existing.phone,
-      addressLine1: addressLine1 !== undefined ? addressLine1 : existing.addressLine1,
-      addressLine2: addressLine2 !== undefined ? addressLine2 : existing.addressLine2,
-      landmark: landmark !== undefined ? landmark : existing.landmark,
-      city: city !== undefined ? city : existing.city,
-      state: state !== undefined ? state : existing.state,
-      pincode: pincode !== undefined ? pincode : existing.pincode,
+      fullName: fullName !== undefined ? fullName.trim() : existing.fullName,
+      phone: phone !== undefined ? phone.trim() : existing.phone,
+      addressLine1: addressLine1 !== undefined ? addressLine1.trim() : existing.addressLine1,
+      addressLine2: addressLine2 !== undefined ? addressLine2.trim() : existing.addressLine2,
+      landmark: landmark !== undefined ? (landmark ? landmark.trim() : null) : existing.landmark,
+      city: city !== undefined ? city.trim() : existing.city,
+      state: state !== undefined ? state.trim() : existing.state,
+      pincode: pincode !== undefined ? pincode.trim() : existing.pincode,
       ...(isDefault !== undefined && { isDefault }),
     },
   });

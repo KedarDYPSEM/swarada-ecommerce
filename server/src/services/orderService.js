@@ -70,8 +70,20 @@ const createOrder = async (orderData) => {
     shippingPincode,
   } = shippingDetails;
 
-  if (!shippingName || !shippingPhone || !shippingEmail || !shippingAddressLine1 || !shippingCity || !shippingState || !shippingPincode) {
-    throw new AppError('Please fill in all mandatory delivery address fields.', 400);
+  if (
+    !shippingName?.trim() ||
+    !shippingPhone?.trim() ||
+    !shippingEmail?.trim() ||
+    !shippingAddressLine1?.trim() ||
+    !shippingAddressLine2?.trim() ||
+    !shippingCity?.trim() ||
+    !shippingState?.trim() ||
+    !shippingPincode?.trim()
+  ) {
+    throw new AppError(
+      'Full address is compulsory for shipping labels. Please fill in Flat/Building, Street/Area, City, State, and Pincode.',
+      400
+    );
   }
 
   // 1. Auto-create or link user account for public guest checkout
@@ -117,14 +129,14 @@ const createOrder = async (orderData) => {
             },
             addresses: {
               create: {
-                fullName: shippingName,
-                phone: shippingPhone,
-                addressLine1: shippingAddressLine1,
-                addressLine2: shippingAddressLine2 || null,
-                landmark: shippingLandmark || null,
-                city: shippingCity,
-                state: shippingState,
-                pincode: shippingPincode,
+                fullName: shippingName.trim(),
+                phone: shippingPhone.trim(),
+                addressLine1: shippingAddressLine1.trim(),
+                addressLine2: shippingAddressLine2 ? shippingAddressLine2.trim() : null,
+                landmark: shippingLandmark ? shippingLandmark.trim() : null,
+                city: shippingCity.trim(),
+                state: shippingState.trim(),
+                pincode: shippingPincode.trim(),
                 isDefault: true,
                 label: 'Home',
               },
@@ -147,6 +159,40 @@ const createOrder = async (orderData) => {
       }
     } catch (authErr) {
       console.warn('Auto account creation warning (proceeding):', authErr.message);
+    }
+  }
+
+  // Save address into saved addresses book if user is logged in
+  if (orderUserId) {
+    try {
+      const existingAddr = await prisma.customerAddress.findFirst({
+        where: {
+          userId: orderUserId,
+          addressLine1: shippingAddressLine1.trim(),
+          pincode: shippingPincode.trim(),
+        },
+      });
+
+      if (!existingAddr) {
+        const addrCount = await prisma.customerAddress.count({ where: { userId: orderUserId } });
+        await prisma.customerAddress.create({
+          data: {
+            userId: orderUserId,
+            fullName: shippingName.trim(),
+            phone: shippingPhone.trim(),
+            addressLine1: shippingAddressLine1.trim(),
+            addressLine2: shippingAddressLine2 ? shippingAddressLine2.trim() : null,
+            landmark: shippingLandmark ? shippingLandmark.trim() : null,
+            city: shippingCity.trim(),
+            state: shippingState.trim(),
+            pincode: shippingPincode.trim(),
+            isDefault: addrCount === 0,
+            label: 'Home',
+          },
+        });
+      }
+    } catch (addrSaveErr) {
+      console.warn('Could not auto-save address to user book:', addrSaveErr.message);
     }
   }
 
