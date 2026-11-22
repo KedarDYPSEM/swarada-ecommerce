@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -20,12 +21,24 @@ import SearchBar from './SearchBar';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedSubmenu, setExpandedSubmenu] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { itemCount, openCartDrawer } = useCart();
   const { settings } = useSettings();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -298,71 +311,143 @@ export const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div
-            className="fixed inset-0 bg-black/50"
-            onClick={() => setMobileMenuOpen(false)}
-          />
+      {/* Mobile Drawer Menu Mounted via Portal to document.body */}
+      {mobileMenuOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex lg:hidden">
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+              onClick={() => setMobileMenuOpen(false)}
+            />
 
-          <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
-            {/* Drawer Header */}
-            <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-[#641B32] text-white">
-              <div>
-                {settings?.logoUrl ? (
-                  <img
-                    src={settings.logoUrl}
-                    alt={settings.storeName || 'Swarada Saree Center'}
-                    className="h-10 w-auto max-w-[180px] object-contain brightness-0 invert"
-                  />
+            <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
+              {/* Drawer Header */}
+              <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-[#641B32] text-white shrink-0">
+                <div>
+                  {settings?.logoUrl ? (
+                    <img
+                      src={settings.logoUrl}
+                      alt={settings.storeName || 'Swarada Saree Center'}
+                      className="h-10 w-auto max-w-[180px] object-contain brightness-0 invert"
+                    />
+                  ) : (
+                    <>
+                      <span className="font-heading text-xl font-bold uppercase tracking-wider">
+                        Swarada
+                      </span>
+                      <span className="block text-[9px] tracking-widest text-[#C5A05A] uppercase">
+                        Saree Center • Kolhapur
+                      </span>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Account Quick Status Strip */}
+              <div className="px-5 py-3 bg-[#FFF9F0] border-b border-neutral-200/60 flex items-center justify-between text-xs shrink-0">
+                {isAuthenticated ? (
+                  <div className="flex items-center space-x-2">
+                    <User className="w-4 h-4 text-[#641B32]" />
+                    <span className="font-medium text-[#292323]">
+                      Namaste, {user.profile?.firstName || 'Customer'}
+                    </span>
+                  </div>
                 ) : (
-                  <>
-                    <span className="font-heading text-xl font-bold uppercase tracking-wider">
-                      Swarada
-                    </span>
-                    <span className="block text-[9px] tracking-widest text-[#C5A05A] uppercase">
-                      Saree Center • Kolhapur
-                    </span>
-                  </>
+                  <Link
+                    to="/account/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 text-[#641B32] font-semibold"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Sign In / Register</span>
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <Link
+                    to="/account/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-[#641B32] font-semibold underline text-[11px]"
+                  >
+                    My Account
+                  </Link>
                 )}
               </div>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 text-white hover:text-[#C5A05A]"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
 
-            {/* Navigation links */}
-            <div className="p-4 flex-1">
-              <ul className="space-y-3">
-                {activeNavLinks.map((link) => (
-                  <li key={link.id || link.name} className="border-b border-neutral-100 pb-2">
-                    <Link
-                      to={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`text-sm font-medium ${
-                        link.highlight ? 'text-[#C5A05A] font-bold' : 'text-[#292323]'
-                      }`}
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              {/* Navigation links with expandable submenus */}
+              <div className="p-4 flex-1">
+                <ul className="space-y-1">
+                  {activeNavLinks.map((link) => (
+                    <li key={link.id || link.name} className="border-b border-neutral-100/80 pb-2 pt-1">
+                      <div className="flex items-center justify-between">
+                        <Link
+                          to={link.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`text-sm font-semibold flex-1 py-1.5 ${
+                            link.highlight ? 'text-[#C5A05A] font-bold' : 'text-[#292323] hover:text-[#641B32]'
+                          }`}
+                        >
+                          {link.name}
+                        </Link>
+                        {link.subcategories && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedSubmenu(expandedSubmenu === link.id ? null : link.id)
+                            }
+                            className="p-2 text-neutral-400 hover:text-[#641B32]"
+                            aria-label={`Expand ${link.name} categories`}
+                          >
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                expandedSubmenu === link.id ? 'rotate-180 text-[#641B32]' : ''
+                              }`}
+                            />
+                          </button>
+                        )}
+                      </div>
 
-            {/* Drawer Footer */}
-            <div className="p-5 bg-[#FFF9F0] border-t border-[#C5A05A]/30 text-xs space-y-2 text-[#594E4E]">
-              <p className="font-semibold text-[#641B32]">Kolhapur Flagship Store</p>
-              <p>Shop 12, Mahadwar Road, Kolhapur</p>
-              <p>Helpline: +91 98220 12345</p>
+                      {/* Expandable Subcategories */}
+                      {link.subcategories && expandedSubmenu === link.id && (
+                        <ul className="mt-1 ml-3 pl-3 border-l-2 border-[#C5A05A]/40 space-y-1.5 py-1">
+                          {link.subcategories.map((sub) => (
+                            <li key={sub.name}>
+                              <Link
+                                to={sub.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="block py-1 text-xs text-neutral-600 hover:text-[#641B32]"
+                              >
+                                {sub.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="p-5 bg-[#FFF9F0] border-t border-[#C5A05A]/30 text-xs space-y-2 text-[#594E4E] shrink-0">
+                <p className="font-semibold text-[#641B32]">Kolhapur Flagship Store</p>
+                <p>Shop 12, Mahadwar Road, Kolhapur</p>
+                <p className="flex items-center space-x-1.5">
+                  <Phone className="w-3.5 h-3.5 text-[#C5A05A]" />
+                  <span>Orders & Video: +91 98220 12345</span>
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </header>
   );
 };
