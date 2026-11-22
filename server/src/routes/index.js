@@ -12,12 +12,14 @@ const adminRoutes = require('./adminRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const shippingRoutes = require('./shippingRoutes');
 const vyaparRoutes = require('./vyaparRoutes');
+const reviewRoutes = require('./reviewRoutes');
 
 const router = express.Router();
 
 // Mount all REST endpoints
 router.use('/auth', authRoutes);
 router.use('/products', productRoutes);
+router.use('/products', reviewRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/homepage', homepageRoutes);
 router.use('/cart', cartRoutes);

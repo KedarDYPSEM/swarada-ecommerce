@@ -122,6 +122,26 @@ const adminService = {
     const res = await api.delete(`/admin/banners/${id}`);
     return res.data;
   },
+
+  // Reviews
+  getReviews: async (params = {}) => {
+    const res = await api.get('/admin/reviews', { params });
+    return res.data;
+  },
+  toggleReviewApproval: async (id, isApproved) => {
+    const res = await api.put(`/admin/reviews/${id}/approval`, { isApproved });
+    return res.data;
+  },
+  deleteReview: async (id) => {
+    const res = await api.delete(`/admin/reviews/${id}`);
+    return res.data;
+  },
+
+  // Reports
+  getSalesReport: async (params = {}) => {
+    const res = await api.get('/admin/reports/sales', { params });
+    return res.data;
+  },
 };
 
 export default adminService;

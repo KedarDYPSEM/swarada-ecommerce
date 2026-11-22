@@ -39,6 +39,8 @@ import CustomerList from '../admin/customers/CustomerList';
 import CouponManager from '../admin/coupons/CouponManager';
 import BannerManager from '../admin/banners/BannerManager';
 import SettingsManager from '../admin/settings/SettingsManager';
+import ReviewManager from '../admin/reviews/ReviewManager';
+import ReportsManager from '../admin/reports/ReportsManager';
 
 export const AppRoutes = () => {
   return (
@@ -102,8 +104,8 @@ export const AppRoutes = () => {
         <Route path="customers" element={<CustomerList />} />
         <Route path="coupons" element={<CouponManager />} />
         <Route path="banners" element={<BannerManager />} />
-        <Route path="reviews" element={<AdminDashboard />} />
-        <Route path="reports" element={<AdminDashboard />} />
+        <Route path="reviews" element={<ReviewManager />} />
+        <Route path="reports" element={<ReportsManager />} />
         <Route path="settings" element={<SettingsManager />} />
       </Route>
 

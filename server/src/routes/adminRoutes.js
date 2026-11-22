@@ -8,6 +8,8 @@ const adminCustomer = require('../controllers/adminCustomerController');
 const adminCoupon = require('../controllers/adminCouponController');
 const adminCategory = require('../controllers/adminCategoryController');
 const adminBanner = require('../controllers/adminBannerController');
+const reviewController = require('../controllers/reviewController');
+const reportController = require('../controllers/reportController');
 
 const router = express.Router();
 
@@ -54,5 +56,13 @@ router.get('/banners', adminBanner.listBanners);
 router.post('/banners', adminBanner.createBanner);
 router.put('/banners/:id', adminBanner.updateBanner);
 router.delete('/banners/:id', adminBanner.deleteBanner);
+
+// Reviews Moderation
+router.get('/reviews', reviewController.listAdminReviews);
+router.put('/reviews/:id/approval', reviewController.toggleApproval);
+router.delete('/reviews/:id', reviewController.deleteReview);
+
+// Reports
+router.get('/reports/sales', reportController.getSalesReport);
 
 module.exports = router;
