@@ -73,7 +73,7 @@ export const CustomerLogin = () => {
             <div className="relative">
               <Input
                 type="email"
-                placeholder="name@example.com"
+                placeholder="e.g. ananya@example.com"
                 error={errors.email?.message}
                 {...register('email')}
                 className="pl-10"
@@ -97,7 +97,7 @@ export const CustomerLogin = () => {
             <div className="relative">
               <Input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
+                placeholder="e.g. Enter your password"
                 error={errors.password?.message}
                 {...register('password')}
                 className="pl-10 pr-10"

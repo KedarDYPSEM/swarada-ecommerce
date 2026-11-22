@@ -37,12 +37,13 @@ export const SettingsManager = () => {
     mode: 'test',
   });
 
-  // Vyapar Gold Settings
-  const [vyaparSettings, setVyaparSettings] = useState({
-    isPrimaryInventory: true,
-    syncIntervalMinutes: '15',
-    apiEndpoint: 'http://localhost:5000/api/integrations/vyapar/sync',
-    status: 'ACTIVE_LISTENING',
+  // Shipping & Logistics Settings
+  const [shippingSettings, setShippingSettings] = useState({
+    courierPartner: 'Blue Dart & Delhivery Express',
+    freeShippingThreshold: '2999',
+    standardShippingFee: '150',
+    estimatedDeliveryDays: '3 to 5 business days',
+    codAvailable: true,
   });
 
   const handleSave = (e) => {
@@ -98,14 +99,14 @@ export const SettingsManager = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('vyapar')}
-          className={`px-4 py-2 rounded-t-lg transition-colors ${
-            activeTab === 'vyapar'
+          onClick={() => setActiveTab('shipping')}
+          className={`px-4 py-2 rounded-t-lg transition-colors cursor-pointer ${
+            activeTab === 'shipping'
               ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
               : 'text-neutral-600 hover:bg-neutral-50'
           }`}
         >
-          Vyapar Gold Billing
+          Shipping & Logistics
         </button>
       </div>
 
@@ -124,6 +125,7 @@ export const SettingsManager = () => {
                   type="text"
                   value={storeSettings.storeName}
                   onChange={(e) => setStoreSettings({ ...storeSettings, storeName: e.target.value })}
+                  placeholder="e.g. Swarada Saree Center"
                   className="w-full px-3 py-2 border border-neutral-200 rounded"
                 />
               </div>
@@ -134,6 +136,7 @@ export const SettingsManager = () => {
                   type="text"
                   value={storeSettings.gstin}
                   onChange={(e) => setStoreSettings({ ...storeSettings, gstin: e.target.value })}
+                  placeholder="e.g. 27AAAAA0000A1Z5"
                   className="w-full px-3 py-2 border border-neutral-200 rounded font-mono"
                 />
               </div>
@@ -144,6 +147,7 @@ export const SettingsManager = () => {
                   type="text"
                   value={storeSettings.phone}
                   onChange={(e) => setStoreSettings({ ...storeSettings, phone: e.target.value })}
+                  placeholder="e.g. +91 98220 12345"
                   className="w-full px-3 py-2 border border-neutral-200 rounded"
                 />
               </div>
@@ -154,6 +158,7 @@ export const SettingsManager = () => {
                   type="email"
                   value={storeSettings.email}
                   onChange={(e) => setStoreSettings({ ...storeSettings, email: e.target.value })}
+                  placeholder="e.g. contact@swaradasarees.com"
                   className="w-full px-3 py-2 border border-neutral-200 rounded"
                 />
               </div>
@@ -164,6 +169,7 @@ export const SettingsManager = () => {
                   type="text"
                   value={storeSettings.location}
                   onChange={(e) => setStoreSettings({ ...storeSettings, location: e.target.value })}
+                  placeholder="e.g. Mahadwar Road, Kolhapur, Maharashtra 416002"
                   className="w-full px-3 py-2 border border-neutral-200 rounded"
                 />
               </div>
@@ -174,6 +180,7 @@ export const SettingsManager = () => {
                   type="number"
                   value={storeSettings.freeShippingThreshold}
                   onChange={(e) => setStoreSettings({ ...storeSettings, freeShippingThreshold: e.target.value })}
+                  placeholder="e.g. 2999"
                   className="w-full px-3 py-2 border border-neutral-200 rounded font-bold text-[#641B32]"
                 />
               </div>
@@ -211,6 +218,7 @@ export const SettingsManager = () => {
                   type="text"
                   value={razorpaySettings.keyId}
                   onChange={(e) => setRazorpaySettings({ ...razorpaySettings, keyId: e.target.value })}
+                  placeholder="e.g. rzp_test_..."
                   className="w-full px-3 py-2 border border-neutral-200 rounded font-mono bg-white"
                 />
               </div>
@@ -221,6 +229,7 @@ export const SettingsManager = () => {
                   type="password"
                   value={razorpaySettings.keySecret}
                   onChange={(e) => setRazorpaySettings({ ...razorpaySettings, keySecret: e.target.value })}
+                  placeholder="e.g. Enter Razorpay Key Secret"
                   className="w-full px-3 py-2 border border-neutral-200 rounded font-mono bg-white"
                 />
               </div>
@@ -231,6 +240,7 @@ export const SettingsManager = () => {
                   type="password"
                   value={razorpaySettings.webhookSecret}
                   onChange={(e) => setRazorpaySettings({ ...razorpaySettings, webhookSecret: e.target.value })}
+                  placeholder="e.g. Enter Webhook Secret"
                   className="w-full px-3 py-2 border border-neutral-200 rounded font-mono bg-white"
                 />
               </div>
@@ -250,50 +260,69 @@ export const SettingsManager = () => {
           </div>
         )}
 
-        {/* Tab 3: Vyapar */}
-        {activeTab === 'vyapar' && (
+        {/* Tab 3: Shipping & Logistics */}
+        {activeTab === 'shipping' && (
           <div className="space-y-4">
             <div className="flex items-center space-x-2 text-[#641B32]">
-              <Smartphone className="w-5 h-5" />
+              <Truck className="w-5 h-5" />
               <h3 className="font-heading font-bold text-sm text-[#292323]">
-                Vyapar Gold Android Inventory Middleware
+                Express Delivery & Shipping Logistics
               </h3>
             </div>
             <p className="text-neutral-500 text-xs leading-relaxed">
-              Vyapar Gold on the store Android device serves as the master source of inventory truth. All website orders generate a transactional inventory movement log and queue synchronization.
+              Configure free shipping thresholds, integrated courier delivery partners, and Cash on Delivery rules for all 28 Indian states.
             </p>
 
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-emerald-900">Vyapar Middleware Bridge:</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 text-emerald-800 uppercase">
-                  Connected & Ready
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Free Shipping Threshold (₹)
+                </label>
+                <input
+                  type="number"
+                  value={shippingSettings.freeShippingThreshold}
+                  onChange={(e) => setShippingSettings({ ...shippingSettings, freeShippingThreshold: e.target.value })}
+                  placeholder="2999"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-semibold text-[#641B32]"
+                />
               </div>
-              <div className="text-[11px] text-emerald-800">
-                Incoming orders are assigned unique SKUs and dispatched to the sync queue for auto-reconciliation.
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Standard Shipping Fee (₹)
+                </label>
+                <input
+                  type="number"
+                  value={shippingSettings.standardShippingFee}
+                  onChange={(e) => setShippingSettings({ ...shippingSettings, standardShippingFee: e.target.value })}
+                  placeholder="150"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block font-semibold text-neutral-700 mb-1">Reconciliation API Webhook</label>
-                <input
-                  type="text"
-                  readOnly
-                  value={vyaparSettings.apiEndpoint}
-                  className="w-full px-3 py-2 border border-neutral-200 rounded font-mono bg-neutral-100 text-neutral-600"
-                />
-              </div>
+            <div>
+              <label className="block font-semibold text-neutral-700 mb-1">
+                Primary Integrated Courier
+              </label>
+              <input
+                type="text"
+                value={shippingSettings.courierPartner}
+                onChange={(e) => setShippingSettings({ ...shippingSettings, courierPartner: e.target.value })}
+                placeholder="e.g. Blue Dart & Delhivery Express"
+                className="w-full px-3 py-2 border border-neutral-200 rounded"
+              />
+            </div>
 
-              <label className="flex items-center space-x-2 cursor-pointer pt-2">
+            <div className="pt-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={vyaparSettings.isPrimaryInventory}
-                  onChange={(e) => setVyaparSettings({ ...vyaparSettings, isPrimaryInventory: e.target.checked })}
+                  checked={shippingSettings.codAvailable}
+                  onChange={(e) => setShippingSettings({ ...shippingSettings, codAvailable: e.target.checked })}
                   className="rounded text-[#641B32] focus:ring-[#641B32]"
                 />
-                <span className="font-semibold text-neutral-800">Treat Vyapar Gold as Primary Authority for Stock Counts</span>
+                <span className="font-semibold text-neutral-800">Enable Cash on Delivery (COD) for Indian PIN Codes</span>
               </label>
             </div>
           </div>

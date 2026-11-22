@@ -1,6 +1,8 @@
+const argon2 = require('argon2');
 const prisma = require('../config/database');
 const { AppError } = require('../middleware/errorHandler');
 const { validateCoupon } = require('./couponService');
+const authService = require('./authService');
 const vyaparService = require('../integrations/vyapar/vyaparService');
 const emailService = require('./emailService');
 const whatsappService = require('../integrations/whatsapp/whatsappService');
@@ -72,21 +74,88 @@ const createOrder = async (orderData) => {
     throw new AppError('Please fill in all mandatory delivery address fields.', 400);
   }
 
-  // 1. Fetch user cart
-  let cart = null;
-  if (userId) {
-    cart = await prisma.cart.findUnique({
-      where: { userId },
-      include: {
-        items: {
-          include: { product: true },
+  // 1. Auto-create or link user account for public guest checkout
+  let orderUserId = userId;
+  let autoCreatedUser = null;
+  let authTokens = null;
+
+  if (!orderUserId && shippingEmail) {
+    try {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: shippingEmail },
+            ...(shippingPhone ? [{ phone: shippingPhone }] : []),
+          ],
         },
-      },
-    });
+        include: { profile: true },
+      });
+
+      if (existingUser) {
+        orderUserId = existingUser.id;
+        autoCreatedUser = existingUser;
+        authTokens = authService.generateTokens(existingUser);
+      } else {
+        const nameParts = (shippingName || '').trim().split(' ');
+        const firstName = nameParts[0] || 'Customer';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        const autoPassword = `Swarada@${Math.floor(100000 + Math.random() * 900000)}`;
+        const passwordHash = await argon2.hash(autoPassword);
+
+        const newUser = await prisma.user.create({
+          data: {
+            email: shippingEmail,
+            phone: shippingPhone || null,
+            passwordHash,
+            role: 'CUSTOMER',
+            profile: {
+              create: {
+                firstName,
+                lastName,
+                displayName: shippingName || firstName,
+              },
+            },
+            addresses: {
+              create: {
+                fullName: shippingName,
+                phone: shippingPhone,
+                addressLine1: shippingAddressLine1,
+                addressLine2: shippingAddressLine2 || null,
+                landmark: shippingLandmark || null,
+                city: shippingCity,
+                state: shippingState,
+                pincode: shippingPincode,
+                isDefault: true,
+                label: 'Home',
+              },
+            },
+            cart: {
+              create: {
+                sessionId: `cart_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+              },
+            },
+            wishlist: {
+              create: {},
+            },
+          },
+          include: { profile: true },
+        });
+
+        orderUserId = newUser.id;
+        autoCreatedUser = newUser;
+        authTokens = authService.generateTokens(newUser);
+      }
+    } catch (authErr) {
+      console.warn('Auto account creation warning (proceeding):', authErr.message);
+    }
   }
 
-  if (!cart && sessionId) {
-    cart = await prisma.cart.findUnique({
+  // 2. Fetch cart (and migrate session cart items if user was auto-created or logged in)
+  let cart = null;
+  let sessionCartId = null;
+
+  if (sessionId) {
+    const sessionCart = await prisma.cart.findUnique({
       where: { sessionId },
       include: {
         items: {
@@ -94,6 +163,46 @@ const createOrder = async (orderData) => {
         },
       },
     });
+    if (sessionCart && sessionCart.items && sessionCart.items.length > 0) {
+      cart = sessionCart;
+      sessionCartId = sessionCart.id;
+    }
+  }
+
+  if ((!cart || !cart.items || cart.items.length === 0) && orderUserId) {
+    const userCart = await prisma.cart.findUnique({
+      where: { userId: orderUserId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+    if (userCart && userCart.items && userCart.items.length > 0) {
+      cart = userCart;
+    }
+  }
+
+  // If we have items in sessionCart and a userCart exists, ensure items belong to userCart
+  if (cart && orderUserId) {
+    const userCart = await prisma.cart.findUnique({
+      where: { userId: orderUserId },
+    });
+    if (userCart && cart.id !== userCart.id) {
+      // Transfer items into userCart so order belongs properly to customer's cart
+      await prisma.cartItem.updateMany({
+        where: { cartId: cart.id },
+        data: { cartId: userCart.id },
+      });
+      cart = await prisma.cart.findUnique({
+        where: { id: userCart.id },
+        include: {
+          items: {
+            include: { product: true },
+          },
+        },
+      });
+    }
   }
 
   if (!cart || !cart.items || cart.items.length === 0) {
@@ -202,7 +311,7 @@ const createOrder = async (orderData) => {
     const newOrder = await tx.order.create({
       data: {
         orderNumber,
-        userId: userId || null,
+        userId: orderUserId || null,
         status: paymentMethod === 'COD' ? 'CONFIRMED' : 'PENDING_PAYMENT',
         shippingName,
         shippingPhone,
@@ -245,7 +354,7 @@ const createOrder = async (orderData) => {
       await tx.couponUsage.create({
         data: {
           couponId: appliedCoupon.id,
-          userId: userId || null,
+          userId: orderUserId || null,
           orderId: newOrder.id,
           discountApplied: discountAmount,
         },
@@ -254,13 +363,15 @@ const createOrder = async (orderData) => {
 
     // 7. Clear the cart
     await tx.cartItem.deleteMany({
-      where: { cartId: cart.id },
+      where: {
+        cartId: { in: sessionCartId && sessionCartId !== cart.id ? [cart.id, sessionCartId] : [cart.id] },
+      },
     });
 
     return newOrder;
   });
 
-  // Background notifications and Vyapar queueing for confirmed orders
+  // Background notifications for confirmed orders
   if (order.status === 'CONFIRMED' || paymentMethod === 'COD') {
     vyaparService.queueOrderSale(order).catch((err) => console.warn('Vyapar sync queue error:', err.message));
     emailService.sendOrderConfirmation(order).catch((err) => console.warn('Email dispatch error:', err.message));
@@ -272,7 +383,11 @@ const createOrder = async (orderData) => {
     }
   }
 
-  return order;
+  return {
+    order,
+    user: autoCreatedUser,
+    authTokens,
+  };
 };
 
 /**

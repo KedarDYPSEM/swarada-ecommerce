@@ -14,9 +14,9 @@ export const CustomerAddresses = () => {
     addressLine1: '',
     addressLine2: '',
     landmark: '',
-    city: 'Kolhapur',
-    state: 'Maharashtra',
-    pincode: '416008',
+    city: '',
+    state: '',
+    pincode: '',
   });
 
   const fetchAddresses = async () => {
@@ -120,6 +120,7 @@ export const CustomerAddresses = () => {
                 required
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                placeholder="e.g. Kolhapur"
               />
             </div>
             <div>
@@ -128,6 +129,7 @@ export const CustomerAddresses = () => {
                 required
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                placeholder="e.g. Maharashtra"
               />
             </div>
             <div>
@@ -136,6 +138,7 @@ export const CustomerAddresses = () => {
                 required
                 value={formData.pincode}
                 onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                placeholder="e.g. 416008"
               />
             </div>
           </div>

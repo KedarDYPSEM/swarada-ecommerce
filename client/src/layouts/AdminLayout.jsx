@@ -137,7 +137,7 @@ export const AdminLayout = () => {
               <Menu className="w-6 h-6" />
             </button>
             <span className="text-xs font-medium text-neutral-500 hidden sm:inline">
-              Vyapar Gold Integrated Storefront
+              Swarada Flagship Store Administration
             </span>
           </div>
 

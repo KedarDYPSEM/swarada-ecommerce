@@ -89,11 +89,11 @@ export const Contact = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold uppercase text-neutral-600 mb-1">Your Name</label>
-                    <Input placeholder="Ananya Joshi" required />
+                    <Input placeholder="e.g. Ananya Joshi" required />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold uppercase text-neutral-600 mb-1">WhatsApp Number</label>
-                    <Input placeholder="9822012345" required />
+                    <Input placeholder="e.g. 9822012345" required />
                   </div>
                 </div>
 

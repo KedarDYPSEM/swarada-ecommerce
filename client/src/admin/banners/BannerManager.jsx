@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
+import ImageUploader from '../components/ImageUploader';
 
 const BANNER_TYPES = ['HERO', 'PROMOTIONAL', 'POPUP', 'CATEGORY'];
 
@@ -270,28 +271,27 @@ export const BannerManager = () => {
 
               <div>
                 <label className="block font-semibold text-neutral-700 mb-1">
-                  Desktop Image URL (1920×700 Recommended) <span className="text-rose-500">*</span>
+                  Desktop Hero Photography (1920×700 Recommended) <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  type="url"
-                  required
+                <ImageUploader
                   value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                  onChange={(newUrl) => setFormData({ ...formData, imageUrl: newUrl })}
+                  label="Upload Desktop Banner"
+                  placeholder="e.g. Upload photo from computer or paste image URL..."
+                  aspectRatio="banner"
                 />
               </div>
 
               <div>
                 <label className="block font-semibold text-neutral-700 mb-1">
-                  Mobile Image URL (Optional)
+                  Mobile Hero Photography (Optional, 800×800)
                 </label>
-                <input
-                  type="url"
+                <ImageUploader
                   value={formData.mobileImageUrl}
-                  onChange={(e) => setFormData({ ...formData, mobileImageUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                  onChange={(newUrl) => setFormData({ ...formData, mobileImageUrl: newUrl })}
+                  label="Upload Mobile Banner"
+                  placeholder="e.g. Upload mobile photo or paste image URL..."
+                  aspectRatio="square"
                 />
               </div>
 

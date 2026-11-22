@@ -64,6 +64,10 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = Boolean(user);
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
+  const setAuthenticatedUser = (userData) => {
+    setUser(userData);
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -73,6 +77,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    setAuthenticatedUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

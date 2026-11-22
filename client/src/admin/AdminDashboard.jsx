@@ -104,12 +104,6 @@ export const AdminDashboard = () => {
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
 
-          {/* Vyapar Sync Status Indicator */}
-          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-xs font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Vyapar Gold Connected</span>
-          </div>
-
           <Link to="/admin/products/new">
             <Button variant="primary" size="sm" className="bg-[#641B32] hover:bg-[#7B1E35]">
               <Plus className="w-3.5 h-3.5 mr-1" />
@@ -324,22 +318,22 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Vyapar Gold Integration Card */}
+          {/* Order Dispatch & Shipping Status Card */}
           <div className="bg-gradient-to-br from-[#FFF9F0] to-white rounded-lg border border-[#C5A05A]/30 p-5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#C5A05A]">
-              Billing Integration
+              Fulfillment & Dispatch
             </span>
             <h4 className="font-heading font-bold text-[#641B32] mt-1 text-sm">
-              Vyapar Gold Android Sync
+              All-India Express Logistics
             </h4>
             <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
-              Vyapar Gold is configured as the primary inventory authority. Stock changes on the website automatically queue for reconciliation.
+              Real-time delivery coverage across 29,000+ Indian PIN codes with Blue Dart, Delhivery, and insured silk mark packaging.
             </p>
             <div className="mt-4 flex items-center justify-between text-xs">
-              <span className="text-neutral-500">Middleware Status:</span>
+              <span className="text-neutral-500">Logistics Network:</span>
               <span className="font-semibold text-emerald-700 flex items-center space-x-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
-                <span>Ready for Android APK hook</span>
+                <span>Express Dispatch Active</span>
               </span>
             </div>
           </div>

@@ -89,7 +89,7 @@ export const CustomerRegister = () => {
               </label>
               <div className="relative">
                 <Input
-                  placeholder="Ananya"
+                  placeholder="e.g. Ananya"
                   error={errors.firstName?.message}
                   {...register('firstName')}
                   className="pl-9"
@@ -104,7 +104,7 @@ export const CustomerRegister = () => {
               </label>
               <div className="relative">
                 <Input
-                  placeholder="Joshi"
+                  placeholder="e.g. Joshi"
                   error={errors.lastName?.message}
                   {...register('lastName')}
                   className="pl-9"
@@ -121,7 +121,7 @@ export const CustomerRegister = () => {
             <div className="relative">
               <Input
                 type="email"
-                placeholder="name@example.com"
+                placeholder="e.g. ananya@example.com"
                 error={errors.email?.message}
                 {...register('email')}
                 className="pl-9"
@@ -137,7 +137,7 @@ export const CustomerRegister = () => {
             <div className="relative">
               <Input
                 type="tel"
-                placeholder="9822012345"
+                placeholder="e.g. 9822012345"
                 error={errors.phone?.message}
                 {...register('phone')}
                 className="pl-9"
@@ -153,7 +153,7 @@ export const CustomerRegister = () => {
             <div className="relative">
               <Input
                 type="password"
-                placeholder="Min 8 chars, 1 uppercase, 1 number"
+                placeholder="e.g. Min 8 characters with letters & numbers"
                 error={errors.password?.message}
                 {...register('password')}
                 className="pl-9"
@@ -169,7 +169,7 @@ export const CustomerRegister = () => {
             <div className="relative">
               <Input
                 type="password"
-                placeholder="Repeat password"
+                placeholder="e.g. Repeat password"
                 error={errors.confirmPassword?.message}
                 {...register('confirmPassword')}
                 className="pl-9"

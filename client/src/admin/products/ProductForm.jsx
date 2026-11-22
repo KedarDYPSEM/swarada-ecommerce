@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
+import ImageUploader from '../components/ImageUploader';
 
 export const ProductForm = () => {
   const { id } = useParams();
@@ -37,16 +38,16 @@ export const ProductForm = () => {
     sellingPrice: '',
     mrp: '',
     gstRate: '5',
-    stockQuantity: '10',
-    lowStockThreshold: '3',
-    fabric: 'Pure Silk',
-    color: 'Maroon',
-    sareeLength: '5.5 meters',
-    blouseDetails: '0.8 meters unstitched matching blouse piece included',
-    washingInstructions: 'Dry clean only. Store wrapped in pure muslin cloth.',
-    occasion: 'Bridal & Festive',
-    weaveType: 'Handloom',
-    zariType: 'Real Metallic Gold & Silver Zari',
+    stockQuantity: '',
+    lowStockThreshold: '',
+    fabric: '',
+    color: '',
+    sareeLength: '',
+    blouseDetails: '',
+    washingInstructions: '',
+    occasion: '',
+    weaveType: '',
+    zariType: '',
     includesBlouse: true,
     isHandloom: true,
     isFeatured: false,
@@ -54,8 +55,8 @@ export const ProductForm = () => {
     categoryIds: [],
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800',
-        altText: 'Front View',
+        url: '',
+        altText: '',
         isPrimary: true,
         displayOrder: 0,
       },
@@ -338,10 +339,10 @@ export const ProductForm = () => {
           </div>
         </div>
 
-        {/* Pricing & Vyapar Stock */}
+        {/* Pricing & Inventory */}
         <div className="bg-white p-5 rounded-lg border border-neutral-200 shadow-sm space-y-4">
           <h2 className="text-sm font-heading font-bold text-[#292323] border-b border-neutral-100 pb-2">
-            2. Pricing, Margin & Inventory (Vyapar Primary)
+            2. Pricing, Margin & Stock Inventory
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -583,78 +584,82 @@ export const ProductForm = () => {
 
         {/* Product Images Gallery */}
         <div className="bg-white p-5 rounded-lg border border-neutral-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
-            <h2 className="text-sm font-heading font-bold text-[#292323]">
-              5. High-Resolution Gallery & Photography
-            </h2>
-            <Button
-              type="button"
-              onClick={handleAddImage}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              <span>Add Image URL</span>
-            </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-3 gap-2">
+            <div>
+              <h2 className="text-sm font-heading font-bold text-[#292323]">
+                5. Product Gallery & Photography
+              </h2>
+              <p className="text-neutral-500 text-[11px] mt-0.5">
+                Upload photos from your computer or enter high-resolution image URLs.
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                type="button"
+                onClick={handleAddImage}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                <span>Add Photo Slot</span>
+              </Button>
+            </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {formData.images.map((img, idx) => (
               <div
                 key={idx}
-                className="flex items-center space-x-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200"
+                className="p-4 bg-neutral-50 rounded-lg border border-neutral-200 space-y-3"
               >
-                {img.url ? (
-                  <img
-                    src={img.url}
-                    alt={img.altText || 'preview'}
-                    className="w-12 h-16 object-cover rounded border border-neutral-300 shadow-xs"
-                  />
-                ) : (
-                  <div className="w-12 h-16 bg-neutral-200 rounded flex items-center justify-center text-neutral-400">
-                    <Image className="w-5 h-5" />
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#C5A05A]">
+                    {img.isPrimary ? '★ Primary Cover Image' : `Gallery Image #${idx + 1}`}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSetPrimaryImage(idx)}
+                      className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                        img.isPrimary
+                          ? 'bg-[#C5A05A] text-white'
+                          : 'border border-neutral-300 text-neutral-600 hover:bg-neutral-100'
+                      }`}
+                    >
+                      {img.isPrimary ? 'Cover Image' : 'Set As Cover'}
+                    </button>
+                    {formData.images.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="p-1 text-neutral-400 hover:text-rose-600 rounded cursor-pointer"
+                        title="Remove Image"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                )}
-
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/... or Cloudinary URL"
-                    value={img.url}
-                    onChange={(e) => handleImageChange(idx, 'url', e.target.value)}
-                    className="px-3 py-1.5 border border-neutral-200 rounded bg-white"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Alt text / view angle (e.g. Pallu close-up)"
-                    value={img.altText}
-                    onChange={(e) => handleImageChange(idx, 'altText', e.target.value)}
-                    className="px-3 py-1.5 border border-neutral-200 rounded bg-white"
-                  />
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSetPrimaryImage(idx)}
-                    className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                      img.isPrimary
-                        ? 'bg-[#C5A05A] text-white'
-                        : 'border border-neutral-300 text-neutral-600 hover:bg-neutral-100'
-                    }`}
-                  >
-                    {img.isPrimary ? 'Cover Image' : 'Make Cover'}
-                  </button>
+                <ImageUploader
+                  value={img.url}
+                  onChange={(newUrl) => handleImageChange(idx, 'url', newUrl)}
+                  label="Upload Photo"
+                  placeholder="e.g. Upload photo from computer or paste image URL..."
+                />
 
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(idx)}
-                    className="p-1.5 text-neutral-400 hover:text-rose-600 rounded"
-                    title="Remove Image"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <div>
+                  <label className="block text-[11px] font-medium text-neutral-600 mb-1">
+                    Photo Description / Alt Text
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Pallu close-up, Zari border detail, Pleats view"
+                    value={img.altText}
+                    onChange={(e) => handleImageChange(idx, 'altText', e.target.value)}
+                    className="w-full px-3 py-1.5 border border-neutral-200 rounded bg-white text-xs"
+                  />
                 </div>
               </div>
             ))}

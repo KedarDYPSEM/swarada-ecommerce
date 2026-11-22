@@ -69,7 +69,7 @@ export const AdminLogin = () => {
             <div className="relative">
               <Input
                 type="email"
-                placeholder="admin@swarada.com"
+                placeholder="e.g. admin@swarada.com"
                 error={errors.email?.message}
                 {...register('email')}
                 className="pl-9"
@@ -85,7 +85,7 @@ export const AdminLogin = () => {
             <div className="relative">
               <Input
                 type="password"
-                placeholder="••••••••"
+                placeholder="e.g. Enter admin password"
                 error={errors.password?.message}
                 {...register('password')}
                 className="pl-9"

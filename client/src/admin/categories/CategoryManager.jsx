@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
+import ImageUploader from '../components/ImageUploader';
 
 export const CategoryManager = () => {
   const [categories, setCategories] = useState([]);
@@ -340,14 +341,13 @@ export const CategoryManager = () => {
 
               <div>
                 <label className="block font-semibold text-neutral-700 mb-1">
-                  Cover Image URL
+                  Cover Photography
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/..."
+                <ImageUploader
                   value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-200 rounded focus:outline-none focus:border-[#641B32]"
+                  onChange={(newUrl) => setFormData({ ...formData, imageUrl: newUrl })}
+                  label="Upload Category Cover"
+                  placeholder="e.g. Upload photo from computer or paste image URL..."
                 />
               </div>
 

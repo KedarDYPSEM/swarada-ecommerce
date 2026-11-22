@@ -29,7 +29,7 @@ const checkoutSchema = z.object({
 
 export const Checkout = () => {
   const { items, summary, couponCode, clearLocalCart } = useCart();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, setAuthenticatedUser } = useAuth();
   const [serverError, setServerError] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
   const navigate = useNavigate();
@@ -49,9 +49,9 @@ export const Checkout = () => {
       shippingAddressLine1: '',
       shippingAddressLine2: '',
       shippingLandmark: '',
-      shippingCity: 'Kolhapur',
-      shippingState: 'Maharashtra',
-      shippingPincode: '416008',
+      shippingCity: '',
+      shippingState: '',
+      shippingPincode: '',
       paymentMethod: 'RAZORPAY',
       notes: '',
     },
@@ -122,12 +122,19 @@ export const Checkout = () => {
     try {
       const { paymentMethod, notes, ...shippingDetails } = formData;
 
-      const order = await orderService.createOrder({
+      const responseData = await orderService.createOrder({
         shippingDetails,
         paymentMethod,
         couponCode: couponCode || null,
         notes: notes || null,
       });
+
+      const order = responseData.order || responseData;
+
+      // Automatically authenticate the user session if an account was created or linked
+      if (responseData.user && setAuthenticatedUser) {
+        setAuthenticatedUser(responseData.user);
+      }
 
       // Handle Online Razorpay Payment
       if (paymentMethod === 'RAZORPAY') {
@@ -261,10 +268,17 @@ export const Checkout = () => {
 
               {/* Delivery Address Form */}
               <div className="bg-white p-6 sm:p-8 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-4">
-                <h2 className="text-base font-heading font-bold text-[#641B32] border-b border-neutral-100 pb-3 flex items-center space-x-2">
-                  <Truck className="w-4 h-4 text-[#C5A05A]" />
-                  <span>1. Delivery Address</span>
-                </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-3 gap-2">
+                  <h2 className="text-base font-heading font-bold text-[#641B32] flex items-center space-x-2">
+                    <Truck className="w-4 h-4 text-[#C5A05A]" />
+                    <span>1. Delivery Address</span>
+                  </h2>
+                  {!isAuthenticated && (
+                    <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      ✓ Auto-creates customer account for instant order tracking
+                    </span>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -272,7 +286,7 @@ export const Checkout = () => {
                       Full Name *
                     </label>
                     <Input
-                      placeholder="Ananya Joshi"
+                      placeholder="e.g. Ananya Joshi"
                       error={errors.shippingName?.message}
                       {...register('shippingName')}
                     />
@@ -283,7 +297,7 @@ export const Checkout = () => {
                       Mobile Number *
                     </label>
                     <Input
-                      placeholder="9822012345"
+                      placeholder="e.g. 9822012345"
                       error={errors.shippingPhone?.message}
                       {...register('shippingPhone')}
                     />
@@ -296,10 +310,13 @@ export const Checkout = () => {
                   </label>
                   <Input
                     type="email"
-                    placeholder="name@example.com"
+                    placeholder="e.g. ananya@example.com"
                     error={errors.shippingEmail?.message}
                     {...register('shippingEmail')}
                   />
+                  <p className="text-[10px] text-neutral-400 mt-1">
+                    Your invoice, order status, and Blue Dart tracking link will be sent to this email.
+                  </p>
                 </div>
 
                 <div>
@@ -319,7 +336,7 @@ export const Checkout = () => {
                       Apartment / Suite (Optional)
                     </label>
                     <Input
-                      placeholder="Apartment 3B"
+                      placeholder="e.g. Apartment 3B"
                       {...register('shippingAddressLine2')}
                     />
                   </div>
@@ -329,7 +346,7 @@ export const Checkout = () => {
                       Landmark (Optional)
                     </label>
                     <Input
-                      placeholder="Opposite Bank of Maharashtra"
+                      placeholder="e.g. Near Mahalaxmi Temple, Opposite City Garden"
                       {...register('shippingLandmark')}
                     />
                   </div>
@@ -341,7 +358,7 @@ export const Checkout = () => {
                       City *
                     </label>
                     <Input
-                      placeholder="Kolhapur"
+                      placeholder="e.g. Kolhapur"
                       error={errors.shippingCity?.message}
                       {...register('shippingCity')}
                     />
@@ -352,7 +369,7 @@ export const Checkout = () => {
                       State *
                     </label>
                     <Input
-                      placeholder="Maharashtra"
+                      placeholder="e.g. Maharashtra"
                       error={errors.shippingState?.message}
                       {...register('shippingState')}
                     />
@@ -363,7 +380,7 @@ export const Checkout = () => {
                       Pincode *
                     </label>
                     <Input
-                      placeholder="416008"
+                      placeholder="e.g. 416008"
                       error={errors.shippingPincode?.message}
                       {...register('shippingPincode')}
                     />

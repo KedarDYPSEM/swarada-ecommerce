@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,7 +13,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ─── Security ───────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+// ─── Static Uploads ─────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ─── CORS ───────────────────────────────────────────────
 app.use(cors({
