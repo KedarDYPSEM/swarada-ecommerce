@@ -70,6 +70,10 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
+const catchAsync = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 module.exports = {
   AppError,
   ValidationError,
@@ -77,5 +81,6 @@ module.exports = {
   UnauthorizedError,
   ForbiddenError,
   ConflictError,
+  catchAsync,
   errorHandler,
 };

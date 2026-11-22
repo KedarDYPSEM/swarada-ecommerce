@@ -30,6 +30,15 @@ import CustomerWishlist from '../customer/Wishlist';
 // Admin Portal
 import AdminLogin from '../admin/AdminLogin';
 import AdminDashboard from '../admin/AdminDashboard';
+import ProductList from '../admin/products/ProductList';
+import ProductForm from '../admin/products/ProductForm';
+import CategoryManager from '../admin/categories/CategoryManager';
+import OrderList from '../admin/orders/OrderList';
+import OrderDetail from '../admin/orders/OrderDetail';
+import CustomerList from '../admin/customers/CustomerList';
+import CouponManager from '../admin/coupons/CouponManager';
+import BannerManager from '../admin/banners/BannerManager';
+import SettingsManager from '../admin/settings/SettingsManager';
 
 export const AppRoutes = () => {
   return (
@@ -84,16 +93,18 @@ export const AppRoutes = () => {
         }
       >
         <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="products" element={<AdminDashboard />} />
-        <Route path="products/new" element={<AdminDashboard />} />
-        <Route path="categories" element={<AdminDashboard />} />
-        <Route path="orders" element={<AdminDashboard />} />
-        <Route path="customers" element={<AdminDashboard />} />
-        <Route path="coupons" element={<AdminDashboard />} />
-        <Route path="banners" element={<AdminDashboard />} />
+        <Route path="products" element={<ProductList />} />
+        <Route path="products/new" element={<ProductForm />} />
+        <Route path="products/:id/edit" element={<ProductForm />} />
+        <Route path="categories" element={<CategoryManager />} />
+        <Route path="orders" element={<OrderList />} />
+        <Route path="orders/:id" element={<OrderDetail />} />
+        <Route path="customers" element={<CustomerList />} />
+        <Route path="coupons" element={<CouponManager />} />
+        <Route path="banners" element={<BannerManager />} />
         <Route path="reviews" element={<AdminDashboard />} />
         <Route path="reports" element={<AdminDashboard />} />
-        <Route path="settings" element={<AdminDashboard />} />
+        <Route path="settings" element={<SettingsManager />} />
       </Route>
 
       {/* ─── 404 Catch-All ───────────────────────────────────── */}
