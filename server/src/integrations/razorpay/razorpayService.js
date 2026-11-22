@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const prisma = require('../../config/database');
 const { AppError } = require('../../middleware/errorHandler');
-const { razorpay, keyId, keySecret, webhookSecret } = require('./razorpayClient');
+const { getRazorpayConfig } = require('./razorpayClient');
 const vyaparService = require('../vyapar/vyaparService');
 const emailService = require('../../services/emailService');
 const whatsappService = require('../whatsapp/whatsappService');
@@ -30,11 +30,12 @@ const createRazorpayOrder = async (orderId, userId = null) => {
   }
 
   const amountPaise = Math.round(parseFloat(order.totalAmount) * 100);
+  const config = await getRazorpayConfig();
 
   let razorpayOrder;
-  try {
-    if (razorpay && keyId !== 'rzp_test_swarada2026') {
-      razorpayOrder = await razorpay.orders.create({
+  if (config.razorpay && config.isRealKey) {
+    try {
+      razorpayOrder = await config.razorpay.orders.create({
         amount: amountPaise,
         currency: 'INR',
         receipt: order.orderNumber,
@@ -43,21 +44,18 @@ const createRazorpayOrder = async (orderId, userId = null) => {
           orderNumber: order.orderNumber,
         },
       });
-    } else {
-      // Mock / Offline Development Fallback
-      razorpayOrder = {
-        id: `order_mock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-        entity: 'order',
-        amount: amountPaise,
-        currency: 'INR',
-        receipt: order.orderNumber,
-        status: 'created',
-      };
+    } catch (err) {
+      console.error('❌ Razorpay orders.create failed:', err.message, err.error || '');
+      // If Razorpay API rejects (e.g. invalid key/secret), throw clear explanation
+      throw new AppError(
+        `Razorpay error: ${err.error?.description || err.message || 'Authentication failed'}. Please check your Key ID and Key Secret in Admin Settings.`,
+        400
+      );
     }
-  } catch (err) {
-    console.error('Razorpay API error, falling back to mock test order:', err.message);
+  } else {
+    // Mock / Offline Development Fallback
     razorpayOrder = {
-      id: `order_test_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: `order_mock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       entity: 'order',
       amount: amountPaise,
       currency: 'INR',
@@ -84,7 +82,7 @@ const createRazorpayOrder = async (orderId, userId = null) => {
     amount: parseFloat(order.totalAmount),
     amountPaise,
     currency: 'INR',
-    keyId,
+    keyId: config.keyId,
     orderNumber: order.orderNumber,
     paymentId: payment.id,
     customer: {
@@ -118,9 +116,10 @@ const verifyPaymentSignature = async ({
   }
 
   // Verify HMAC signature
+  const config = await getRazorpayConfig();
   const body = `${razorpayOrderId}|${razorpayPaymentId}`;
   const expectedSignature = crypto
-    .createHmac('sha256', keySecret)
+    .createHmac('sha256', config.keySecret)
     .update(body.toString())
     .digest('hex');
 
@@ -192,10 +191,11 @@ const verifyPaymentSignature = async ({
  * Webhook handler with Idempotency Protection
  */
 const handleWebhook = async (rawBody, signature) => {
+  const config = await getRazorpayConfig();
   // 1. Verify webhook signature
-  if (webhookSecret && signature) {
+  if (config.webhookSecret && signature) {
     const expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
+      .createHmac('sha256', config.webhookSecret)
       .update(rawBody)
       .digest('hex');
 

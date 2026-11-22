@@ -64,6 +64,7 @@ export const SettingsManager = () => {
 
   // Navigation Menus State
   const [menus, setMenus] = useState(DEFAULT_MENUS);
+  const [showKeySecret, setShowKeySecret] = useState(false);
 
   // Razorpay Settings
   const [razorpaySettings, setRazorpaySettings] = useState({
@@ -100,6 +101,14 @@ export const SettingsManager = () => {
             gstin: map.gst_number || prev.gstin,
             freeShippingThreshold: map.free_shipping_threshold || prev.freeShippingThreshold,
             standardShippingFee: map.standard_shipping_charge || prev.standardShippingFee,
+          }));
+
+          setRazorpaySettings((prev) => ({
+            ...prev,
+            keyId: map.razorpay_key_id || prev.keyId || '',
+            keySecret: map.razorpay_key_secret || prev.keySecret || '',
+            webhookSecret: map.razorpay_webhook_secret || prev.webhookSecret || '',
+            mode: map.razorpay_mode || prev.mode || 'test',
           }));
 
           if (map.nav_menus) {
@@ -148,6 +157,10 @@ export const SettingsManager = () => {
         free_shipping_threshold: storeSettings.freeShippingThreshold,
         standard_shipping_charge: storeSettings.standardShippingFee,
         nav_menus: JSON.stringify(menus),
+        razorpay_key_id: razorpaySettings.keyId?.trim() || '',
+        razorpay_key_secret: razorpaySettings.keySecret?.trim() || '',
+        razorpay_webhook_secret: razorpaySettings.webhookSecret?.trim() || '',
+        razorpay_mode: razorpaySettings.mode || 'test',
       });
 
       setSaveSuccess(true);
@@ -476,12 +489,22 @@ export const SettingsManager = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-700 mb-1">Key Secret</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-semibold text-neutral-700">Key Secret</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowKeySecret(!showKeySecret)}
+                    className="text-[11px] text-[#641B32] hover:underline flex items-center space-x-1"
+                  >
+                    {showKeySecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    <span>{showKeySecret ? 'Hide Secret' : 'Show Secret'}</span>
+                  </button>
+                </div>
                 <input
-                  type="password"
+                  type={showKeySecret ? 'text' : 'password'}
                   value={razorpaySettings.keySecret}
                   onChange={(e) => setRazorpaySettings({ ...razorpaySettings, keySecret: e.target.value })}
-                  placeholder="e.g. ••••••••••••••••"
+                  placeholder="Paste your Razorpay Key Secret here"
                   className="w-full px-3 py-2 border border-neutral-200 rounded font-mono"
                 />
               </div>

@@ -193,6 +193,13 @@ export const Checkout = () => {
             },
           };
           const rzpInstance = new window.Razorpay(options);
+          rzpInstance.on('payment.failed', function (resp) {
+            setServerError(
+              resp.error?.description ||
+                resp.error?.reason ||
+                'Payment was not completed. You can try again or choose Cash on Delivery (COD).'
+            );
+          });
           rzpInstance.open();
           return;
         } else {
