@@ -4,6 +4,7 @@ import AnnouncementBar from '../components/common/AnnouncementBar';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import WhatsAppButton from '../components/common/WhatsAppButton';
+import CartDrawer from '../components/cart/CartDrawer';
 
 export const StoreLayout = () => {
   return (
@@ -15,6 +16,7 @@ export const StoreLayout = () => {
       </main>
       <Footer />
       <WhatsAppButton />
+      <CartDrawer />
     </div>
   );
 };

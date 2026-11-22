@@ -13,6 +13,7 @@ import Shop from '../pages/Shop';
 import ProductPage from '../pages/ProductPage';
 import CartPage from '../pages/CartPage';
 import Checkout from '../pages/Checkout';
+import OrderSuccess from '../pages/OrderSuccess';
 import TrackOrder from '../pages/TrackOrder';
 import About from '../pages/About';
 import Contact from '../pages/Contact';
@@ -22,6 +23,9 @@ import NotFound from '../pages/NotFound';
 import CustomerLogin from '../customer/Login';
 import CustomerRegister from '../customer/Register';
 import CustomerDashboard from '../customer/Dashboard';
+import CustomerOrders from '../customer/Orders';
+import CustomerAddresses from '../customer/Addresses';
+import CustomerWishlist from '../customer/Wishlist';
 
 // Admin Portal
 import AdminLogin from '../admin/AdminLogin';
@@ -39,6 +43,7 @@ export const AppRoutes = () => {
         <Route path="/search" element={<Shop />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
@@ -59,9 +64,9 @@ export const AppRoutes = () => {
           }
         >
           <Route path="dashboard" element={<CustomerDashboard />} />
-          <Route path="orders" element={<CustomerDashboard />} />
-          <Route path="wishlist" element={<CustomerDashboard />} />
-          <Route path="addresses" element={<CustomerDashboard />} />
+          <Route path="orders" element={<CustomerOrders />} />
+          <Route path="wishlist" element={<CustomerWishlist />} />
+          <Route path="addresses" element={<CustomerAddresses />} />
           <Route path="profile" element={<CustomerDashboard />} />
           <Route path="password" element={<CustomerDashboard />} />
         </Route>

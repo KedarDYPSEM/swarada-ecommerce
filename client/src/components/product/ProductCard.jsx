@@ -4,11 +4,13 @@ import { Heart, ShoppingBag, Eye, MessageCircle } from 'lucide-react';
 import { formatPrice, calculateDiscount } from '../../lib/utils';
 import { Badge } from '../ui/Badge';
 import ProductQuickView from './ProductQuickView';
+import { useCart } from '../../context/CartContext';
 
 export const ProductCard = ({ product }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const { addToCart } = useCart();
 
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
   const primaryImage =
@@ -16,11 +18,16 @@ export const ProductCard = ({ product }) => {
     product.images?.[0]?.url ||
     'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80';
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 1800);
+    try {
+      await addToCart(product.id, 1);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 1800);
+    } catch (err) {
+      // Cart context handles error display
+    }
   };
 
   const handleWishlist = (e) => {

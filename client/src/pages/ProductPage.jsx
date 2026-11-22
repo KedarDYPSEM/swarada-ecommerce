@@ -17,10 +17,12 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import productService from '../services/productService';
 import ProductCard from '../components/product/ProductCard';
+import { useCart } from '../context/CartContext';
 
 export const ProductPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -86,14 +88,23 @@ export const ProductPage = () => {
   const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku}). Please let me know if it is available for video call consultation.`;
   const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
 
-  const handleAddToCart = () => {
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(product.id, quantity);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (e) {
+      // Handled in context
+    }
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    navigate('/checkout');
+  const handleBuyNow = async () => {
+    try {
+      await addToCart(product.id, quantity);
+      navigate('/checkout');
+    } catch (e) {
+      // Handled
+    }
   };
 
   return (

@@ -14,6 +14,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import SearchBar from './SearchBar';
 
 export const Navbar = () => {
@@ -21,6 +22,7 @@ export const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { itemCount, openCartDrawer } = useCart();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -214,20 +216,22 @@ export const Navbar = () => {
               <Heart className="w-5 h-5" />
             </Link>
 
-            {/* Cart Link */}
-            <Link
-              to="/cart"
-              className="flex items-center space-x-2 p-2 text-[#292323] hover:text-[#641B32] transition-colors relative"
+            {/* Cart Trigger */}
+            <button
+              onClick={openCartDrawer}
+              className="flex items-center space-x-2 p-2 text-[#292323] hover:text-[#641B32] transition-colors relative cursor-pointer"
               aria-label="Shopping Cart"
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 text-[#641B32]" />
-                <span className="absolute -top-1.5 -right-2 bg-[#641B32] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#641B32] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-scale-in">
+                    {itemCount}
+                  </span>
+                )}
               </div>
               <span className="hidden md:inline text-xs font-semibold">Cart</span>
-            </Link>
+            </button>
           </div>
         </div>
 
