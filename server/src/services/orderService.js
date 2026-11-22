@@ -1,6 +1,9 @@
 const prisma = require('../config/database');
 const { AppError } = require('../middleware/errorHandler');
 const { validateCoupon } = require('./couponService');
+const vyaparService = require('../integrations/vyapar/vyaparService');
+const emailService = require('./emailService');
+const whatsappService = require('../integrations/whatsapp/whatsappService');
 
 const FREE_SHIPPING_THRESHOLD = 2999.0;
 const STANDARD_SHIPPING_FEE = 150.0;
@@ -256,6 +259,18 @@ const createOrder = async (orderData) => {
 
     return newOrder;
   });
+
+  // Background notifications and Vyapar queueing for confirmed orders
+  if (order.status === 'CONFIRMED' || paymentMethod === 'COD') {
+    vyaparService.queueOrderSale(order).catch((err) => console.warn('Vyapar sync queue error:', err.message));
+    emailService.sendOrderConfirmation(order).catch((err) => console.warn('Email dispatch error:', err.message));
+    if (order.shippingPhone) {
+      whatsappService.sendWhatsAppNotification(
+        order.shippingPhone,
+        whatsappService.formatOrderConfirmationMessage(order)
+      ).catch((err) => console.warn('WhatsApp dispatch error:', err.message));
+    }
+  }
 
   return order;
 };

@@ -11,6 +11,7 @@ const couponRoutes = require('./couponRoutes');
 const adminRoutes = require('./adminRoutes');
 const paymentRoutes = require('./paymentRoutes');
 const shippingRoutes = require('./shippingRoutes');
+const vyaparRoutes = require('./vyaparRoutes');
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ router.use('/coupons', couponRoutes);
 router.use('/admin', adminRoutes);
 router.use('/payment', paymentRoutes);
 router.use('/shipping', shippingRoutes);
+router.use('/integrations/vyapar', vyaparRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {

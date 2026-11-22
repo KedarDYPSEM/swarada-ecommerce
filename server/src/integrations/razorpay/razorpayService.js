@@ -2,6 +2,9 @@ const crypto = require('crypto');
 const prisma = require('../../config/database');
 const { AppError } = require('../../middleware/errorHandler');
 const { razorpay, keyId, keySecret, webhookSecret } = require('./razorpayClient');
+const vyaparService = require('../vyapar/vyaparService');
+const emailService = require('../../services/emailService');
+const whatsappService = require('../whatsapp/whatsappService');
 
 /**
  * Server-side Razorpay Order Initiation
@@ -167,6 +170,16 @@ const verifyPaymentSignature = async ({
 
     return updatedOrder;
   });
+
+  // Background notifications and Vyapar queueing for paid orders
+  vyaparService.queueOrderSale(result).catch((err) => console.warn('Vyapar sync queue error:', err.message));
+  emailService.sendOrderConfirmation(result).catch((err) => console.warn('Email dispatch error:', err.message));
+  if (result.shippingPhone) {
+    whatsappService.sendWhatsAppNotification(
+      result.shippingPhone,
+      whatsappService.formatOrderConfirmationMessage(result)
+    ).catch((err) => console.warn('WhatsApp dispatch error:', err.message));
+  }
 
   return {
     success: true,
