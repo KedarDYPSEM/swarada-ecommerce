@@ -299,6 +299,18 @@ const createOrder = async (orderData) => {
         total: itemTotal,
       });
 
+      // Decrement variant stock if variant item
+      if (item.variantId) {
+        const variant = await tx.productVariant.findUnique({ where: { id: item.variantId } });
+        if (variant) {
+          const newVarStock = Math.max(0, variant.stockQuantity - item.quantity);
+          await tx.productVariant.update({
+            where: { id: variant.id },
+            data: { stockQuantity: newVarStock },
+          });
+        }
+      }
+
       // Decrement stock quantity if greater than 0
       const newStock = Math.max(0, product.stockQuantity - item.quantity);
       await tx.product.update({

@@ -147,7 +147,13 @@ const createProduct = async (data, adminId) => {
     .replace(/\s+/g, '-')
     .substring(0, 100) + `-${Date.now().toString(36)}`;
 
-  const numStock = parseInt(stockQuantity, 10) || 0;
+  const validVariants = (variants || []).filter(
+    (v) => (v.variantValue && v.variantValue.trim()) || (v.colorName && v.colorName.trim()) || v.imageUrl
+  );
+  // Product quantity is equal to sum of variant quantity
+  const numStock = validVariants.length > 0
+    ? validVariants.reduce((sum, v) => sum + (parseInt(v.stockQuantity, 10) || 0), 0)
+    : (parseInt(stockQuantity, 10) || 0);
 
   return prisma.$transaction(async (tx) => {
     const product = await tx.product.create({
@@ -339,6 +345,8 @@ const updateProduct = async (id, data, adminId) => {
       });
     }
 
+    let finalStockQuantity = stockQuantity !== undefined ? parseInt(stockQuantity, 10) : existing.stockQuantity;
+
     // Update variants if provided
     if (variants !== undefined) {
       await tx.productVariant.deleteMany({ where: { productId } });
@@ -347,6 +355,9 @@ const updateProduct = async (id, data, adminId) => {
           (v) => (v.variantValue && v.variantValue.trim()) || (v.colorName && v.colorName.trim()) || v.imageUrl
         );
         if (validVariants.length > 0) {
+          // Product quantity is equal to sum of variant quantity
+          finalStockQuantity = validVariants.reduce((sum, v) => sum + (parseInt(v.stockQuantity, 10) || 0), 0);
+
           const baseSku = (sku ? sku.trim() : existing.sku) || `SW${productId}`;
           await tx.productVariant.createMany({
             data: validVariants.map((v, idx) => ({
@@ -357,7 +368,7 @@ const updateProduct = async (id, data, adminId) => {
               imageUrl: v.imageUrl || null,
               sku: (v.sku && v.sku.trim()) || `${baseSku}-CLR${idx + 1}-${Date.now().toString(36).slice(-3)}`,
               priceAdjustment: v.priceAdjustment ? parseFloat(v.priceAdjustment) : 0.00,
-              stockQuantity: v.stockQuantity !== undefined ? parseInt(v.stockQuantity, 10) : (stockQuantity !== undefined ? parseInt(stockQuantity, 10) : existing.stockQuantity),
+              stockQuantity: parseInt(v.stockQuantity, 10) || 0,
               isActive: v.isActive !== undefined ? Boolean(v.isActive) : true,
             })),
           });
@@ -382,7 +393,7 @@ const updateProduct = async (id, data, adminId) => {
         sareeLength: sareeLength !== undefined ? sareeLength : undefined,
         blouseDetails: blouseDetails !== undefined ? blouseDetails : undefined,
         washingInstructions: washingInstructions !== undefined ? washingInstructions : undefined,
-        stockQuantity: stockQuantity !== undefined ? parseInt(stockQuantity, 10) : undefined,
+        stockQuantity: finalStockQuantity,
         lowStockThreshold: lowStockThreshold !== undefined ? parseInt(lowStockThreshold, 10) : undefined,
         isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : undefined,
         isNewArrival: isNewArrival !== undefined ? Boolean(isNewArrival) : undefined,
@@ -394,6 +405,11 @@ const updateProduct = async (id, data, adminId) => {
         categories: { include: { category: true } },
         variants: true,
       },
+    });
+
+    await tx.inventory.updateMany({
+      where: { productId },
+      data: { quantity: finalStockQuantity },
     });
 
     return updated;

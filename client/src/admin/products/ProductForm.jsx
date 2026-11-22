@@ -237,29 +237,38 @@ export const ProductForm = () => {
     setError(null);
 
     try {
+      const validVariants = formData.variants
+        ? formData.variants
+            .filter((v) => (v.variantValue && v.variantValue.trim()) || v.imageUrl)
+            .map((v) => ({
+              id: v.id,
+              variantName: 'Color',
+              variantValue: v.variantValue.trim(),
+              colorCode: v.colorCode || null,
+              imageUrl: v.imageUrl || null,
+              stockQuantity: v.stockQuantity !== '' ? parseInt(v.stockQuantity, 10) || 0 : 0,
+              sku: v.sku || undefined,
+            }))
+        : [];
+
+      const totalStock =
+        validVariants.length > 0
+          ? validVariants.reduce((sum, v) => sum + (parseInt(v.stockQuantity, 10) || 0), 0)
+          : formData.stockQuantity !== ''
+          ? parseInt(formData.stockQuantity, 10) || 0
+          : 10;
+
       const payload = {
         ...formData,
         purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
         sellingPrice: parseFloat(formData.sellingPrice),
         mrp: formData.mrp ? parseFloat(formData.mrp) : null,
         gstRate: parseFloat(formData.gstRate) || 5,
-        stockQuantity: formData.stockQuantity !== '' ? (parseInt(formData.stockQuantity, 10) || 0) : 10,
+        stockQuantity: totalStock,
         lowStockThreshold: parseInt(formData.lowStockThreshold, 10) || 3,
         barcode: formData.barcode?.trim() || null,
         images: formData.images.filter((img) => img.url && img.url.trim() !== ''),
-        variants: formData.variants
-          ? formData.variants
-              .filter((v) => (v.variantValue && v.variantValue.trim()) || v.imageUrl)
-              .map((v) => ({
-                id: v.id,
-                variantName: 'Color',
-                variantValue: v.variantValue.trim(),
-                colorCode: v.colorCode || null,
-                imageUrl: v.imageUrl || null,
-                stockQuantity: v.stockQuantity !== '' ? parseInt(v.stockQuantity, 10) || 0 : 10,
-                sku: v.sku || undefined,
-              }))
-          : [],
+        variants: validVariants,
       };
 
       if (isEdit) {
@@ -481,10 +490,24 @@ export const ProductForm = () => {
                 type="number"
                 min="0"
                 required
-                value={formData.stockQuantity}
+                readOnly={formData.variants && formData.variants.length > 0}
+                value={
+                  formData.variants && formData.variants.length > 0
+                    ? formData.variants.reduce((sum, v) => sum + (parseInt(v.stockQuantity, 10) || 0), 0)
+                    : formData.stockQuantity
+                }
                 onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                className="w-full px-3 py-1.5 border border-neutral-200 rounded focus:outline-none focus:border-[#641B32] font-semibold"
+                className={`w-full px-3 py-1.5 border border-neutral-200 rounded focus:outline-none focus:border-[#641B32] font-semibold ${
+                  formData.variants && formData.variants.length > 0
+                    ? 'bg-amber-50/70 text-[#641B32] cursor-not-allowed border-amber-300'
+                    : ''
+                }`}
               />
+              {formData.variants && formData.variants.length > 0 && (
+                <p className="text-[10px] text-amber-800 font-medium mt-1">
+                  ⚡ Auto-summed from {formData.variants.length} color variants ({formData.variants.reduce((sum, v) => sum + (parseInt(v.stockQuantity, 10) || 0), 0)} pcs total)
+                </p>
+              )}
             </div>
           </div>
         </div>

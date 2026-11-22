@@ -69,9 +69,12 @@ export const ProductPage = () => {
           setRelatedProducts(data.relatedProducts || []);
           setSelectedImage(0);
           if (data.product.variants && data.product.variants.length > 0) {
-            setSelectedVariant(data.product.variants[0]);
-            if (data.product.variants[0].imageUrl) {
-              setActiveImageOverride(data.product.variants[0].imageUrl);
+            // Select first in-stock variant if available, otherwise first variant
+            const firstInStock = data.product.variants.find((v) => (v.stockQuantity || 0) > 0);
+            const initialVar = firstInStock || data.product.variants[0];
+            setSelectedVariant(initialVar);
+            if (initialVar?.imageUrl) {
+              setActiveImageOverride(initialVar.imageUrl);
             }
           }
         }
@@ -115,6 +118,9 @@ export const ProductPage = () => {
     : ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80'];
 
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
+  const isVariantOutOfStock = selectedVariant
+    ? (selectedVariant.stockQuantity || 0) <= 0
+    : (product.stockQuantity || 0) <= 0;
 
   const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku})${selectedVariant ? ` in color ${selectedVariant.variantValue}` : ''}. Please let me know if it is available for video call consultation.`;
   const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
@@ -229,10 +235,22 @@ export const ProductPage = () => {
                   SKU: {product.sku}
                 </span>
 
-                <span className="text-xs text-emerald-700 font-semibold flex items-center space-x-1">
-                  <Check className="w-3.5 h-3.5" />
+                <span
+                  className={`text-xs font-semibold flex items-center space-x-1.5 ${
+                    isVariantOutOfStock ? 'text-rose-700' : 'text-emerald-700'
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full inline-block ${
+                      isVariantOutOfStock ? 'bg-rose-500' : 'bg-emerald-600 animate-pulse'
+                    }`}
+                  />
                   <span>
-                    {product.stockQuantity > 0
+                    {isVariantOutOfStock
+                      ? 'Out of Stock'
+                      : selectedVariant
+                      ? `In Stock (${selectedVariant.stockQuantity} Remaining)`
+                      : product.stockQuantity > 0
                       ? `In Stock (${product.stockQuantity} Pieces Remaining)`
                       : 'Made to Order'}
                   </span>
@@ -305,26 +323,36 @@ export const ProductPage = () => {
               ))}
             </div>
 
-            {/* Color Variants Selection */}
+            {/* Color Variants Visual Thumbnail Grid (Matching Reference) */}
             {product.variants && product.variants.length > 0 && (
-              <div className="space-y-3 pb-3 border-b border-neutral-100">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-neutral-700">
-                    Available Colors:{' '}
-                    <span className="text-[#641B32] font-bold">
+              <div className="space-y-3 pb-4 border-b border-neutral-100">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold uppercase tracking-wider text-neutral-800">
+                    COLOR:{' '}
+                    <span className="text-[#641B32] font-extrabold">
                       {selectedVariant?.variantValue || 'Select a shade'}
                     </span>
-                  </span>
+                  </div>
                   {selectedVariant && (
-                    <span className="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      {selectedVariant.stockQuantity > 0 ? `In Stock (${selectedVariant.stockQuantity})` : 'Made to Order'}
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                        isVariantOutOfStock
+                          ? 'text-rose-700 bg-rose-50 border-rose-200'
+                          : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      }`}
+                    >
+                      {isVariantOutOfStock ? 'Sold Out' : `${selectedVariant.stockQuantity} in stock`}
                     </span>
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
+                {/* 5-column responsive visual thumbnail grid */}
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 gap-2.5 sm:gap-3 pt-1">
                   {product.variants.map((variant) => {
                     const isSelected = selectedVariant?.id === variant.id;
+                    const isOutOfStock = (variant.stockQuantity || 0) <= 0;
+                    const variantThumb = variant.imageUrl || images[0];
+
                     return (
                       <button
                         key={variant.id}
@@ -335,17 +363,50 @@ export const ProductPage = () => {
                             setActiveImageOverride(variant.imageUrl);
                           }
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-[#641B32] bg-[#641B32]/10 text-[#641B32] ring-2 ring-[#641B32]/30 font-bold shadow-xs'
-                            : 'border-neutral-200 bg-white text-neutral-700 hover:border-[#C5A05A]'
-                        }`}
+                        className="group flex flex-col items-center cursor-pointer text-center focus:outline-none"
+                        title={`${variant.variantValue} (${isOutOfStock ? 'Out of Stock' : `${variant.stockQuantity} in stock`})`}
                       >
+                        <div
+                          className={`w-full aspect-square bg-neutral-100 rounded-xs overflow-hidden relative transition-all duration-200 ${
+                            isSelected
+                              ? 'border-2 border-black ring-2 ring-black/15 shadow-md scale-102'
+                              : 'border border-neutral-300 hover:border-neutral-500'
+                          }`}
+                        >
+                          <img
+                            src={variantThumb}
+                            alt={variant.variantValue}
+                            className={`w-full h-full object-cover transition-all duration-300 ${
+                              isOutOfStock
+                                ? 'grayscale contrast-125 brightness-95 opacity-60 group-hover:opacity-85'
+                                : 'group-hover:scale-105'
+                            }`}
+                          />
+
+                          {isOutOfStock && (
+                            <div className="absolute inset-0 bg-black/15 flex items-center justify-center p-0.5">
+                              <span className="bg-neutral-900/90 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-xs leading-none shadow-xs">
+                                Sold Out
+                              </span>
+                            </div>
+                          )}
+
+                          {isSelected && !isOutOfStock && (
+                            <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white" />
+                          )}
+                        </div>
+
                         <span
-                          className="w-4 h-4 rounded-full border border-black/20 shrink-0 shadow-xs"
-                          style={{ backgroundColor: variant.colorCode || '#9B2226' }}
-                        />
-                        <span>{variant.variantValue}</span>
+                          className={`text-[11px] sm:text-xs text-center mt-1.5 truncate max-w-full tracking-tight transition-colors ${
+                            isSelected
+                              ? 'font-bold text-black'
+                              : isOutOfStock
+                              ? 'text-neutral-400 font-normal line-through'
+                              : 'text-neutral-700 font-medium group-hover:text-black'
+                          }`}
+                        >
+                          {variant.variantValue}
+                        </span>
                       </button>
                     );
                   })}
@@ -359,7 +420,7 @@ export const ProductPage = () => {
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#292323]">
                   Quantity
                 </span>
-                <div className="flex items-center border border-neutral-300 rounded bg-white">
+                <div className={`flex items-center border border-neutral-300 rounded bg-white ${isVariantOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                   <button
                     onClick={() => {
                       if (quantity > 1) {
@@ -367,21 +428,24 @@ export const ProductPage = () => {
                         setActionError('');
                       }
                     }}
-                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer"
+                    disabled={isVariantOutOfStock}
+                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer disabled:cursor-not-allowed"
                   >
                     -
                   </button>
                   <span className="px-4 py-1 text-xs font-semibold">{quantity}</span>
                   <button
                     onClick={() => {
-                      if (product.stockQuantity > 0 && quantity >= product.stockQuantity) {
-                        setActionError(`Only ${product.stockQuantity} items in stock.`);
+                      const maxStock = selectedVariant ? selectedVariant.stockQuantity : product.stockQuantity;
+                      if (maxStock > 0 && quantity >= maxStock) {
+                        setActionError(`Only ${maxStock} items available in this shade.`);
                         return;
                       }
                       setQuantity(quantity + 1);
                       setActionError('');
                     }}
-                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer"
+                    disabled={isVariantOutOfStock}
+                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer disabled:cursor-not-allowed"
                   >
                     +
                   </button>
@@ -394,25 +458,45 @@ export const ProductPage = () => {
                 </div>
               )}
 
+              {isVariantOutOfStock && (
+                <div className="p-3 bg-amber-50/90 border border-amber-200 text-amber-900 text-xs rounded-sm space-y-1">
+                  <div className="font-semibold text-rose-700 flex items-center gap-1">
+                    <span>⚠</span> This shade ({selectedVariant?.variantValue || 'Selected'}) is currently Sold Out.
+                  </div>
+                  <div className="text-[11px] text-amber-800">
+                    Please click another shade above or message us on WhatsApp below for custom handloom weaving.
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleAddToCart}
-                  variant="primary"
+                  variant={isVariantOutOfStock ? 'outline' : 'primary'}
+                  disabled={isVariantOutOfStock || isAddingToCart}
                   isLoading={isAddingToCart}
                   className="flex-1 py-3 text-sm flex items-center justify-center space-x-2"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>{added ? 'Added to Cart ✓' : 'Add to Cart'}</span>
+                  <span>
+                    {isVariantOutOfStock
+                      ? 'Out of Stock'
+                      : added
+                      ? 'Added to Cart ✓'
+                      : 'Add to Cart'}
+                  </span>
                 </Button>
 
-                <Button
-                  onClick={handleBuyNow}
-                  variant="gold"
-                  isLoading={isBuyingNow}
-                  className="flex-1 py-3 text-sm font-semibold text-[#292323]"
-                >
-                  Buy Now
-                </Button>
+                {!isVariantOutOfStock && (
+                  <Button
+                    onClick={handleBuyNow}
+                    variant="gold"
+                    isLoading={isBuyingNow}
+                    className="flex-1 py-3 text-sm font-semibold text-[#292323]"
+                  >
+                    Buy Now
+                  </Button>
+                )}
 
                 <a
                   href={whatsappUrl}
