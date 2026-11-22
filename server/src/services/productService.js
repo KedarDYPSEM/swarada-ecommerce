@@ -54,10 +54,18 @@ const getProducts = async (query = {}) => {
     where.fabric = { in: fabrics };
   }
 
-  // 5. Colour Filter
+  // 5. Colour Filter (Master product colour or variant colour)
   if (query.colour) {
     const colours = Array.isArray(query.colour) ? query.colour : [query.colour];
-    where.colour = { in: colours };
+    where.AND = [
+      ...(where.AND || []),
+      {
+        OR: [
+          { colour: { in: colours } },
+          { variants: { some: { variantValue: { in: colours }, isActive: true } } },
+        ],
+      },
+    ];
   }
 
   // 6. Stock Availability Filter
@@ -250,7 +258,7 @@ const searchProducts = async (term, limit = 8) => {
  * Get distinct filter options (available fabrics, colours, price range)
  */
 const getFilterOptions = async () => {
-  const [fabrics, colours, minMaxPrice] = await Promise.all([
+  const [fabrics, colours, variantColours, minMaxPrice] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true, fabric: { not: null } },
       select: { fabric: true },
@@ -261,6 +269,11 @@ const getFilterOptions = async () => {
       select: { colour: true },
       distinct: ['colour'],
     }),
+    prisma.productVariant.findMany({
+      where: { isActive: true, variantValue: { not: '' } },
+      select: { variantValue: true },
+      distinct: ['variantValue'],
+    }),
     prisma.product.aggregate({
       where: { isActive: true },
       _min: { sellingPrice: true },
@@ -268,9 +281,16 @@ const getFilterOptions = async () => {
     }),
   ]);
 
+  const allColours = Array.from(
+    new Set([
+      ...colours.map((c) => c.colour),
+      ...variantColours.map((v) => v.variantValue),
+    ])
+  ).filter(Boolean);
+
   return {
     fabrics: fabrics.map((f) => f.fabric).filter(Boolean),
-    colours: colours.map((c) => c.colour).filter(Boolean),
+    colours: allColours,
     priceRange: {
       min: minMaxPrice._min.sellingPrice || 0,
       max: minMaxPrice._max.sellingPrice || 50000,

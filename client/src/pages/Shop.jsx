@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
 import productService from '../services/productService';
+import categoryService from '../services/categoryService';
 import { Button } from '../components/ui/Button';
 
 export const Shop = () => {
@@ -27,6 +28,7 @@ export const Shop = () => {
 
   // Component state
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, totalPages: 1 });
   const [filterOptions, setFilterOptions] = useState({ fabrics: [], colours: [] });
   const [isLoading, setIsLoading] = useState(true);
@@ -36,12 +38,20 @@ export const Shop = () => {
   const [selectedFabrics, setSelectedFabrics] = useState([]);
   const [selectedColours, setSelectedColours] = useState([]);
 
-  // Fetch filter options on mount
+  // Fetch filter options and live categories from database on mount
   useEffect(() => {
-    const fetchFilters = async () => {
+    const fetchMetadata = async () => {
       try {
-        const options = await productService.getFilterOptions();
-        if (options) setFilterOptions(options);
+        const [options, cats] = await Promise.allSettled([
+          productService.getFilterOptions(),
+          categoryService.getCategories(),
+        ]);
+        if (options.status === 'fulfilled' && options.value) {
+          setFilterOptions(options.value);
+        }
+        if (cats.status === 'fulfilled' && Array.isArray(cats.value)) {
+          setCategories(cats.value);
+        }
       } catch (err) {
         // Fallback default options
         setFilterOptions({
@@ -50,7 +60,7 @@ export const Shop = () => {
         });
       }
     };
-    fetchFilters();
+    fetchMetadata();
   }, []);
 
   // Fetch products whenever params or filters change
@@ -254,17 +264,32 @@ export const Shop = () => {
                   Categories
                 </h4>
                 <ul className="space-y-2 text-xs">
-                  {[
-                    { label: 'All Categories', slug: '' },
-                    { label: 'Paithani Sarees', slug: 'paithani-sarees' },
-                    { label: 'Banarasi Silk', slug: 'banarasi-silk' },
-                    { label: 'Nauvari Sarees', slug: 'nauvari-sarees' },
-                    { label: 'Dresses', slug: 'dresses' },
-                    { label: 'Kurtis', slug: 'kurtis' },
-                    { label: 'Handbags & Potlis', slug: 'handbags' },
-                    { label: 'Accessories', slug: 'accessories' },
-                  ].map((c) => (
-                    <li key={c.label}>
+                  <li>
+                    <button
+                      onClick={() => {
+                        searchParams.delete('category');
+                        searchParams.set('page', '1');
+                        setSearchParams(searchParams);
+                      }}
+                      className={`text-left w-full transition-colors cursor-pointer ${
+                        !categoryParam
+                          ? 'text-[#641B32] font-bold'
+                          : 'text-[#594E4E] hover:text-[#641B32]'
+                      }`}
+                    >
+                      All Categories
+                    </button>
+                  </li>
+                  {(categories.length > 0 ? categories : [
+                    { name: 'Paithani Sarees', slug: 'paithani-sarees' },
+                    { name: 'Banarasi Silk', slug: 'banarasi-silk' },
+                    { name: 'Nauvari Sarees', slug: 'nauvari-sarees' },
+                    { name: 'Dresses', slug: 'dresses' },
+                    { name: 'Kurtis', slug: 'kurtis' },
+                    { name: 'Handbags & Potlis', slug: 'handbags' },
+                    { name: 'Accessories', slug: 'accessories' },
+                  ]).map((c) => (
+                    <li key={c.id || c.slug}>
                       <button
                         onClick={() => {
                           if (c.slug) searchParams.set('category', c.slug);
@@ -278,7 +303,7 @@ export const Shop = () => {
                             : 'text-[#594E4E] hover:text-[#641B32]'
                         }`}
                       >
-                        {c.label}
+                        {c.name}
                       </button>
                     </li>
                   ))}

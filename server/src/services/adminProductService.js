@@ -126,6 +126,22 @@ const createProduct = async (data, adminId) => {
     variants = [],
   } = data;
 
+  const resolvedColour = colour !== undefined && colour !== null ? colour : (data.color || null);
+
+  const initialAttributes = [...(Array.isArray(attributes) ? attributes : [])];
+  if (data.weaveType && !initialAttributes.some((a) => a.name === 'Weave Type' || a.name === 'Weave Technique')) {
+    initialAttributes.push({ name: 'Weave Type', value: data.weaveType.trim() });
+  }
+  if (data.zariType && !initialAttributes.some((a) => a.name === 'Zari Quality' || a.name === 'Zari Type')) {
+    initialAttributes.push({ name: 'Zari Quality', value: data.zariType.trim() });
+  }
+  if (data.occasion && !initialAttributes.some((a) => a.name === 'Occasion')) {
+    initialAttributes.push({ name: 'Occasion', value: data.occasion.trim() });
+  }
+  if (data.isHandloom !== undefined && !initialAttributes.some((a) => a.name === 'Handloom Certified')) {
+    initialAttributes.push({ name: 'Handloom Certified', value: data.isHandloom ? 'Yes (Authentic Handloom)' : 'Powerloom / Mill' });
+  }
+
   // Verify unique SKU
   const existingSku = await prisma.product.findUnique({ where: { sku: sku.trim() } });
   if (existingSku) {
@@ -169,7 +185,7 @@ const createProduct = async (data, adminId) => {
         purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
         gstRate: gstRate ? parseFloat(gstRate) : 5.0,
         fabric: fabric || null,
-        colour: colour || null,
+        colour: resolvedColour || null,
         sareeLength: sareeLength || null,
         blouseDetails: blouseDetails || null,
         washingInstructions: washingInstructions || null,
@@ -208,7 +224,7 @@ const createProduct = async (data, adminId) => {
           })),
         },
         attributes: {
-          create: attributes.map((attr) => ({
+          create: initialAttributes.map((attr) => ({
             name: attr.name,
             value: attr.value,
           })),
@@ -273,7 +289,11 @@ const updateProduct = async (id, data, adminId) => {
     categoryIds,
     images,
     variants,
+    attributes,
   } = data;
+
+  const resolvedUpdateColour =
+    colour !== undefined ? colour : data.color !== undefined ? data.color : undefined;
 
   if (sku && sku !== existing.sku) {
     const duplicate = await prisma.product.findUnique({ where: { sku: sku.trim() } });
@@ -376,6 +396,36 @@ const updateProduct = async (id, data, adminId) => {
       }
     }
 
+    // Update attributes if provided
+    const incomingAttributes = Array.isArray(attributes) ? [...attributes] : [];
+    if (data.weaveType && !incomingAttributes.some((a) => a.name === 'Weave Type' || a.name === 'Weave Technique')) {
+      incomingAttributes.push({ name: 'Weave Type', value: data.weaveType.trim() });
+    }
+    if (data.zariType && !incomingAttributes.some((a) => a.name === 'Zari Quality' || a.name === 'Zari Type')) {
+      incomingAttributes.push({ name: 'Zari Quality', value: data.zariType.trim() });
+    }
+    if (data.occasion && !incomingAttributes.some((a) => a.name === 'Occasion')) {
+      incomingAttributes.push({ name: 'Occasion', value: data.occasion.trim() });
+    }
+    if (data.isHandloom !== undefined && !incomingAttributes.some((a) => a.name === 'Handloom Certified')) {
+      incomingAttributes.push({ name: 'Handloom Certified', value: data.isHandloom ? 'Yes (Authentic Handloom)' : 'Powerloom / Mill' });
+    }
+
+    if (attributes !== undefined || incomingAttributes.length > 0) {
+      await tx.productAttribute.deleteMany({ where: { productId } });
+      if (incomingAttributes.length > 0) {
+        await tx.productAttribute.createMany({
+          data: incomingAttributes
+            .filter((a) => a && a.name && a.value)
+            .map((attr) => ({
+              productId,
+              name: attr.name.trim(),
+              value: attr.value.trim(),
+            })),
+        });
+      }
+    }
+
     const updated = await tx.product.update({
       where: { id: productId },
       data: {
@@ -389,7 +439,7 @@ const updateProduct = async (id, data, adminId) => {
         purchasePrice: purchasePrice !== undefined ? parseFloat(purchasePrice) : undefined,
         gstRate: gstRate !== undefined ? parseFloat(gstRate) : undefined,
         fabric: fabric !== undefined ? fabric : undefined,
-        colour: colour !== undefined ? colour : undefined,
+        colour: resolvedUpdateColour !== undefined ? resolvedUpdateColour : undefined,
         sareeLength: sareeLength !== undefined ? sareeLength : undefined,
         blouseDetails: blouseDetails !== undefined ? blouseDetails : undefined,
         washingInstructions: washingInstructions !== undefined ? washingInstructions : undefined,
@@ -403,6 +453,7 @@ const updateProduct = async (id, data, adminId) => {
       include: {
         images: true,
         categories: { include: { category: true } },
+        attributes: true,
         variants: true,
       },
     });

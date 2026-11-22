@@ -301,10 +301,10 @@ export const ProductPage = () => {
                   <span className="col-span-2 text-[#292323]">{product.fabric}</span>
                 </div>
               )}
-              {product.colour && (
+              {(selectedVariant?.variantValue || product.colour) && (
                 <div className="grid grid-cols-3 p-2.5">
                   <span className="font-semibold text-neutral-600">Colour Palette</span>
-                  <span className="col-span-2 text-[#292323]">{product.colour}</span>
+                  <span className="col-span-2 text-[#292323]">{selectedVariant?.variantValue || product.colour}</span>
                 </div>
               )}
               {product.sareeLength && (

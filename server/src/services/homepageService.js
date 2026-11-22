@@ -60,6 +60,32 @@ const getHomepageData = async () => {
     settingsMap[s.key] = s.value;
   });
 
+  let resolvedNewArrivals = newArrivals;
+  if (!resolvedNewArrivals || resolvedNewArrivals.length === 0) {
+    resolvedNewArrivals = await prisma.product.findMany({
+      where: { isActive: true },
+      take: 8,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        images: { orderBy: { displayOrder: 'asc' } },
+        categories: { include: { category: true } },
+      },
+    });
+  }
+
+  let resolvedBestSellers = bestSellers;
+  if (!resolvedBestSellers || resolvedBestSellers.length === 0) {
+    resolvedBestSellers = await prisma.product.findMany({
+      where: { isActive: true },
+      take: 8,
+      orderBy: { stockQuantity: 'desc' },
+      include: {
+        images: { orderBy: { displayOrder: 'asc' } },
+        categories: { include: { category: true } },
+      },
+    });
+  }
+
   return {
     banners: {
       hero: banners.filter((b) => b.type === 'HERO'),
@@ -67,8 +93,8 @@ const getHomepageData = async () => {
       all: banners,
     },
     categories,
-    newArrivals,
-    bestSellers,
+    newArrivals: resolvedNewArrivals,
+    bestSellers: resolvedBestSellers,
     settings: settingsMap,
   };
 };

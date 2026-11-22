@@ -85,6 +85,11 @@ export const ProductForm = () => {
           const res = await adminService.getProductById(id);
           if (res && res.data) {
             const p = res.data;
+            const attrMap = {};
+            (p.attributes || []).forEach((a) => {
+              if (a && a.name) attrMap[a.name] = a.value;
+            });
+
             setFormData({
               name: p.name || '',
               slug: p.slug || '',
@@ -92,22 +97,22 @@ export const ProductForm = () => {
               barcode: p.barcode || '',
               shortDescription: p.shortDescription || '',
               description: p.description || '',
-              purchasePrice: p.purchasePrice !== null ? p.purchasePrice.toString() : '',
+              purchasePrice: p.purchasePrice !== null && p.purchasePrice !== undefined ? p.purchasePrice.toString() : '',
               sellingPrice: p.sellingPrice ? p.sellingPrice.toString() : '',
               mrp: p.mrp ? p.mrp.toString() : '',
               gstRate: p.gstRate ? p.gstRate.toString() : '5',
-              stockQuantity: p.stockQuantity ? p.stockQuantity.toString() : '0',
+              stockQuantity: p.stockQuantity !== undefined ? p.stockQuantity.toString() : '0',
               lowStockThreshold: p.lowStockThreshold ? p.lowStockThreshold.toString() : '3',
               fabric: p.fabric || '',
-              color: p.color || '',
+              color: p.colour || p.color || '',
               sareeLength: p.sareeLength || '',
               blouseDetails: p.blouseDetails || '',
               washingInstructions: p.washingInstructions || '',
-              occasion: p.occasion || '',
-              weaveType: p.weaveType || '',
-              zariType: p.zariType || '',
+              occasion: attrMap['Occasion'] || p.occasion || '',
+              weaveType: attrMap['Weave Type'] || attrMap['Weave Technique'] || p.weaveType || '',
+              zariType: attrMap['Zari Quality'] || attrMap['Zari Type'] || p.zariType || '',
               includesBlouse: Boolean(p.includesBlouse),
-              isHandloom: Boolean(p.isHandloom),
+              isHandloom: attrMap['Handloom Certified'] ? attrMap['Handloom Certified'].includes('Yes') : Boolean(p.isHandloom),
               isFeatured: Boolean(p.isFeatured),
               isActive: Boolean(p.isActive),
               categoryIds: p.categories?.map((c) => c.categoryId) || [],
@@ -258,8 +263,17 @@ export const ProductForm = () => {
           ? parseInt(formData.stockQuantity, 10) || 0
           : 10;
 
+      const attributes = [];
+      if (formData.weaveType?.trim()) attributes.push({ name: 'Weave Type', value: formData.weaveType.trim() });
+      if (formData.zariType?.trim()) attributes.push({ name: 'Zari Quality', value: formData.zariType.trim() });
+      if (formData.occasion?.trim()) attributes.push({ name: 'Occasion', value: formData.occasion.trim() });
+      if (formData.isHandloom !== undefined) attributes.push({ name: 'Handloom Certified', value: formData.isHandloom ? 'Yes (Authentic Handloom)' : 'Powerloom / Mill' });
+
       const payload = {
         ...formData,
+        colour: formData.color?.trim() || null,
+        color: formData.color?.trim() || null,
+        attributes,
         purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
         sellingPrice: parseFloat(formData.sellingPrice),
         mrp: formData.mrp ? parseFloat(formData.mrp) : null,

@@ -92,8 +92,12 @@ export const ProductQuickView = ({ product, isOpen, onClose }) => {
             </p>
 
             <div className="text-xs space-y-1.5 border-t border-neutral-100 pt-3">
-              <p><strong className="text-neutral-600">Fabric:</strong> {product.fabric || 'Pure Silk'}</p>
-              <p><strong className="text-neutral-600">Colour:</strong> {product.colour || 'Maroon & Gold'}</p>
+              {product.fabric && (
+                <p><strong className="text-neutral-600">Fabric:</strong> {product.fabric}</p>
+              )}
+              {product.colour && (
+                <p><strong className="text-neutral-600">Colour:</strong> {product.colour}</p>
+              )}
               <p>
                 <strong className="text-neutral-600">Availability:</strong>{' '}
                 {(product.stockQuantity || 0) > 0 ? (
