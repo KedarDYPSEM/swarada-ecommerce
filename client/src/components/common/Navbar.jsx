@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useSettings } from '../../context/SettingsContext';
 import SearchBar from './SearchBar';
 
 export const Navbar = () => {
@@ -23,6 +24,7 @@ export const Navbar = () => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { itemCount, openCartDrawer } = useCart();
+  const { settings } = useSettings();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -30,11 +32,13 @@ export const Navbar = () => {
     navigate('/');
   };
 
-  const navLinks = [
-    { name: 'Home', href: '/' },
+  const defaultNavLinks = [
+    { id: 'home', name: 'Home', href: '/', active: true },
     {
+      id: 'sarees',
       name: 'Sarees',
       href: '/shop?category=sarees',
+      active: true,
       subcategories: [
         { name: 'All Sarees', href: '/shop?category=sarees' },
         { name: 'Yeola Paithani Sarees', href: '/shop?category=paithani-sarees' },
@@ -43,13 +47,16 @@ export const Navbar = () => {
         { name: 'Bridal Silk Sarees', href: '/shop?category=bridal' },
       ],
     },
-    { name: 'Dresses', href: '/shop?category=dresses' },
-    { name: 'Kurtis', href: '/shop?category=kurtis' },
-    { name: 'Handbags & Potlis', href: '/shop?category=handbags' },
-    { name: 'Accessories', href: '/shop?category=accessories' },
-    { name: 'Festive Sale', href: '/shop?sale=true', highlight: true },
-    { name: 'Our Kolhapur Story', href: '/about' },
+    { id: 'dresses', name: 'Dresses', href: '/shop?category=dresses', active: true },
+    { id: 'kurtis', name: 'Kurtis', href: '/shop?category=kurtis', active: true },
+    { id: 'handbags', name: 'Handbags & Potlis', href: '/shop?category=handbags', active: true },
+    { id: 'accessories', name: 'Accessories', href: '/shop?category=accessories', active: true },
+    { id: 'festive_sale', name: 'Festive Sale', href: '/shop?sale=true', highlight: true, active: true },
+    { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
   ];
+
+  // Only active menu pages will be displayed
+  const activeNavLinks = (settings?.menus || defaultNavLinks).filter((m) => m.active !== false);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#C5A05A]/30 shadow-xs">
@@ -114,12 +121,22 @@ export const Navbar = () => {
           {/* Brand Logo */}
           <div className="flex-1 lg:flex-none text-center lg:text-left">
             <Link to="/" className="inline-block group">
-              <span className="font-heading text-2xl sm:text-3xl font-bold tracking-wider text-[#641B32] uppercase group-hover:text-[#7B1E35] transition-colors">
-                Swarada
-              </span>
-              <span className="block text-[9px] sm:text-[10px] tracking-[0.25em] font-medium text-[#C5A05A] uppercase -mt-1 font-sans">
-                Saree Center • Kolhapur
-              </span>
+              {settings?.logoUrl ? (
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.storeName || 'Swarada Saree Center'}
+                  className="h-12 sm:h-14 w-auto max-w-[200px] sm:max-w-[240px] object-contain mx-auto lg:mx-0"
+                />
+              ) : (
+                <>
+                  <span className="font-heading text-2xl sm:text-3xl font-bold tracking-wider text-[#641B32] uppercase group-hover:text-[#7B1E35] transition-colors">
+                    Swarada
+                  </span>
+                  <span className="block text-[9px] sm:text-[10px] tracking-[0.25em] font-medium text-[#C5A05A] uppercase -mt-1 font-sans">
+                    Saree Center • Kolhapur
+                  </span>
+                </>
+              )}
             </Link>
           </div>
 
@@ -247,8 +264,8 @@ export const Navbar = () => {
       <nav className="hidden lg:block border-t border-neutral-150 bg-[#FFF9F0]/60">
         <div className="max-w-7xl mx-auto px-8">
           <ul className="flex items-center justify-center space-x-8 text-xs font-medium tracking-wider uppercase py-3">
-            {navLinks.map((link) => (
-              <li key={link.name} className="relative group">
+            {activeNavLinks.map((link) => (
+              <li key={link.id || link.name} className="relative group">
                 <Link
                   to={link.href}
                   className={`py-2 transition-colors flex items-center space-x-1 ${
@@ -293,12 +310,22 @@ export const Navbar = () => {
             {/* Drawer Header */}
             <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-[#641B32] text-white">
               <div>
-                <span className="font-heading text-xl font-bold uppercase tracking-wider">
-                  Swarada
-                </span>
-                <span className="block text-[9px] tracking-widest text-[#C5A05A] uppercase">
-                  Saree Center • Kolhapur
-                </span>
+                {settings?.logoUrl ? (
+                  <img
+                    src={settings.logoUrl}
+                    alt={settings.storeName || 'Swarada Saree Center'}
+                    className="h-10 w-auto max-w-[180px] object-contain brightness-0 invert"
+                  />
+                ) : (
+                  <>
+                    <span className="font-heading text-xl font-bold uppercase tracking-wider">
+                      Swarada
+                    </span>
+                    <span className="block text-[9px] tracking-widest text-[#C5A05A] uppercase">
+                      Saree Center • Kolhapur
+                    </span>
+                  </>
+                )}
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -311,8 +338,8 @@ export const Navbar = () => {
             {/* Navigation links */}
             <div className="p-4 flex-1">
               <ul className="space-y-3">
-                {navLinks.map((link) => (
-                  <li key={link.name} className="border-b border-neutral-100 pb-2">
+                {activeNavLinks.map((link) => (
+                  <li key={link.id || link.name} className="border-b border-neutral-100 pb-2">
                     <Link
                       to={link.href}
                       onClick={() => setMobileMenuOpen(false)}

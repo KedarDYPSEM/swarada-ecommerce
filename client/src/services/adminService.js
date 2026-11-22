@@ -160,6 +160,20 @@ const adminService = {
     });
     return res.data;
   },
+
+  // Settings & Menu Management
+  getSettings: async () => {
+    const res = await api.get('/settings');
+    return res.data;
+  },
+  updateSettings: async (settingsData) => {
+    const res = await api.put('/settings', settingsData);
+    return res.data;
+  },
+  getPublicSettings: async () => {
+    const res = await api.get('/settings/public');
+    return res.data;
+  },
 };
 
 export default adminService;

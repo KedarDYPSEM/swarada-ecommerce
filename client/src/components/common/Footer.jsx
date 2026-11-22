@@ -11,8 +11,10 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { InstagramIcon, FacebookIcon, YoutubeIcon } from './SocialIcons';
+import { useSettings } from '../../context/SettingsContext';
 
 export const Footer = () => {
+  const { settings } = useSettings();
   return (
     <footer className="bg-[#292323] text-[#FFF9F0] pt-16 pb-8 border-t-2 border-[#C5A05A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,12 +58,22 @@ export const Footer = () => {
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <Link to="/" className="inline-block">
-              <span className="font-heading text-2xl font-bold tracking-wider text-white uppercase">
-                Swarada
-              </span>
-              <span className="block text-[10px] tracking-[0.25em] font-medium text-[#C5A05A] uppercase -mt-1">
-                Saree Center • Kolhapur
-              </span>
+              {settings?.logoUrl ? (
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.storeName || 'Swarada Saree Center'}
+                  className="h-12 w-auto max-w-[220px] object-contain brightness-0 invert"
+                />
+              ) : (
+                <>
+                  <span className="font-heading text-2xl font-bold tracking-wider text-white uppercase">
+                    Swarada
+                  </span>
+                  <span className="block text-[10px] tracking-[0.25em] font-medium text-[#C5A05A] uppercase -mt-1">
+                    Saree Center • Kolhapur
+                  </span>
+                </>
+              )}
             </Link>
             <p className="text-xs text-neutral-300 leading-relaxed max-w-sm">
               Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the unmatched majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.

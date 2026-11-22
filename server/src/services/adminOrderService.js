@@ -219,7 +219,10 @@ const cancelOrder = async (id, reason) => {
 module.exports = {
   listOrders,
   getOrderDetails,
+  getOrderById: getOrderDetails,
   updateOrderStatus,
   updateTracking,
+  updateShipmentTracking: updateTracking,
   cancelOrder,
+  cancelOrderByAdmin: cancelOrder,
 };

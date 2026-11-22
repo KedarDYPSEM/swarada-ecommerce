@@ -14,6 +14,7 @@ const shippingRoutes = require('./shippingRoutes');
 const vyaparRoutes = require('./vyaparRoutes');
 const reviewRoutes = require('./reviewRoutes');
 const uploadRoutes = require('./uploadRoutes');
+const settingsRoutes = require('./settingsRoutes');
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.use('/customer', customerRoutes);
 router.use('/coupons', couponRoutes);
 router.use('/admin', adminRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/settings', settingsRoutes);
 router.use('/payment', paymentRoutes);
 router.use('/shipping', shippingRoutes);
 router.use('/integrations/vyapar', vyaparRoutes);
