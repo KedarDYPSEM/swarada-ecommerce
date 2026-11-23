@@ -24,6 +24,11 @@ const DEFAULT_MENUS = [
   { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
 ];
 
+const sanitizeUploadUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  return url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
+};
+
 /**
  * Public Settings (Storefront identity, logo, active menus, contacts)
  */
@@ -48,7 +53,7 @@ const getPublicSettings = catchAsync(async (req, res) => {
     data: {
       storeName: map.store_name || 'Swarada Saree Center',
       tagline: map.store_tagline || "Kolhapur's Destination for Premium Sarees",
-      logoUrl: map.store_logo_url || null,
+      logoUrl: sanitizeUploadUrl(map.store_logo_url) || null,
       phone: map.store_phone || '+91 98220 12345',
       whatsapp: map.store_whatsapp || '+91 98220 12345',
       email: map.store_email || 'contact@swaradasarees.com',
@@ -71,6 +76,10 @@ const getAdminSettings = catchAsync(async (req, res) => {
     map[s.key] = s.value;
   });
 
+  if (map.store_logo_url) {
+    map.store_logo_url = sanitizeUploadUrl(map.store_logo_url);
+  }
+
   if (!map.nav_menus) {
     map.nav_menus = JSON.stringify(DEFAULT_MENUS);
   }
@@ -86,6 +95,10 @@ const getAdminSettings = catchAsync(async (req, res) => {
  */
 const updateSettings = catchAsync(async (req, res) => {
   const updates = req.body; // e.g. { store_logo_url: '...', nav_menus: '...', ... }
+
+  if (updates.store_logo_url) {
+    updates.store_logo_url = sanitizeUploadUrl(updates.store_logo_url);
+  }
 
   const operations = Object.entries(updates).map(([key, value]) => {
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value ?? '');
@@ -103,6 +116,10 @@ const updateSettings = catchAsync(async (req, res) => {
   updatedSettings.forEach((s) => {
     map[s.key] = s.value;
   });
+
+  if (map.store_logo_url) {
+    map.store_logo_url = sanitizeUploadUrl(map.store_logo_url);
+  }
 
   res.json({
     success: true,

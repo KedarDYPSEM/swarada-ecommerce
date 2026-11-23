@@ -138,9 +138,16 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    # Uploaded media assets proxy
-    location /uploads/ {
-        proxy_pass http://127.0.0.1:${BACKEND_PORT}/uploads/;
+    # Uploaded media assets (using ^~ so it overrides the static asset regex below)
+    location ^~ /uploads/ {
+        alias ${APP_DIR}/server/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+        try_files \$uri @uploads_proxy;
+    }
+
+    location @uploads_proxy {
+        proxy_pass http://127.0.0.1:${BACKEND_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -148,7 +155,7 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    # Static assets caching
+    # Static assets caching for frontend build
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 30d;
         add_header Cache-Control "public, no-transform";

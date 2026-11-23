@@ -94,7 +94,7 @@ export const SettingsManager = () => {
             ...prev,
             storeName: map.store_name || prev.storeName,
             tagline: map.store_tagline || prev.tagline,
-            logoUrl: map.store_logo_url || '',
+            logoUrl: (map.store_logo_url || '').replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1'),
             phone: map.store_phone || prev.phone,
             email: map.store_email || prev.email,
             location: map.store_address || prev.location,
@@ -290,9 +290,9 @@ export const SettingsManager = () => {
                 <div className="mt-3 p-3 bg-white border border-neutral-200 rounded flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={storeSettings.logoUrl}
+                      src={storeSettings.logoUrl?.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1')}
                       alt="Logo Preview"
-                      className="h-10 max-w-[140px] object-contain border border-neutral-100 p-1 rounded"
+                      className="h-10 max-w-[140px] object-contain border border-neutral-100 p-1 rounded bg-neutral-50"
                     />
                     <div>
                       <p className="font-semibold text-[#292323]">Current Storefront Logo</p>

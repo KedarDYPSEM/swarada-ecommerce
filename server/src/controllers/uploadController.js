@@ -48,9 +48,8 @@ const uploadSingle = (req, res, next) => {
     return next(new AppError('Please select an image file to upload.', 400));
   }
 
-  const host = req.get('host');
-  const protocol = req.protocol;
-  const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+  // Use root-relative URL so it works seamlessly under HTTP, HTTPS, localhost, or reverse proxies
+  const fileUrl = `/uploads/${req.file.filename}`;
 
   res.status(200).json({
     status: 'success',
@@ -72,10 +71,8 @@ const uploadMultiple = (req, res, next) => {
     return next(new AppError('Please select at least one image file to upload.', 400));
   }
 
-  const host = req.get('host');
-  const protocol = req.protocol;
   const files = req.files.map((f) => ({
-    url: `${protocol}://${host}/uploads/${f.filename}`,
+    url: `/uploads/${f.filename}`,
     filename: f.filename,
     size: f.size,
     mimetype: f.mimetype,

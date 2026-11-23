@@ -30,7 +30,9 @@ export const ImageUploader = ({
     try {
       const res = await adminService.uploadImage(file);
       if (res && res.data && res.data.url) {
-        onChange(res.data.url);
+        // Store relative URL so it is always served via the current origin/protocol (HTTP/HTTPS)
+        const normalized = res.data.url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
+        onChange(normalized);
       }
     } catch (err) {
       console.error('Image upload failed:', err);
@@ -110,7 +112,7 @@ export const ImageUploader = ({
       {value && (
         <div className="relative inline-block border border-neutral-200 rounded overflow-hidden bg-neutral-900 group">
           <img
-            src={value}
+            src={value.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1')}
             alt="Preview"
             className={`${getAspectClass()} object-cover object-center`}
             onError={(e) => {
@@ -120,7 +122,7 @@ export const ImageUploader = ({
           />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
             <a
-              href={value}
+              href={value.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1')}
               target="_blank"
               rel="noopener noreferrer"
               className="p-1.5 bg-white/90 text-neutral-800 rounded-full hover:bg-white"

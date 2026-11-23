@@ -44,8 +44,11 @@ export const SettingsProvider = ({ children }) => {
     try {
       const res = await adminService.getPublicSettings();
       if (res && res.data) {
+        const rawLogo = res.data.logoUrl || '';
+        const normalizedLogo = rawLogo ? rawLogo.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1') : null;
         setSettings({
           ...res.data,
+          logoUrl: normalizedLogo,
           menus: res.data.menus && res.data.menus.length > 0 ? res.data.menus : DEFAULT_MENUS,
         });
       }
