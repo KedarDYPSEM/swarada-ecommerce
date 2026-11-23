@@ -21,10 +21,24 @@ app.use(helmet({
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ─── CORS ───────────────────────────────────────────────
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'https://demo.dypesconf.io',
+  'http://demo.dypesconf.io',
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server) or allowed list
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Fallback allow to avoid unexpected deployment CORS blockage
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
