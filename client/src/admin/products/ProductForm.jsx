@@ -244,11 +244,11 @@ export const ProductForm = () => {
     try {
       const validVariants = formData.variants
         ? formData.variants
-            .filter((v) => (v.variantValue && v.variantValue.trim()) || v.imageUrl)
-            .map((v) => ({
+            .filter((v) => (v && ((v.variantValue && v.variantValue.trim()) || v.imageUrl)))
+            .map((v, idx) => ({
               id: v.id,
               variantName: 'Color',
-              variantValue: v.variantValue.trim(),
+              variantValue: (v.variantValue || `Color ${idx + 1}`).trim(),
               colorCode: v.colorCode || null,
               imageUrl: v.imageUrl || null,
               stockQuantity: v.stockQuantity !== '' ? parseInt(v.stockQuantity, 10) || 0 : 0,
@@ -293,7 +293,7 @@ export const ProductForm = () => {
 
       navigate('/admin/products');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error saving product');
+      setError(err.response?.data?.message || err.message || 'Error saving product');
     } finally {
       setLoading(false);
     }

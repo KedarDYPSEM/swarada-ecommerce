@@ -171,6 +171,38 @@ const createProduct = async (data, adminId) => {
     ? validVariants.reduce((sum, v) => sum + (parseInt(v.stockQuantity, 10) || 0), 0)
     : (parseInt(stockQuantity, 10) || 0);
 
+  const parsedSellingPrice = parseFloat(sellingPrice);
+  if (isNaN(parsedSellingPrice)) {
+    throw new AppError('Selling price must be a valid number.', 400);
+  }
+
+  const parsedMrp = mrp !== undefined && mrp !== null && mrp !== '' && !isNaN(parseFloat(mrp))
+    ? parseFloat(mrp)
+    : parsedSellingPrice;
+
+  const parsedPurchasePrice = purchasePrice !== undefined && purchasePrice !== null && purchasePrice !== '' && !isNaN(parseFloat(purchasePrice))
+    ? parseFloat(purchasePrice)
+    : null;
+
+  const parsedGstRate = gstRate !== undefined && gstRate !== null && gstRate !== '' && !isNaN(parseFloat(gstRate))
+    ? parseFloat(gstRate)
+    : 5.0;
+
+  const validCategoryIds = (Array.isArray(categoryIds) ? categoryIds : [])
+    .map((id) => parseInt(id, 10))
+    .filter((id) => !isNaN(id) && id > 0);
+
+  const validImages = (Array.isArray(images) ? images : [])
+    .filter((img) => img && (typeof img === 'string' ? img.trim() : (img.url && img.url.trim())))
+    .map((img, idx) => ({
+      url: typeof img === 'string' ? img.trim() : img.url.trim(),
+      altText: typeof img === 'string' ? name : img.altText || name,
+      displayOrder: idx + 1,
+      isPrimary: idx === 0,
+    }));
+
+  const cleanAdminId = adminId ? parseInt(adminId, 10) || null : null;
+
   return prisma.$transaction(async (tx) => {
     const product = await tx.product.create({
       data: {
@@ -180,10 +212,10 @@ const createProduct = async (data, adminId) => {
         barcode: cleanBarcode,
         description: description || null,
         shortDescription: shortDescription || null,
-        mrp: parseFloat(mrp),
-        sellingPrice: parseFloat(sellingPrice),
-        purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
-        gstRate: gstRate ? parseFloat(gstRate) : 5.0,
+        mrp: parsedMrp,
+        sellingPrice: parsedSellingPrice,
+        purchasePrice: parsedPurchasePrice,
+        gstRate: parsedGstRate,
         fabric: fabric || null,
         colour: resolvedColour || null,
         sareeLength: sareeLength || null,
@@ -209,39 +241,32 @@ const createProduct = async (data, adminId) => {
             balanceAfter: numStock,
             referenceType: 'INITIAL_STOCK',
             notes: 'Product created by administrator',
-            createdById: adminId,
+            createdById: cleanAdminId,
           },
         },
-        categories: {
-          create: categoryIds.map((catId) => ({ categoryId: parseInt(catId, 10) })),
-        },
-        images: {
-          create: images.map((img, idx) => ({
-            url: typeof img === 'string' ? img : img.url,
-            altText: typeof img === 'string' ? name : img.altText || name,
-            displayOrder: idx + 1,
-            isPrimary: idx === 0,
-          })),
-        },
-        attributes: {
+        categories: validCategoryIds.length > 0 ? {
+          create: validCategoryIds.map((catId) => ({ categoryId: catId })),
+        } : undefined,
+        images: validImages.length > 0 ? {
+          create: validImages,
+        } : undefined,
+        attributes: initialAttributes.length > 0 ? {
           create: initialAttributes.map((attr) => ({
             name: attr.name,
             value: attr.value,
           })),
-        },
-        variants: variants && variants.length > 0 ? {
-          create: variants
-            .filter((v) => (v.variantValue && v.variantValue.trim()) || (v.colorName && v.colorName.trim()) || v.imageUrl)
-            .map((v, idx) => ({
-              variantName: v.variantName || 'Color',
-              variantValue: (v.variantValue || v.colorName || `Color ${idx + 1}`).trim(),
-              colorCode: v.colorCode || null,
-              imageUrl: v.imageUrl || null,
-              sku: (v.sku && v.sku.trim()) || `${sku.trim()}-CLR${idx + 1}`,
-              priceAdjustment: v.priceAdjustment ? parseFloat(v.priceAdjustment) : 0.00,
-              stockQuantity: v.stockQuantity !== undefined ? parseInt(v.stockQuantity, 10) : numStock,
-              isActive: v.isActive !== undefined ? Boolean(v.isActive) : true,
-            })),
+        } : undefined,
+        variants: validVariants.length > 0 ? {
+          create: validVariants.map((v, idx) => ({
+            variantName: v.variantName || 'Color',
+            variantValue: (v.variantValue || v.colorName || `Color ${idx + 1}`).trim(),
+            colorCode: v.colorCode || null,
+            imageUrl: v.imageUrl || null,
+            sku: (v.sku && v.sku.trim()) || `${sku.trim()}-CLR${idx + 1}`,
+            priceAdjustment: v.priceAdjustment ? parseFloat(v.priceAdjustment) : 0.00,
+            stockQuantity: v.stockQuantity !== undefined ? parseInt(v.stockQuantity, 10) || 0 : numStock,
+            isActive: v.isActive !== undefined ? Boolean(v.isActive) : true,
+          })),
         } : undefined,
       },
       include: {

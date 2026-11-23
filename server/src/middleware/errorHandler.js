@@ -48,6 +48,7 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint failed'))) {
     err.statusCode = 400;
     err.status = 'fail';
+    err.isOperational = true;
     const target = err.meta?.target || (err.message.includes('products_barcode_key') ? 'barcode' : err.message.includes('products_sku_key') ? 'sku' : 'field');
     if (target === 'barcode' || String(target).includes('barcode')) {
       err.message = 'The barcode / tag ID entered is already in use by another product. Please use a unique barcode or leave it blank.';
@@ -56,6 +57,22 @@ const errorHandler = (err, req, res, next) => {
     } else {
       err.message = `A unique constraint failed on ${Array.isArray(target) ? target.join(', ') : target}. Please provide unique values.`;
     }
+  }
+
+  // Format Prisma Foreign Key Violations (P2003)
+  if (err.code === 'P2003') {
+    err.statusCode = 400;
+    err.status = 'fail';
+    err.isOperational = true;
+    err.message = 'A referenced record (category, user, or parent item) was not found.';
+  }
+
+  // Format Prisma Client Validation Errors
+  if (err.name === 'PrismaClientValidationError') {
+    err.statusCode = 400;
+    err.status = 'fail';
+    err.isOperational = true;
+    err.message = 'Invalid data provided for database operation. Please check all fields.';
   }
 
   if (process.env.NODE_ENV === 'development') {
@@ -78,9 +95,9 @@ const errorHandler = (err, req, res, next) => {
 
   // Programming or unknown error
   console.error('ERROR 💥:', err);
-  return res.status(500).json({
+  return res.status(err.statusCode || 500).json({
     status: 'error',
-    message: 'Something went wrong',
+    message: err.message || 'Something went wrong',
   });
 };
 
