@@ -64,16 +64,16 @@ export const SearchBar = ({ isOpen, onClose }) => {
 
   return (
     <div className="relative w-full">
-      <form onSubmit={handleSubmit} className="relative flex items-center">
+      <form onSubmit={handleSubmit} className="relative flex items-center group">
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by Saree Name, Fabric or SKU (e.g. S7B3)..."
-          className="w-full bg-[#FFF9F0]/80 border border-[#C5A05A]/40 rounded-full py-2.5 pl-11 pr-10 text-sm text-[#292323] placeholder:text-neutral-400 focus:bg-white focus:outline-none focus:border-[#641B32] focus:ring-1 focus:ring-[#641B32] transition-all"
+          placeholder="Search sarees, pure Paithani, Banarasi or SKU..."
+          className="w-full bg-[#FAF7F2]/90 border border-[#D4AF37]/35 rounded-full py-2.5 pl-11 pr-10 text-xs sm:text-sm text-[#1E1719] placeholder:text-neutral-400 focus:bg-white focus:outline-none focus:border-[#641B32] focus:ring-2 focus:ring-[#641B32]/15 shadow-2xs transition-all duration-300"
         />
-        <Search className="w-4 h-4 text-[#C5A05A] absolute left-4 pointer-events-none" />
+        <Search className="w-4 h-4 text-[#D4AF37] group-focus-within:text-[#641B32] absolute left-4 pointer-events-none transition-colors" />
 
         {isLoading ? (
           <Loader2 className="w-4 h-4 text-[#641B32] animate-spin absolute right-3.5" />
@@ -81,7 +81,7 @@ export const SearchBar = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="absolute right-3.5 text-neutral-400 hover:text-neutral-700 cursor-pointer"
+            className="absolute right-3.5 text-neutral-400 hover:text-neutral-700 cursor-pointer p-0.5"
           >
             <X className="w-4 h-4" />
           </button>
@@ -90,7 +90,7 @@ export const SearchBar = ({ isOpen, onClose }) => {
 
       {/* Autocomplete / Instant Suggestions Dropdown */}
       {query.trim().length > 0 && !isLoading && (
-        <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-[#C5A05A]/30 rounded-sm shadow-xl z-50 overflow-hidden max-h-96 overflow-y-auto">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white/98 backdrop-blur-md border border-[#D4AF37]/30 rounded-xl shadow-2xl z-50 overflow-hidden max-h-96 overflow-y-auto">
           {results.length > 0 ? (
             <div>
               <div className="px-4 py-2 bg-[#FFF9F0] border-b border-neutral-100 flex items-center justify-between">

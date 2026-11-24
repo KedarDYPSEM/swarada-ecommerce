@@ -12,18 +12,23 @@ export const WhatsAppButton = ({ sku = null, productName = null }) => {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Chat on WhatsApp"
-      className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 group"
-    >
-      <MessageCircle className="w-5 h-5 fill-current" />
-      <span className="text-xs font-semibold tracking-wide hidden sm:inline">
-        WhatsApp Us
-      </span>
-    </a>
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Animated Radar Pulse Ring */}
+      <span className="absolute -inset-1 rounded-full bg-emerald-500 opacity-75 animate-radar pointer-events-none" />
+
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Chat on WhatsApp"
+        className="relative flex items-center space-x-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4.5 py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-108 group border border-emerald-400/40"
+      >
+        <MessageCircle className="w-5 h-5 fill-current" />
+        <span className="text-xs font-bold tracking-wide hidden sm:inline font-body">
+          WhatsApp Us
+        </span>
+      </a>
+    </div>
   );
 };
 

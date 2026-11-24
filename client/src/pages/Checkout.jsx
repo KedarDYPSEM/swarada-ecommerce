@@ -250,22 +250,24 @@ export const Checkout = () => {
   }
 
   return (
-    <div className="py-10 sm:py-16 bg-[#FFF9F0] min-h-screen">
+    <div className="py-10 sm:py-16 bg-[#FAF7F2] min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-            Secure Checkout
-          </span>
-          <h1 className="mt-1 text-3xl font-heading font-bold text-[#641B32]">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center space-x-2 text-xs font-semibold tracking-widest uppercase text-[#D4AF37] mb-1">
+            <span>✦</span>
+            <span>Heirloom Concierge</span>
+            <span>✦</span>
+          </div>
+          <h1 className="mt-1 text-3xl sm:text-4xl font-heading font-extrabold text-[#140F11] tracking-tight">
             Complete Your Saree Order
           </h1>
-          <p className="text-xs text-[#594E4E] mt-1">
-            Free all-India express delivery & authentic silk mark packaging
+          <p className="text-xs sm:text-sm text-[#594E4E] mt-1.5 max-w-lg mx-auto">
+            Free all-India express delivery & authentic silk mark heirloom gift packaging from Kolhapur.
           </p>
         </div>
 
         {serverError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm max-w-3xl mx-auto">
+          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-2xl max-w-3xl mx-auto shadow-xs">
             {serverError}
           </div>
         )}
@@ -276,19 +278,20 @@ export const Checkout = () => {
             <div className="lg:col-span-7 space-y-6">
               {/* Saved Address Quick Selector (If logged in) */}
               {savedAddresses.length > 0 && (
-                <div className="bg-white p-6 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[#C5A05A]">
-                    Select From Saved Addresses
+                <div className="bg-white/95 backdrop-blur-md p-6 border border-[#D4AF37]/30 rounded-3xl shadow-sm space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center space-x-1.5">
+                    <span>❖</span>
+                    <span>Select From Saved Addresses</span>
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {savedAddresses.map((addr) => (
                       <div
                         key={addr.id}
                         onClick={() => selectSavedAddress(addr)}
-                        className="p-3 border border-neutral-200 hover:border-[#641B32] rounded text-xs cursor-pointer transition-colors"
+                        className="p-3.5 border border-[#D4AF37]/25 hover:border-[#641B32] rounded-2xl text-xs cursor-pointer transition-all bg-amber-50/20 hover:bg-amber-50/50 shadow-2xs"
                       >
-                        <p className="font-semibold text-[#292323]">{addr.fullName} ({addr.label})</p>
-                        <p className="text-neutral-500 truncate">{addr.addressLine1}, {addr.city}</p>
+                        <p className="font-bold text-[#140F11]">{addr.fullName} ({addr.label})</p>
+                        <p className="text-neutral-500 truncate mt-0.5">{addr.addressLine1}, {addr.city}</p>
                         <p className="text-neutral-400 font-mono text-[11px] mt-0.5">{addr.phone}</p>
                       </div>
                     ))}
@@ -297,52 +300,55 @@ export const Checkout = () => {
               )}
 
               {/* Delivery Address Form */}
-              <div className="bg-white p-6 sm:p-8 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-3 gap-2">
+              <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 border border-[#D4AF37]/30 rounded-3xl shadow-sm space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-amber-100/70 pb-3.5 gap-2">
                   <h2 className="text-base font-heading font-bold text-[#641B32] flex items-center space-x-2">
-                    <Truck className="w-4 h-4 text-[#C5A05A]" />
-                    <span>1. Delivery Address</span>
+                    <Truck className="w-4 h-4 text-[#D4AF37]" />
+                    <span>1. Delivery Destination</span>
                   </h2>
                   {!isAuthenticated && (
-                    <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      ✓ Auto-creates customer account for instant order tracking
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      ✓ Instant order tracking account included
                     </span>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       Full Name *
                     </label>
                     <Input
                       placeholder="e.g. Ananya Joshi"
                       error={errors.shippingName?.message}
                       {...register('shippingName')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       Mobile Number *
                     </label>
                     <Input
                       placeholder="e.g. 9822012345"
                       error={errors.shippingPhone?.message}
                       {...register('shippingPhone')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                     Email Address <span className="text-neutral-400 font-normal lowercase">(optional)</span>
                   </label>
                   <Input
                     type="email"
-                    placeholder="e.g. ananya@example.com (optional)"
+                    placeholder="e.g. ananya@example.com"
                     error={errors.shippingEmail?.message}
                     {...register('shippingEmail')}
+                    className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                   />
                   <p className="text-[10px] text-neutral-400 mt-1">
                     Optional: If provided, your order invoice and tracking updates will be sent to this email.
@@ -350,132 +356,138 @@ export const Checkout = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                     Flat / House No., Building / Society Name *
                   </label>
                   <Input
                     placeholder="e.g. Flat 402, Shree Mahalaxmi Towers"
                     error={errors.shippingAddressLine1?.message}
                     {...register('shippingAddressLine1')}
+                    className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       Street / Area / Locality *
                     </label>
                     <Input
                       placeholder="e.g. 5th Lane Rajarampuri, Main Road"
                       error={errors.shippingAddressLine2?.message}
                       {...register('shippingAddressLine2')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       Landmark (Optional)
                     </label>
                     <Input
                       placeholder="e.g. Near Mahalaxmi Temple, Opp. Bank"
                       {...register('shippingLandmark')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       City *
                     </label>
                     <Input
                       placeholder="e.g. Kolhapur"
                       error={errors.shippingCity?.message}
                       {...register('shippingCity')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       State *
                     </label>
                     <Input
                       placeholder="e.g. Maharashtra"
                       error={errors.shippingState?.message}
                       {...register('shippingState')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase text-[#292323] mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#140F11] mb-1.5">
                       Pincode *
                     </label>
                     <Input
                       placeholder="e.g. 416008"
                       error={errors.shippingPincode?.message}
                       {...register('shippingPincode')}
+                      className="rounded-xl border-[#D4AF37]/30 focus:border-[#641B32]"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Payment Method Selector */}
-              <div className="bg-white p-6 sm:p-8 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-4">
-                <h2 className="text-base font-heading font-bold text-[#641B32] border-b border-neutral-100 pb-3 flex items-center space-x-2">
-                  <CreditCard className="w-4 h-4 text-[#C5A05A]" />
+              <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 border border-[#D4AF37]/30 rounded-3xl shadow-sm space-y-4">
+                <h2 className="text-base font-heading font-bold text-[#641B32] border-b border-amber-100/70 pb-3.5 flex items-center space-x-2">
+                  <CreditCard className="w-4 h-4 text-[#D4AF37]" />
                   <span>2. Payment Option</span>
                 </h2>
 
                 <div className="space-y-3">
                   <label
-                    className={`flex items-start space-x-3 p-4 border rounded-xs cursor-pointer transition-all ${
+                    className={`flex items-start space-x-3.5 p-4 border rounded-2xl cursor-pointer transition-all ${
                       selectedPaymentMethod === 'RAZORPAY'
-                        ? 'border-[#641B32] bg-[#FFF9F0]/80 shadow-xs'
-                        : 'border-neutral-200 hover:bg-neutral-50'
+                        ? 'border-[#641B32] bg-gradient-to-r from-amber-50/60 to-white shadow-xs ring-1 ring-[#D4AF37]/40'
+                        : 'border-neutral-200 hover:bg-neutral-50/60'
                     }`}
                   >
                     <input
                       type="radio"
                       value="RAZORPAY"
                       {...register('paymentMethod')}
-                      className="mt-1 text-[#641B32]"
+                      className="mt-1 accent-[#641B32]"
                     />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#292323]">
+                        <span className="text-xs font-bold text-[#140F11]">
                           Online Payment via Razorpay
                         </span>
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold uppercase">
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold uppercase">
                           Recommended
                         </span>
                       </div>
-                      <p className="text-[11px] text-neutral-500 mt-0.5">
+                      <p className="text-[11px] text-neutral-500 mt-1">
                         UPI (Google Pay, PhonePe, Paytm), Debit/Credit Cards, Netbanking & Wallets.
                       </p>
                     </div>
                   </label>
 
                   <label
-                    className={`flex items-start space-x-3 p-4 border rounded-xs cursor-pointer transition-all ${
+                    className={`flex items-start space-x-3.5 p-4 border rounded-2xl cursor-pointer transition-all ${
                       selectedPaymentMethod === 'COD'
-                        ? 'border-[#641B32] bg-[#FFF9F0]/80 shadow-xs'
-                        : 'border-neutral-200 hover:bg-neutral-50'
+                        ? 'border-[#641B32] bg-gradient-to-r from-amber-50/60 to-white shadow-xs ring-1 ring-[#D4AF37]/40'
+                        : 'border-neutral-200 hover:bg-neutral-50/60'
                     }`}
                   >
                     <input
                       type="radio"
                       value="COD"
                       {...register('paymentMethod')}
-                      className="mt-1 text-[#641B32]"
+                      className="mt-1 accent-[#641B32]"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <Banknote className="w-4 h-4 text-[#641B32]" />
-                        <span className="text-xs font-bold text-[#292323]">
+                        <span className="text-xs font-bold text-[#140F11]">
                           Cash on Delivery (COD)
                         </span>
                       </div>
-                      <p className="text-[11px] text-neutral-500 mt-0.5">
+                      <p className="text-[11px] text-neutral-500 mt-1">
                         Pay cash directly to our delivery courier upon parcel arrival.
                       </p>
                     </div>
@@ -486,27 +498,32 @@ export const Checkout = () => {
 
             {/* Right Column: Order Summary & Placement Button */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="bg-white p-6 sm:p-8 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-5 sticky top-28">
-                <h3 className="text-base font-heading font-bold text-[#641B32] border-b border-neutral-100 pb-3">
-                  Order Summary ({items.length} {items.length === 1 ? 'Saree' : 'Sarees'})
-                </h3>
+              <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 border border-[#D4AF37]/35 rounded-3xl shadow-lg space-y-5 sticky top-28">
+                <div className="flex items-center justify-between border-b border-amber-100/70 pb-3.5">
+                  <h3 className="text-base font-heading font-bold text-[#641B32]">
+                    Order Summary
+                  </h3>
+                  <span className="text-xs font-bold text-[#D4AF37] bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/60">
+                    {items.length} {items.length === 1 ? 'Saree' : 'Sarees'}
+                  </span>
+                </div>
 
                 {/* Items Preview */}
-                <div className="divide-y divide-neutral-100 max-h-60 overflow-y-auto">
+                <div className="divide-y divide-amber-100/50 max-h-60 overflow-y-auto pr-1">
                   {items.map((item) => (
-                    <div key={item.id} className="py-2.5 flex items-center space-x-3">
+                    <div key={item.id} className="py-3 flex items-center space-x-3">
                       <img
                         src={
                           item.product.primaryImage ||
                           'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=200&q=80'
                         }
                         alt={item.product.name}
-                        className="w-12 h-14 object-cover rounded-xs border border-neutral-200 shrink-0"
+                        className="w-12 h-16 object-cover rounded-xl border border-[#D4AF37]/20 shrink-0 shadow-2xs"
                       />
                       <div className="flex-1 min-w-0 text-xs">
-                        <p className="font-semibold text-[#292323] truncate">{item.product.name}</p>
+                        <p className="font-bold text-[#140F11] truncate">{item.product.name}</p>
                         {item.variant && (
-                          <p className="text-[11px] text-[#641B32] font-medium flex items-center gap-1 mt-0.5">
+                          <p className="text-[11px] text-[#641B32] font-semibold flex items-center gap-1 mt-0.5">
                             {item.variant.colorCode && (
                               <span
                                 className="w-2 h-2 rounded-full inline-block border border-black/20"
@@ -516,18 +533,18 @@ export const Checkout = () => {
                             <span>Color: {item.variant.variantValue}</span>
                           </p>
                         )}
-                        <p className="text-neutral-500">Qty: {item.quantity} • SKU: {item.product.sku}</p>
-                        <p className="font-bold text-[#641B32]">{formatPrice(item.totalPrice)}</p>
+                        <p className="text-neutral-500 mt-0.5">Qty: {item.quantity} • SKU: {item.product.sku}</p>
+                        <p className="font-bold text-[#641B32] mt-0.5">{formatPrice(item.totalPrice)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Calculations */}
-                <div className="space-y-2 text-xs border-t border-neutral-100 pt-3">
-                  <div className="flex justify-between">
+                <div className="space-y-2 text-xs border-t border-amber-100/70 pt-3.5">
+                  <div className="flex justify-between text-neutral-600">
                     <span>Subtotal</span>
-                    <span>{formatPrice(summary.subtotal)}</span>
+                    <span className="font-medium">{formatPrice(summary.subtotal)}</span>
                   </div>
 
                   {summary.discountAmount > 0 && (
@@ -537,11 +554,11 @@ export const Checkout = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-neutral-600">
                     <span>Express All-India Shipping</span>
                     <span>
                       {summary.shippingAmount === 0 ? (
-                        <strong className="text-emerald-700">FREE</strong>
+                        <strong className="text-emerald-700 font-bold">FREE</strong>
                       ) : (
                         formatPrice(summary.shippingAmount)
                       )}
@@ -553,9 +570,9 @@ export const Checkout = () => {
                     <span>{formatPrice(summary.gstAmount)}</span>
                   </div>
 
-                  <div className="flex justify-between text-lg font-bold text-[#641B32] pt-3 border-t border-neutral-200">
+                  <div className="flex justify-between text-lg font-bold text-[#641B32] pt-3.5 border-t border-amber-100/70">
                     <span>Total Amount</span>
-                    <span>{formatPrice(summary.totalAmount)}</span>
+                    <span className="text-xl">{formatPrice(summary.totalAmount)}</span>
                   </div>
                 </div>
 
@@ -564,7 +581,7 @@ export const Checkout = () => {
                   type="submit"
                   variant="primary"
                   isLoading={isSubmitting}
-                  className="w-full py-4 text-sm font-semibold shadow-lg flex items-center justify-center space-x-2"
+                  className="w-full py-4 text-sm font-bold shadow-xl flex items-center justify-center space-x-2 rounded-full gold-shimmer-btn"
                 >
                   <Lock className="w-4 h-4" />
                   <span>
@@ -577,10 +594,10 @@ export const Checkout = () => {
 
                 <div className="pt-2 text-center text-[11px] text-[#594E4E] space-y-1">
                   <div className="flex items-center justify-center space-x-1.5 text-emerald-700 font-semibold">
-                    <ShieldCheck className="w-4 h-4" />
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     <span>256-bit SSL encrypted • 100% Authentic Handloom</span>
                   </div>
-                  <p>By placing your order, you agree to Swarada Saree Center terms.</p>
+                  <p className="text-[10px] text-neutral-400">By placing your order, you agree to Swarada Saree Center terms.</p>
                 </div>
               </div>
             </div>

@@ -47,19 +47,19 @@ export const CartPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="py-20 bg-[#FFF9F0] min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 rounded-full bg-white border border-[#C5A05A]/40 flex items-center justify-center text-[#641B32] shadow-xs mb-4">
-          <ShoppingBag className="w-10 h-10" />
+      <div className="py-20 bg-[#FAF7F2] min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
+        <div className="w-20 h-20 rounded-full bg-amber-50 border border-[#D4AF37]/40 flex items-center justify-center text-[#641B32] shadow-sm mb-4">
+          <ShoppingBag className="w-10 h-10 text-[#D4AF37]" />
         </div>
         <h1 className="text-3xl font-heading font-bold text-[#641B32]">
-          Your Shopping Cart is Empty
+          Your Shopping Bag is Empty
         </h1>
-        <p className="text-xs sm:text-sm text-[#594E4E] mt-2 mb-8 max-w-md">
-          Explore our signature Yeola Paithani, royal Banarasi brocades, and traditional Nauvari sarees.
+        <p className="text-xs sm:text-sm text-[#594E4E] mt-2 mb-8 max-w-md leading-relaxed">
+          Explore our signature Yeola Paithani, royal Banarasi brocades, and traditional Nauvari sarees to adorn your wardrobe.
         </p>
         <Link to="/shop">
-          <Button variant="primary" size="lg">
-            Explore Handloom Sarees
+          <Button variant="primary" size="lg" className="rounded-full shadow-lg">
+            Explore Royal Sarees
           </Button>
         </Link>
       </div>
@@ -67,42 +67,44 @@ export const CartPage = () => {
   }
 
   return (
-    <div className="py-12 bg-[#FFF9F0] min-h-screen">
+    <div className="py-10 sm:py-16 bg-[#FAF7F2] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-            Review & Checkout
-          </span>
-          <h1 className="mt-1 text-3xl sm:text-4xl font-heading font-bold text-[#641B32]">
+        <div className="mb-10 text-center sm:text-left">
+          <div className="inline-flex items-center space-x-2 text-xs font-semibold tracking-widest uppercase text-[#D4AF37] mb-1">
+            <span>✦</span>
+            <span>Review & Checkout</span>
+            <span>✦</span>
+          </div>
+          <h1 className="mt-1 text-3xl sm:text-4xl font-heading font-extrabold text-[#140F11] tracking-tight">
             Shopping Bag ({itemCount} {itemCount === 1 ? 'Piece' : 'Pieces'})
           </h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Cart Items Table */}
-          <div className="lg:col-span-8 bg-white border border-[#C5A05A]/30 rounded-xs shadow-xs p-6 space-y-6">
+          <div className="lg:col-span-8 bg-white/95 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl shadow-sm p-6 sm:p-8 space-y-6">
             {/* Free shipping banner */}
-            <div className="p-3 bg-[#FFF9F0] border border-[#C5A05A]/30 rounded text-xs flex items-center justify-between">
+            <div className="p-4 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/80 border border-[#D4AF37]/35 rounded-2xl text-xs flex items-center justify-between shadow-2xs">
               {summary.amountNeededForFreeShipping > 0 ? (
                 <div className="flex items-center space-x-2 text-[#641B32]">
-                  <Truck className="w-4 h-4 text-[#C5A05A]" />
+                  <Truck className="w-4 h-4 text-[#D4AF37]" />
                   <span>
                     Add <strong>{formatPrice(summary.amountNeededForFreeShipping)}</strong> more to get <strong>FREE Express Shipping</strong>!
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 text-emerald-800 font-semibold">
-                  <Sparkles className="w-4 h-4 text-[#C5A05A]" />
+                  <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                   <span>Congratulations! You qualify for FREE All-India Shipping.</span>
                 </div>
               )}
             </div>
 
             {/* Table */}
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-amber-100/60">
               {items.map((item) => (
-                <div key={item.id} className="py-4 sm:py-6 flex space-x-4">
-                  <Link to={`/product/${item.product.slug}`} className="w-20 sm:w-24 h-28 sm:h-32 rounded-xs overflow-hidden border border-neutral-200 shrink-0 bg-neutral-100 block">
+                <div key={item.id} className="py-5 sm:py-6 flex space-x-4">
+                  <Link to={`/product/${item.product.slug}`} className="w-20 sm:w-24 h-28 sm:h-32 rounded-xl overflow-hidden border border-[#D4AF37]/25 shrink-0 bg-[#F7F2E7] block hover:scale-102 transition-transform shadow-2xs">
                     <img
                       src={item.product.primaryImage || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=300&q=80'}
                       alt={item.product.name}
@@ -115,27 +117,28 @@ export const CartPage = () => {
                       <div className="flex items-start justify-between">
                         <Link
                           to={`/product/${item.product.slug}`}
-                          className="text-sm font-semibold text-[#292323] hover:text-[#641B32] line-clamp-2"
+                          className="text-sm font-bold text-[#140F11] hover:text-[#641B32] line-clamp-2 leading-snug transition-colors"
                         >
                           {item.product.name}
                         </Link>
                         <button
                           onClick={() => removeFromCart(item.id)}
-                          className="text-neutral-400 hover:text-red-600 p-1 ml-2 cursor-pointer transition-colors"
+                          className="text-neutral-400 hover:text-rose-600 p-1 ml-2 cursor-pointer transition-colors"
+                          aria-label="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
 
                       <div className="flex items-center space-x-3 text-xs text-neutral-500 mt-1">
-                        <span className="font-mono bg-neutral-100 px-1.5 py-0.5 rounded text-[10px]">
+                        <span className="font-mono bg-[#FAF7F2] border border-[#D4AF37]/20 px-2 py-0.5 rounded-full text-[10px] font-semibold text-[#641B32]">
                           SKU: {item.product.sku}
                         </span>
                         {item.product.fabric && <span>• {item.product.fabric}</span>}
                       </div>
 
                       {item.variant && (
-                        <div className="flex items-center gap-1.5 text-xs text-[#641B32] font-medium mt-1">
+                        <div className="flex items-center gap-1.5 text-xs text-[#641B32] font-semibold mt-1">
                           {item.variant.colorCode && (
                             <span
                               className="w-3 h-3 rounded-full inline-block border border-black/20"
@@ -148,24 +151,24 @@ export const CartPage = () => {
                     </div>
 
                     <div className="flex items-center justify-between pt-3">
-                      <div className="flex items-center border border-neutral-300 rounded bg-[#FFF9F0]">
+                      <div className="flex items-center border border-neutral-300 rounded-full bg-white shadow-2xs overflow-hidden">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-200 cursor-pointer"
+                          className="px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors"
                         >
                           -
                         </button>
-                        <span className="px-3 text-xs font-semibold">{item.quantity}</span>
+                        <span className="px-3 text-xs font-bold text-[#140F11]">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-200 cursor-pointer"
+                          className="px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-100 cursor-pointer transition-colors"
                         >
                           +
                         </button>
                       </div>
 
                       <div className="text-right">
-                        <p className="text-base font-bold text-[#641B32]">
+                        <p className="text-base font-extrabold text-[#641B32]">
                           {formatPrice(item.totalPrice)}
                         </p>
                         <p className="text-[11px] text-neutral-400">
@@ -182,13 +185,13 @@ export const CartPage = () => {
           {/* Right Column: Order Summary & Coupon */}
           <div className="lg:col-span-4 space-y-6">
             {/* Coupon Card */}
-            <div className="bg-white border border-[#C5A05A]/30 rounded-xs p-6 shadow-xs space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#292323]">
+            <div className="bg-white/95 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-sm space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#140F11]">
                 Apply Coupon Code
               </h3>
 
               {summary.coupon ? (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs flex items-center justify-between text-emerald-800">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs flex items-center justify-between text-emerald-800 shadow-2xs">
                   <div className="flex items-center space-x-2">
                     <Tag className="w-4 h-4 text-emerald-700" />
                     <span>
@@ -197,7 +200,7 @@ export const CartPage = () => {
                   </div>
                   <button
                     onClick={removeCoupon}
-                    className="text-xs font-semibold text-red-600 hover:underline cursor-pointer"
+                    className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
                   >
                     Remove
                   </button>
@@ -210,27 +213,27 @@ export const CartPage = () => {
                       placeholder="e.g. FIRST10"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                      className="flex-1 bg-[#FFF9F0] border border-neutral-300 rounded px-3 py-2 text-xs uppercase focus:outline-none focus:border-[#641B32]"
+                      className="flex-1 bg-[#FAF7F2] border border-[#D4AF37]/30 rounded-full px-4 py-2 text-xs uppercase focus:outline-none focus:border-[#641B32] font-medium shadow-2xs"
                     />
-                    <Button type="submit" variant="secondary" size="sm" isLoading={isApplying}>
+                    <Button type="submit" variant="secondary" size="sm" isLoading={isApplying} className="rounded-full px-4 font-bold">
                       Apply
                     </Button>
                   </div>
-                  {couponError && <p className="text-xs text-red-600">{couponError}</p>}
+                  {couponError && <p className="text-xs text-rose-600 pl-2">{couponError}</p>}
                 </form>
               )}
             </div>
 
             {/* Calculations Summary */}
-            <div className="bg-white border border-[#C5A05A]/30 rounded-xs p-6 shadow-xs space-y-4">
-              <h3 className="text-sm font-heading font-bold text-[#641B32] border-b border-neutral-100 pb-3">
+            <div className="bg-white/95 backdrop-blur-md border border-[#D4AF37]/35 rounded-3xl p-6 sm:p-7 shadow-lg space-y-4">
+              <h3 className="text-base font-heading font-bold text-[#641B32] border-b border-amber-100/70 pb-3">
                 Order Total Summary
               </h3>
 
-              <div className="space-y-2 text-xs text-[#292323]">
-                <div className="flex justify-between">
+              <div className="space-y-2.5 text-xs text-[#292323]">
+                <div className="flex justify-between text-neutral-600">
                   <span>Bag Subtotal</span>
-                  <span className="font-semibold">{formatPrice(summary.subtotal)}</span>
+                  <span className="font-semibold text-[#140F11]">{formatPrice(summary.subtotal)}</span>
                 </div>
 
                 {summary.discountAmount > 0 && (
@@ -240,11 +243,11 @@ export const CartPage = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between">
+                <div className="flex justify-between text-neutral-600">
                   <span>Shipping & Delivery</span>
                   <span>
                     {summary.shippingAmount === 0 ? (
-                      <strong className="text-emerald-700">FREE</strong>
+                      <strong className="text-emerald-700 font-bold">FREE</strong>
                     ) : (
                       formatPrice(summary.shippingAmount)
                     )}
@@ -256,23 +259,23 @@ export const CartPage = () => {
                   <span>{formatPrice(summary.gstAmount)}</span>
                 </div>
 
-                <div className="flex justify-between text-lg font-bold text-[#641B32] pt-3 border-t border-neutral-200">
+                <div className="flex justify-between text-lg font-bold text-[#641B32] pt-3.5 border-t border-amber-100/70">
                   <span>Total Payable</span>
-                  <span>{formatPrice(summary.totalAmount)}</span>
+                  <span className="text-xl font-extrabold">{formatPrice(summary.totalAmount)}</span>
                 </div>
               </div>
 
               <Button
                 onClick={() => navigate('/checkout')}
                 variant="primary"
-                className="w-full py-3.5 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
+                className="w-full py-4 text-sm font-bold shadow-xl flex items-center justify-center space-x-2 rounded-full gold-shimmer-btn"
               >
                 <span>Proceed to Checkout</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
 
               <div className="pt-2 flex items-center justify-center space-x-2 text-[11px] text-[#594E4E]">
-                <ShieldCheck className="w-4 h-4 text-[#C5A05A]" />
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span>100% Genuine Handlooms • Razorpay Secured</span>
               </div>
             </div>

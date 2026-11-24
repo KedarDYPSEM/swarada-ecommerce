@@ -48,16 +48,16 @@ export const AdminDashboard = () => {
     fetchStats();
   };
 
-  const totalRev = data?.totalRevenue ?? data?.metrics?.totalRevenue ?? 0;
-  const todayRev = data?.todayRevenue ?? data?.metrics?.todayRevenue ?? 0;
-  const totalOrd = data?.totalOrders ?? data?.metrics?.totalOrders ?? 0;
-  const pendingOrd = data?.pendingOrders ?? data?.metrics?.pendingOrders ?? 0;
-  const totalProd = data?.totalProducts ?? data?.metrics?.totalProducts ?? 0;
-  const outOfStk = data?.outOfStock ?? data?.metrics?.outOfStock ?? data?.outOfStockCount ?? data?.metrics?.outOfStockCount ?? 0;
-  const totalCust = data?.totalCustomers ?? data?.metrics?.totalCustomers ?? 0;
-  const deliveredOrd = data?.deliveredOrders ?? data?.metrics?.deliveredOrders ?? 0;
-  const cancelledOrd = data?.cancelledOrders ?? data?.metrics?.cancelledOrders ?? 0;
-  const monthlyRev = data?.monthlyRevenue ?? data?.metrics?.monthlyRevenue ?? 0;
+  const totalRev = Number(data?.totalRevenue ?? data?.metrics?.totalRevenue) || 0;
+  const todayRev = Number(data?.todayRevenue ?? data?.metrics?.todayRevenue) || 0;
+  const totalOrd = Number(data?.totalOrders ?? data?.metrics?.totalOrders) || 0;
+  const pendingOrd = Number(data?.pendingOrders ?? data?.metrics?.pendingOrders) || 0;
+  const totalProd = Number(data?.totalProducts ?? data?.metrics?.totalProducts) || 0;
+  const outOfStk = Number(data?.outOfStock ?? data?.metrics?.outOfStock ?? data?.outOfStockCount ?? data?.metrics?.outOfStockCount) || 0;
+  const totalCust = Number(data?.totalCustomers ?? data?.metrics?.totalCustomers) || 0;
+  const deliveredOrd = Number(data?.deliveredOrders ?? data?.metrics?.deliveredOrders) || 0;
+  const cancelledOrd = Number(data?.cancelledOrders ?? data?.metrics?.cancelledOrders) || 0;
+  const monthlyRev = Number(data?.monthlyRevenue ?? data?.metrics?.monthlyRevenue) || 0;
 
   const statsCards = [
     {

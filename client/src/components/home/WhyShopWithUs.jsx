@@ -26,33 +26,42 @@ const REASONS = [
 
 export const WhyShopWithUs = () => {
   return (
-    <section className="py-16 sm:py-24 bg-[#FFF9F0]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-            The Swarada Standard
-          </span>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-heading font-bold text-[#641B32]">
-            Why Shop with Swarada Saree Center?
+          <div className="inline-flex items-center space-x-2 text-[#D4AF37] text-xs font-royal tracking-[0.25em] uppercase mb-2">
+            <span>✦</span>
+            <span>The Swarada Promise</span>
+            <span>✦</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-heading font-bold text-[#641B32] tracking-tight">
+            Why Discerning Brides Choose Swarada
           </h2>
-          <div className="w-16 h-0.5 bg-[#C5A05A] mx-auto mt-4" />
+          <div className="flex items-center justify-center space-x-3 my-4">
+            <span className="w-12 h-px bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-xs">❖</span>
+            <span className="w-12 h-px bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {REASONS.map((reason, idx) => {
             const Icon = reason.icon;
             return (
               <div
                 key={reason.title}
-                className="bg-white border border-[#C5A05A]/30 p-8 rounded-xs text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group"
+                className="bg-white/90 backdrop-blur-sm border border-amber-900/10 hover:border-[#D4AF37]/60 p-8 rounded-2xl text-center transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 group relative overflow-hidden"
               >
-                <div className="w-14 h-14 rounded-full bg-[#641B32] text-[#C5A05A] flex items-center justify-center mx-auto mb-5 group-hover:bg-[#7B1E35] transition-colors shadow-xs">
-                  <Icon className="w-7 h-7" />
+                {/* Decorative hover gradient glow */}
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#641B32] to-[#851C3B] text-[#F3E2B8] flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-md group-hover:shadow-xl">
+                  <Icon className="w-8 h-8" />
                 </div>
-                <h3 className="font-heading text-lg font-semibold text-[#292323] mb-2 group-hover:text-[#641B32] transition-colors">
+                <h3 className="font-heading text-lg font-bold text-[#1E1719] mb-3 group-hover:text-[#641B32] transition-colors">
                   {reason.title}
                 </h3>
-                <p className="text-xs text-[#594E4E] leading-relaxed">
+                <p className="text-xs text-[#5A4E51] leading-relaxed font-light">
                   {reason.description}
                 </p>
               </div>

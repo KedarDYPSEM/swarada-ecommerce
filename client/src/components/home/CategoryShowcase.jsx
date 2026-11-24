@@ -38,19 +38,28 @@ const CATEGORIES = [
 
 export const CategoryShowcase = () => {
   return (
-    <section className="py-16 sm:py-24 bg-[#FFF9F0]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden">
+      {/* Decorative background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-radial from-[#D4AF37]/15 to-transparent blur-3xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-            Curated Collections
-          </span>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-heading font-bold text-[#641B32]">
-            Shop by Category
+        <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-18">
+          <div className="inline-flex items-center space-x-2 text-[#D4AF37] text-xs font-royal tracking-[0.25em] uppercase mb-2">
+            <span>✦</span>
+            <span>Curated Handlooms</span>
+            <span>✦</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-4.5xl font-heading font-bold text-[#641B32] tracking-tight">
+            Shop by Regal Category
           </h2>
-          <div className="w-16 h-0.5 bg-[#C5A05A] mx-auto mt-4" />
-          <p className="mt-3 text-xs sm:text-sm text-[#594E4E]">
-            Explore handcrafted ethnic wear tailored with timeless Maharashtrian heritage and contemporary silhouettes.
+          <div className="flex items-center justify-center space-x-3 my-4">
+            <span className="w-12 h-px bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-xs">❖</span>
+            <span className="w-12 h-px bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
+          <p className="text-xs sm:text-sm text-[#5A4E51] font-light max-w-lg mx-auto">
+            Discover heirloom Paithanis, regal Banarasi brocades, and festive designer apparel handwoven by India's finest master weavers.
           </p>
         </div>
 
@@ -60,33 +69,36 @@ export const CategoryShowcase = () => {
             <Link
               key={cat.name}
               to={cat.link}
-              className={`group relative overflow-hidden rounded-xs bg-neutral-900 shadow-sm transition-all duration-300 hover:shadow-xl ${
+              className={`group relative overflow-hidden rounded-2xl bg-neutral-900 shadow-md transition-all duration-500 hover:shadow-2xl hover:-translate-y-1.5 border border-amber-900/10 hover:border-[#D4AF37]/60 ${
                 cat.featured ? 'col-span-2 lg:col-span-1' : ''
               }`}
             >
-              {/* Image */}
-              <div className="aspect-4/5 sm:aspect-3/4 overflow-hidden">
+              {/* Image with zoom effect */}
+              <div className="aspect-4/5 sm:aspect-3/4 overflow-hidden relative">
                 <img
                   src={cat.image}
                   alt={cat.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#292323]/90 via-[#292323]/30 to-transparent transition-opacity duration-300 group-hover:from-[#641B32]/95" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#140F11]/95 via-[#1E1719]/40 to-transparent transition-opacity duration-300 group-hover:from-[#641B32]/95" />
               </div>
 
               {/* Text Card Overlay */}
-              <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                <div className="flex items-end justify-between">
+              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 text-white">
+                <div className="flex items-end justify-between gap-2">
                   <div>
-                    <h3 className="font-heading text-base sm:text-lg font-semibold tracking-wide text-[#FFF9F0] group-hover:text-[#C5A05A] transition-colors">
+                    <span className="text-[9px] font-royal tracking-widest text-[#F3E2B8] uppercase block mb-0.5">
+                      Heritage Edition
+                    </span>
+                    <h3 className="font-heading text-base sm:text-lg font-bold tracking-wide text-[#FFFDF9] group-hover:text-[#F3E2B8] transition-colors leading-snug">
                       {cat.name}
                     </h3>
-                    <p className="text-[11px] text-neutral-300 tracking-wide mt-0.5 truncate">
+                    <p className="text-[11px] text-neutral-300 tracking-wide mt-0.5 line-clamp-1 font-light">
                       {cat.subtitle}
                     </p>
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center text-white group-hover:bg-[#C5A05A] transition-colors shrink-0">
-                    <ArrowUpRight className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-[#D4AF37] group-hover:text-[#1E1719] transition-all duration-300 shrink-0 group-hover:scale-110 shadow-md">
+                    <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
                   </div>
                 </div>
               </div>

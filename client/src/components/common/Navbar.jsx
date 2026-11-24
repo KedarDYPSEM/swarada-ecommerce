@@ -72,36 +72,36 @@ export const Navbar = () => {
   const activeNavLinks = (settings?.menus || defaultNavLinks).filter((m) => m.active !== false);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#C5A05A]/30 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-[#D4AF37]/25 shadow-xs transition-all duration-300">
       {/* Top Utility Bar */}
-      <div className="bg-[#FFF9F0] border-b border-neutral-100 hidden md:block py-1.5 px-6 text-xs text-[#594E4E]">
+      <div className="bg-[#FAF7F2] border-b border-amber-900/10 hidden md:block py-2 px-6 text-xs text-[#5A4E51]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <span className="flex items-center space-x-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#C5A05A]" />
+              <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Flagship Store: Mahadwar Road, Kolhapur</span>
             </span>
             <span className="flex items-center space-x-1.5">
-              <Phone className="w-3.5 h-3.5 text-[#C5A05A]" />
+              <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Orders & Video Shopping: +91 98220 12345</span>
             </span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/track-order" className="hover:text-[#641B32] transition-colors">
+            <Link to="/track-order" className="hover:text-[#641B32] transition-colors font-medium">
               Track Order
             </Link>
-            <span className="text-neutral-300">|</span>
-            <Link to="/contact" className="hover:text-[#641B32] transition-colors">
+            <span className="text-amber-900/20">|</span>
+            <Link to="/contact" className="hover:text-[#641B32] transition-colors font-medium">
               Customer Support
             </Link>
             {isAdmin && (
               <>
-                <span className="text-neutral-300">|</span>
+                <span className="text-amber-900/20">|</span>
                 <Link
                   to="/admin/dashboard"
-                  className="text-[#641B32] font-semibold flex items-center space-x-1"
+                  className="text-[#641B32] font-semibold flex items-center space-x-1 bg-[#D4AF37]/15 px-2.5 py-0.5 rounded-full border border-[#D4AF37]/40"
                 >
-                  <Shield className="w-3 h-3" />
+                  <Shield className="w-3 h-3 text-[#D4AF37]" />
                   <span>Admin Dashboard</span>
                 </Link>
               </>
@@ -117,14 +117,14 @@ export const Navbar = () => {
           <div className="flex items-center lg:hidden">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 text-[#292323] hover:text-[#641B32] transition-colors"
+              className="p-2 text-[#1E1719] hover:text-[#641B32] transition-colors"
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6" />
             </button>
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-[#292323] hover:text-[#641B32] transition-colors ml-1"
+              className="p-2 text-[#1E1719] hover:text-[#641B32] transition-colors ml-1"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -133,22 +133,22 @@ export const Navbar = () => {
 
           {/* Brand Logo */}
           <div className="flex-1 lg:flex-none text-center lg:text-left">
-            <Link to="/" className="inline-block group">
+            <Link to="/" className="inline-block group py-1">
               {settings?.logoUrl ? (
                 <img
                   src={settings.logoUrl}
                   alt={settings.storeName || 'Swarada Saree Center'}
-                  className="h-12 sm:h-14 w-auto max-w-[200px] sm:max-w-[240px] object-contain mx-auto lg:mx-0"
+                  className="h-12 sm:h-14 w-auto max-w-[200px] sm:max-w-[240px] object-contain mx-auto lg:mx-0 transition-transform duration-300 group-hover:scale-102"
                 />
               ) : (
-                <>
-                  <span className="font-heading text-2xl sm:text-3xl font-bold tracking-wider text-[#641B32] uppercase group-hover:text-[#7B1E35] transition-colors">
+                <div className="flex flex-col items-center lg:items-start">
+                  <span className="font-royal text-2xl sm:text-3xl font-bold tracking-[0.08em] text-[#641B32] uppercase group-hover:text-[#851C3B] transition-colors">
                     Swarada
                   </span>
-                  <span className="block text-[9px] sm:text-[10px] tracking-[0.25em] font-medium text-[#C5A05A] uppercase -mt-1 font-sans">
+                  <span className="block text-[8px] sm:text-[9px] tracking-[0.3em] font-medium text-[#D4AF37] uppercase -mt-0.5 font-royal">
                     Saree Center • Kolhapur
                   </span>
-                </>
+                </div>
               )}
             </Link>
           </div>
@@ -166,10 +166,12 @@ export const Navbar = () => {
                 <div className="relative">
                   <button
                     onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                    className="flex items-center space-x-1.5 p-2 text-[#292323] hover:text-[#641B32] transition-colors"
+                    className="flex items-center space-x-1.5 p-2 rounded-full hover:bg-neutral-100 text-[#1E1719] hover:text-[#641B32] transition-all cursor-pointer"
                   >
-                    <User className="w-5 h-5 text-[#641B32]" />
-                    <span className="hidden sm:inline text-xs font-medium">
+                    <div className="w-8 h-8 rounded-full bg-[#641B32]/10 border border-[#D4AF37]/40 flex items-center justify-center text-[#641B32]">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <span className="hidden sm:inline text-xs font-semibold">
                       {user.profile?.firstName || 'My Account'}
                     </span>
                     <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
@@ -178,53 +180,53 @@ export const Navbar = () => {
                   {accountMenuOpen && (
                     <div
                       onMouseLeave={() => setAccountMenuOpen(false)}
-                      className="absolute right-0 mt-2 w-48 bg-white border border-[#C5A05A]/30 rounded-sm shadow-lg py-2 z-50 text-xs"
+                      className="absolute right-0 mt-2 w-52 bg-white/98 backdrop-blur-md border border-[#D4AF37]/35 rounded-xl shadow-2xl py-2 z-50 text-xs"
                     >
-                      <div className="px-4 py-2 border-b border-neutral-100">
-                        <p className="font-semibold text-[#292323]">
+                      <div className="px-4 py-2.5 border-b border-neutral-100 bg-[#FAF7F2]">
+                        <p className="font-semibold text-[#1E1719]">
                           {user.profile?.firstName} {user.profile?.lastName}
                         </p>
-                        <p className="text-neutral-500 truncate">{user.email}</p>
+                        <p className="text-[11px] text-neutral-500 truncate">{user.email}</p>
                       </div>
                       <Link
                         to="/account/dashboard"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                        className="block px-4 py-2 hover:bg-[#FAF7F2] text-[#1E1719] transition-colors"
                       >
                         My Dashboard
                       </Link>
                       <Link
                         to="/account/profile"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                        className="block px-4 py-2 hover:bg-[#FAF7F2] text-[#1E1719] transition-colors"
                       >
                         My Profile
                       </Link>
                       <Link
                         to="/account/orders"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                        className="block px-4 py-2 hover:bg-[#FAF7F2] text-[#1E1719] transition-colors"
                       >
                         My Orders
                       </Link>
                       <Link
                         to="/account/wishlist"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                        className="block px-4 py-2 hover:bg-[#FAF7F2] text-[#1E1719] transition-colors"
                       >
                         My Wishlist
                       </Link>
                       <Link
                         to="/account/addresses"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                        className="block px-4 py-2 hover:bg-[#FAF7F2] text-[#1E1719] transition-colors"
                       >
                         Saved Addresses
                       </Link>
                       <Link
                         to="/account/password"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#292323]"
+                        className="block px-4 py-2 hover:bg-[#FAF7F2] text-[#1E1719] transition-colors"
                       >
                         Change Password
                       </Link>
@@ -232,14 +234,14 @@ export const Navbar = () => {
                         <Link
                           to="/admin/dashboard"
                           onClick={() => setAccountMenuOpen(false)}
-                          className="block px-4 py-2 hover:bg-[#FFF9F0] text-[#641B32] font-semibold border-t border-neutral-100"
+                          className="block px-4 py-2 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 text-[#641B32] font-semibold border-t border-neutral-100"
                         >
                           Admin Portal
                         </Link>
                       )}
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center space-x-2 border-t border-neutral-100"
+                        className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-600 flex items-center space-x-2 border-t border-neutral-100 cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>Log Out</span>
@@ -250,10 +252,10 @@ export const Navbar = () => {
               ) : (
                 <Link
                   to="/account/login"
-                  className="flex items-center space-x-1.5 p-2 text-[#292323] hover:text-[#641B32] transition-colors"
+                  className="flex items-center space-x-1.5 px-3 py-2 rounded-full hover:bg-neutral-100 text-[#1E1719] hover:text-[#641B32] transition-colors"
                 >
                   <User className="w-5 h-5 text-[#641B32]" />
-                  <span className="hidden sm:inline text-xs font-medium">Sign In</span>
+                  <span className="hidden sm:inline text-xs font-semibold">Sign In</span>
                 </Link>
               )}
             </div>
@@ -261,7 +263,7 @@ export const Navbar = () => {
             {/* Wishlist Link */}
             <Link
               to="/account/wishlist"
-              className="p-2 text-[#292323] hover:text-[#641B32] transition-colors relative"
+              className="p-2.5 rounded-full hover:bg-neutral-100 text-[#1E1719] hover:text-[#641B32] transition-colors relative"
               aria-label="Wishlist"
             >
               <Heart className="w-5 h-5" />
@@ -270,18 +272,18 @@ export const Navbar = () => {
             {/* Cart Trigger */}
             <button
               onClick={openCartDrawer}
-              className="flex items-center space-x-2 p-2 text-[#292323] hover:text-[#641B32] transition-colors relative cursor-pointer"
+              className="flex items-center space-x-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-[#641B32] to-[#7A1A31] hover:from-[#7A1A31] hover:to-[#480C1E] text-white shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer active:scale-95 group"
               aria-label="Shopping Cart"
             >
               <div className="relative">
-                <ShoppingBag className="w-5 h-5 text-[#641B32]" />
+                <ShoppingBag className="w-4 h-4 text-[#F3E2B8] group-hover:scale-110 transition-transform" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#641B32] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-scale-in">
+                  <span className="absolute -top-2 -right-2.5 bg-[#D4AF37] text-[#1E1719] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-scale-in">
                     {itemCount}
                   </span>
                 )}
               </div>
-              <span className="hidden md:inline text-xs font-semibold">Cart</span>
+              <span className="text-xs font-semibold tracking-wide">Bag</span>
             </button>
           </div>
         </div>
@@ -295,31 +297,37 @@ export const Navbar = () => {
       </div>
 
       {/* Desktop Main Navigation Menu */}
-      <nav className="hidden lg:block border-t border-neutral-150 bg-[#FFF9F0]/60">
+      <nav className="hidden lg:block border-t border-amber-900/10 bg-[#FAF7F2]/90 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-8">
-          <ul className="flex items-center justify-center space-x-8 text-xs font-medium tracking-wider uppercase py-3">
+          <ul className="flex items-center justify-center space-x-8 text-xs font-semibold tracking-widest uppercase py-3.5">
             {activeNavLinks.map((link) => (
               <li key={link.id || link.name} className="relative group">
                 <Link
                   to={link.href}
-                  className={`py-2 transition-colors flex items-center space-x-1 ${
+                  className={`py-2 transition-all flex items-center space-x-1.5 relative ${
                     link.highlight
-                      ? 'text-[#C5A05A] font-bold'
-                      : 'text-[#292323] hover:text-[#641B32]'
+                      ? 'text-[#D4AF37] font-bold'
+                      : 'text-[#1E1719] hover:text-[#641B32]'
                   }`}
                 >
                   <span>{link.name}</span>
-                  {link.subcategories && <ChevronDown className="w-3 h-3 opacity-60" />}
+                  {link.subcategories && <ChevronDown className="w-3 h-3 opacity-60 group-hover:rotate-180 transition-transform duration-200" />}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
                 </Link>
 
                 {/* Dropdown Menu */}
                 {link.subcategories && (
-                  <div className="absolute left-0 top-full hidden group-hover:block w-56 bg-white border border-[#C5A05A]/30 shadow-xl py-2 rounded-xs z-50 normal-case">
+                  <div className="absolute left-0 top-full hidden group-hover:block w-64 bg-white/98 backdrop-blur-md border border-[#D4AF37]/35 shadow-2xl py-3 rounded-xl z-50 normal-case">
+                    <div className="px-4 py-1 mb-1 border-b border-neutral-100">
+                      <span className="text-[10px] font-royal uppercase tracking-widest text-[#D4AF37]">
+                        Handloom Collections
+                      </span>
+                    </div>
                     {link.subcategories.map((sub) => (
                       <Link
                         key={sub.name}
                         to={sub.href}
-                        className="block px-4 py-2 text-xs text-[#292323] hover:bg-[#FFF9F0] hover:text-[#641B32] transition-colors"
+                        className="block px-4 py-2 text-xs text-[#1E1719] hover:bg-[#FAF7F2] hover:text-[#641B32] transition-colors font-medium"
                       >
                         {sub.name}
                       </Link>

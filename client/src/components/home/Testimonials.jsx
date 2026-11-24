@@ -30,50 +30,54 @@ const REVIEWS = [
 
 export const Testimonials = () => {
   return (
-    <section className="py-16 sm:py-24 bg-white border-b border-neutral-150">
+    <section className="py-20 sm:py-28 bg-white border-b border-amber-900/10 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-            Words of Love
-          </span>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-heading font-bold text-[#641B32]">
-            Customer Testimonials
+          <div className="inline-flex items-center space-x-2 text-[#D4AF37] text-xs font-royal tracking-[0.25em] uppercase mb-2">
+            <span>✦</span>
+            <span>Voices of Trust</span>
+            <span>✦</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-heading font-bold text-[#641B32] tracking-tight">
+            Loved by 25,000+ Brides & Connoisseurs
           </h2>
-          <div className="w-16 h-0.5 bg-[#C5A05A] mx-auto mt-4" />
-          <p className="mt-3 text-xs sm:text-sm text-[#594E4E]">
-            Over 25,000 brides and saree connoisseurs have celebrated life’s milestone moments with Swarada.
-          </p>
+          <div className="flex items-center justify-center space-x-3 my-4">
+            <span className="w-12 h-px bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-xs">❖</span>
+            <span className="w-12 h-px bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {REVIEWS.map((review) => (
             <div
               key={review.name}
-              className="bg-[#FFF9F0]/60 border border-[#C5A05A]/30 p-8 rounded-xs relative flex flex-col justify-between"
+              className="bg-[#FAF7F2]/90 border border-amber-900/10 hover:border-[#D4AF37]/60 p-8 rounded-2xl relative flex flex-col justify-between transition-all duration-500 hover:shadow-xl hover:-translate-y-1.5 group"
             >
-              <Quote className="w-8 h-8 text-[#C5A05A]/30 absolute top-6 right-6" />
+              <Quote className="w-10 h-10 text-[#D4AF37]/20 absolute top-6 right-6 group-hover:text-[#D4AF37]/40 transition-colors" />
 
               <div>
                 {/* 5-star rating */}
-                <div className="flex items-center space-x-1 mb-4">
+                <div className="flex items-center space-x-1 mb-5">
                   {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    <Star key={i} className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />
                   ))}
                 </div>
 
-                <p className="text-xs sm:text-sm text-[#292323] italic leading-relaxed mb-6">
+                <p className="text-xs sm:text-sm text-[#1E1719] italic leading-relaxed mb-6 font-light">
                   "{review.comment}"
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-neutral-200">
-                <h4 className="font-heading text-sm font-semibold text-[#641B32]">
+              <div className="pt-4 border-t border-amber-900/10">
+                <h4 className="font-heading text-sm font-bold text-[#641B32]">
                   {review.name}
                 </h4>
-                <p className="text-[11px] text-[#C5A05A] font-medium">{review.location}</p>
-                <p className="text-[10px] text-neutral-400 mt-0.5 truncate">
-                  Verified Purchase: {review.productPurchased}
-                </p>
+                <p className="text-[11px] text-[#D4AF37] font-semibold tracking-wide">{review.location}</p>
+                <div className="mt-2 inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-medium">
+                  <span>✓ Verified Purchase:</span>
+                  <span className="truncate max-w-[140px]">{review.productPurchased}</span>
+                </div>
               </div>
             </div>
           ))}

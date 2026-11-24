@@ -94,58 +94,63 @@ export const HeroBanner = ({ banners }) => {
               <img
                 src={slide.image}
                 alt={slide.title}
-                className="w-full h-full object-cover object-center scale-105 transition-transform duration-10000 ease-out"
+                className={`w-full h-full object-cover object-center transition-transform duration-10000 ease-out ${
+                  isActive ? 'scale-110' : 'scale-100'
+                }`}
               />
               {/* Multilayer gradient for optimal legibility */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#292323]/95 via-[#292323]/70 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#292323]/80 via-transparent to-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#140F11]/95 via-[#1E1719]/75 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#140F11]/90 via-transparent to-black/40" />
             </div>
 
             {/* Slide Content */}
             <div className="relative max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center">
               <div className="max-w-2xl text-white space-y-4 sm:space-y-6">
                 {/* Badge */}
-                <div className="inline-flex items-center space-x-2 bg-[#641B32]/90 border border-[#C5A05A] px-3.5 py-1 rounded-full text-xs font-semibold tracking-widest uppercase text-[#FFF9F0]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#C5A05A]" />
+                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#641B32]/95 to-[#851C3B]/90 border border-[#D4AF37]/70 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase text-[#FFFDF9] shadow-md backdrop-blur-md">
+                  <Sparkles className="w-3.5 h-3.5 text-[#F3E2B8] animate-pulse" />
                   <span>{slide.badge}</span>
+                  <span className="text-[#D4AF37]">✦</span>
                 </div>
 
                 {/* Heading */}
-                <h1 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#FFF9F0] leading-tight">
+                <h1 className="font-heading text-3.5xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#FFFDF9] leading-[1.15] drop-shadow-sm">
                   {slide.title}
                 </h1>
 
-                {/* Subtitle */}
-                <p className="text-sm sm:text-lg font-medium text-[#C5A05A] tracking-wide">
-                  {slide.subtitle}
-                </p>
+                {/* Subtitle with gold accent line */}
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-0.5 bg-[#D4AF37]" />
+                  <p className="text-sm sm:text-lg font-medium text-[#F3E2B8] tracking-wide font-body">
+                    {slide.subtitle}
+                  </p>
+                </div>
 
                 {/* Description */}
-                <p className="text-xs sm:text-base text-neutral-300 max-w-xl leading-relaxed hidden sm:block">
+                <p className="text-xs sm:text-base text-neutral-200/90 max-w-xl leading-relaxed hidden sm:block font-light">
                   {slide.description}
                 </p>
 
                 {/* Call to Action */}
-                <div className="pt-2 sm:pt-4 flex flex-wrap gap-4">
+                <div className="pt-2 sm:pt-4 flex flex-wrap gap-4 items-center">
                   <Link to={slide.ctaLink}>
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="bg-[#641B32] hover:bg-[#7B1E35] border border-[#C5A05A]/40 text-[#FFF9F0] shadow-xl group"
+                    <button
+                      type="button"
+                      className="inline-flex items-center space-x-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E2B8] to-[#C5A05A] text-[#1E1719] font-bold text-xs sm:text-sm tracking-wider uppercase shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-103 cursor-pointer group gold-shimmer-btn"
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                    </button>
                   </Link>
-                  <Link to="/contact">
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      className="bg-white/10 backdrop-blur-md text-white border-white/30 hover:bg-white/20"
-                    >
-                      Book Video Consultation
-                    </Button>
-                  </Link>
+
+                  <a
+                    href="https://wa.me/919822012345?text=Hello%20Swarada%20Saree%20Center,%20I%20would%20like%20to%20book%20a%20video%20shopping%20call."
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 hover:scale-102 cursor-pointer shadow-md"
+                  >
+                    <span>Book Video Consultation</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -157,7 +162,7 @@ export const HeroBanner = ({ banners }) => {
       <button
         onClick={prevSlide}
         aria-label="Previous slide"
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-[#641B32] text-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 border border-white/20 cursor-pointer"
+        className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 hover:bg-[#641B32] text-white backdrop-blur-md flex items-center justify-center transition-all duration-300 border border-white/20 hover:border-[#D4AF37] cursor-pointer shadow-xl hover:scale-110"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
@@ -165,20 +170,20 @@ export const HeroBanner = ({ banners }) => {
       <button
         onClick={nextSlide}
         aria-label="Next slide"
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-[#641B32] text-white backdrop-blur-xs flex items-center justify-center transition-all duration-200 border border-white/20 cursor-pointer"
+        className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/40 hover:bg-[#641B32] text-white backdrop-blur-md flex items-center justify-center transition-all duration-300 border border-white/20 hover:border-[#D4AF37] cursor-pointer shadow-xl hover:scale-110"
       >
         <ChevronRight className="w-6 h-6" />
       </button>
 
       {/* Dot Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2.5">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2.5 bg-black/35 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/15">
         {activeSlides.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentSlide(idx)}
             aria-label={`Go to slide ${idx + 1}`}
-            className={`h-2 transition-all duration-300 rounded-full cursor-pointer ${
-              idx === currentIdx ? 'w-8 bg-[#C5A05A]' : 'w-2 bg-white/50 hover:bg-white'
+            className={`h-2 transition-all duration-500 rounded-full cursor-pointer ${
+              idx === currentIdx ? 'w-8 bg-[#D4AF37] shadow-xs' : 'w-2 bg-white/50 hover:bg-white'
             }`}
           />
         ))}

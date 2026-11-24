@@ -2,18 +2,30 @@
 
 @theme {
   --color-maroon: #641B32;
-  --color-maroon-dark: #4e1225;
-  --color-burgundy: #7B1E35;
+  --color-maroon-dark: #480C1E;
+  --color-maroon-glow: #851C3B;
+  --color-burgundy: #7A1A31;
+  
   --color-gold: #C5A05A;
-  --color-gold-light: #E4C88A;
-  --color-gold-dark: #A37E3A;
-  --color-ivory: #FFF9F0;
-  --color-ivory-light: #FFFCF7;
-  --color-dark: #292323;
-  --color-dark-muted: #594E4E;
+  --color-gold-rich: #D4AF37;
+  --color-gold-light: #F3E2B8;
+  --color-gold-dark: #9A7836;
+  --color-gold-champagne: #FAF0D8;
+  
+  --color-emerald-royal: #0D5C46;
+  --color-emerald-light: #14765B;
+
+  --color-ivory: #FAF7F2;
+  --color-ivory-light: #FFFDF9;
+  --color-ivory-dark: #F3ECE2;
+
+  --color-dark: #1E1719;
+  --color-dark-muted: #5A4E51;
+  --color-charcoal: #140F11;
 
   --font-heading: 'Playfair Display', Georgia, serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-royal: 'Cinzel', serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 @layer base {
@@ -29,29 +41,30 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    letter-spacing: -0.01em;
   }
 }
 
-/* Custom scrollbar */
+/* Custom Luxury Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FFF9F0;
+  background: #FAF7F2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C5A05A;
-  border-radius: 4px;
+  background: #D4AF37;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #641B32;
 }
 
-/* Gold shimmer animation */
+/* Keyframe Animations */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -61,16 +74,147 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.55);
+  }
+}
+
+@keyframes radar {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Luxury Utilities */
 .gold-gradient {
-  background: linear-gradient(135deg, #C5A05A 0%, #E4C88A 50%, #A37E3A 100%);
+  background: linear-gradient(135deg, #C5A05A 0%, #F3E2B8 45%, #D4AF37 70%, #9A7836 100%);
+}
+
+.gold-gradient-subtle {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(243, 226, 184, 0.25) 50%, rgba(212, 175, 55, 0.08) 100%);
 }
 
 .maroon-gradient {
-  background: linear-gradient(135deg, #641B32 0%, #7B1E35 60%, #4e1225 100%);
+  background: linear-gradient(135deg, #641B32 0%, #7A1A31 50%, #480C1E 100%);
+}
+
+.maroon-gradient-rich {
+  background: radial-gradient(circle at 20% 30%, #851C3B 0%, #641B32 40%, #3B0917 100%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F5E6B8 50%, #B89230 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-maroon-gradient {
+  background: linear-gradient(135deg, #641B32 0%, #851C3B 60%, #480C1E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .gold-shimmer {
-  background: linear-gradient(90deg, rgba(197, 160, 90, 0.1) 0%, rgba(197, 160, 90, 0.3) 50%, rgba(197, 160, 90, 0.1) 100%);
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, rgba(243, 226, 184, 0.45) 50%, rgba(212, 175, 55, 0.08) 100%);
   background-size: 200% 100%;
-  animation: shimmer 2.5s infinite;
+  animation: shimmer 3s infinite;
+}
+
+.gold-shimmer-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.gold-shimmer-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: rotate(25deg);
+  transition: none;
+}
+
+.gold-shimmer-btn:hover::after {
+  left: 120%;
+  transition: left 0.85s ease-in-out;
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.glass-dark {
+  background: rgba(30, 23, 25, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-radar {
+  animation: radar 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.luxury-card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 35px -10px rgba(100, 27, 50, 0.12), 0 0 1px 1px rgba(212, 175, 55, 0.35);
 }

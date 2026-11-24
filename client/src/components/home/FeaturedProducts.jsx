@@ -151,22 +151,26 @@ export const FeaturedProducts = ({ title = 'Featured Collections', defaultTab = 
         );
 
   return (
-    <section className="py-16 sm:py-24 bg-white border-y border-neutral-150">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 sm:py-28 bg-white border-y border-amber-900/10 relative overflow-hidden">
+      {/* Decorative gradient flare */}
+      <div className="absolute top-1/2 right-0 w-96 h-96 bg-radial from-[#D4AF37]/10 to-transparent blur-3xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16">
           <div>
-            <div className="flex items-center space-x-2 text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Handcrafted Treasures</span>
+            <div className="flex items-center space-x-2 text-xs font-royal font-semibold tracking-[0.25em] uppercase text-[#D4AF37]">
+              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+              <span>Royal Maharashtrian Weaves</span>
             </div>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-heading font-bold text-[#641B32]">
+            <h2 className="mt-2 text-3xl sm:text-4xl lg:text-4.5xl font-heading font-bold text-[#641B32] tracking-tight">
               {title}
             </h2>
+            <div className="w-20 h-0.5 bg-gradient-to-r from-[#D4AF37] to-transparent mt-3" />
           </div>
 
           {/* Tab Filters */}
-          <div className="flex items-center space-x-2 mt-6 md:mt-0 overflow-x-auto pb-2 md:pb-0">
+          <div className="flex items-center space-x-2.5 mt-6 md:mt-0 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
             {[
               { id: 'all', label: 'All Treasures' },
               { id: 'new', label: 'New Arrivals' },
@@ -176,10 +180,10 @@ export const FeaturedProducts = ({ title = 'Featured Collections', defaultTab = 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95 ${
                   activeTab === tab.id
-                    ? 'bg-[#641B32] text-white shadow-xs'
-                    : 'bg-[#FFF9F0] text-[#292323] hover:bg-[#FFF4E0] border border-neutral-200'
+                    ? 'bg-gradient-to-r from-[#641B32] to-[#851C3B] text-white shadow-md ring-2 ring-[#D4AF37]/40'
+                    : 'bg-[#FAF7F2] text-[#1E1719] hover:bg-white border border-amber-900/10 hover:border-[#D4AF37]/60'
                 }`}
               >
                 {tab.label}
@@ -189,20 +193,20 @@ export const FeaturedProducts = ({ title = 'Featured Collections', defaultTab = 
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-7">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
 
         {/* View All Button */}
-        <div className="mt-12 text-center">
+        <div className="mt-16 text-center">
           <Link
             to="/shop"
-            className="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-widest text-[#641B32] hover:text-[#7B1E35] border-b-2 border-[#C5A05A] pb-1 hover:border-[#641B32] transition-colors"
+            className="inline-flex items-center space-x-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#641B32] via-[#7A1A31] to-[#641B32] text-[#FFFDF9] font-bold text-xs tracking-[0.18em] uppercase shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-103 cursor-pointer group gold-shimmer-btn border border-[#D4AF37]/40"
           >
-            <span>View All Handloom Sarees</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Explore Entire Handloom Catalog</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </div>
       </div>

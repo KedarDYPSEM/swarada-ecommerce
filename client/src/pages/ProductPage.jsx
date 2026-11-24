@@ -94,20 +94,31 @@ export const ProductPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20">
-        <div className="w-12 h-12 border-4 border-[#C5A05A] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="font-heading text-lg text-[#641B32]">Opening Handloom Vault...</p>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 bg-[#FAF7F2]">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-[#D4AF37]/30 border-t-[#641B32] rounded-full animate-spin mb-4" />
+          <div className="absolute inset-0 flex items-center justify-center text-xs font-serif font-bold text-[#641B32]">
+            ✦
+          </div>
+        </div>
+        <p className="font-heading text-xl font-bold text-[#641B32] tracking-wide mt-2">Unveiling Masterpiece...</p>
+        <p className="text-xs text-[#8A7A70] mt-1 font-sans">Connecting to Swarada Royal Handloom Vault</p>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 text-center px-4">
-        <h2 className="text-3xl font-heading font-bold text-[#641B32]">Saree Not Found</h2>
-        <p className="text-xs text-[#594E4E] mt-2 mb-6">The requested saree piece may have been purchased or relocated.</p>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 text-center px-4 bg-[#FAF7F2]">
+        <div className="w-20 h-20 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-[#641B32] text-2xl mb-4">
+          ❖
+        </div>
+        <h2 className="text-3xl font-heading font-bold text-[#641B32]">Creation Not Found</h2>
+        <p className="text-xs sm:text-sm text-[#7D7069] mt-2 mb-6 max-w-md">
+          This handcrafted saree piece may have been acquired by another connoisseur or moved to our private archives.
+        </p>
         <Link to="/shop">
-          <Button variant="primary">Return to Saree Catalog</Button>
+          <Button variant="primary" className="rounded-full shadow-lg">Return to Royal Catalog</Button>
         </Link>
       </div>
     );
@@ -153,67 +164,70 @@ export const ProductPage = () => {
   };
 
   return (
-    <div className="py-8 sm:py-12 bg-[#FFF9F0]">
+    <div className="py-8 sm:py-14 bg-[#FAF7F2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb Navigation */}
         <nav className="text-xs text-neutral-500 mb-6 flex items-center space-x-2 flex-wrap">
-          <Link to="/" className="hover:text-[#641B32]">Home</Link>
-          <ChevronRight className="w-3 h-3 text-neutral-400" />
-          <Link to="/shop" className="hover:text-[#641B32]">Catalog</Link>
-          <ChevronRight className="w-3 h-3 text-neutral-400" />
+          <Link to="/" className="hover:text-[#641B32] transition-colors">Home</Link>
+          <ChevronRight className="w-3 h-3 text-[#D4AF37]" />
+          <Link to="/shop" className="hover:text-[#641B32] transition-colors">Royal Catalog</Link>
+          <ChevronRight className="w-3 h-3 text-[#D4AF37]" />
           {product.categories?.[0] && (
             <>
               <Link
                 to={`/shop?category=${product.categories[0].category.slug}`}
-                className="hover:text-[#641B32]"
+                className="hover:text-[#641B32] transition-colors"
               >
                 {product.categories[0].category.name}
               </Link>
-              <ChevronRight className="w-3 h-3 text-neutral-400" />
+              <ChevronRight className="w-3 h-3 text-[#D4AF37]" />
             </>
           )}
-          <span className="text-[#292323] font-semibold truncate max-w-xs sm:max-w-md">
+          <span className="text-[#140F11] font-semibold truncate max-w-xs sm:max-w-md">
             {product.name}
           </span>
         </nav>
 
         {/* Main Product Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 bg-white p-6 sm:p-10 border border-[#C5A05A]/30 rounded-xs shadow-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 bg-white/95 backdrop-blur-md p-6 sm:p-10 border border-[#D4AF37]/30 rounded-3xl shadow-xl shadow-amber-950/5 relative overflow-hidden">
+          {/* Subtle decorative background ambient glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-radial from-[#D4AF37]/10 to-transparent blur-3xl pointer-events-none" />
+
           {/* Left Column: Image Gallery with Zoom */}
           <div className="lg:col-span-6 space-y-4">
             <div
-              className="aspect-3/4 overflow-hidden rounded-xs bg-neutral-100 border border-neutral-200 relative cursor-crosshair group"
+              className="aspect-3/4 overflow-hidden rounded-2xl bg-[#F7F2E7] border border-[#D4AF37]/25 relative cursor-zoom-in group shadow-md"
               onMouseEnter={() => setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
             >
               <img
                 src={activeImageOverride || images[selectedImage]}
                 alt={product.name}
-                className={`w-full h-full object-cover object-center transition-transform duration-500 ${
+                className={`w-full h-full object-cover object-center transition-transform duration-700 ease-out ${
                   isZoomed ? 'scale-125' : 'scale-100'
                 }`}
               />
 
-              <div className="absolute top-3 left-3 flex flex-col space-y-1.5 pointer-events-none z-10">
-                <Badge variant="gold">Silk Mark Certified</Badge>
-                {discount > 0 && <Badge variant="discount">{discount}% Off</Badge>}
+              <div className="absolute top-3.5 left-3.5 flex flex-col space-y-2 pointer-events-none z-10">
+                <Badge variant="gold" className="shadow-md">✦ Silk Mark Certified</Badge>
+                {discount > 0 && <Badge variant="discount" className="shadow-md">{discount}% OFF</Badge>}
               </div>
 
               {isVariantOutOfStock && (
-                <div className="absolute top-3 right-3 bg-rose-700 text-white px-3 py-1 rounded-xs text-xs font-bold uppercase tracking-wider shadow-md z-10 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-white"></span>
+                <div className="absolute top-3.5 right-3.5 bg-gradient-to-r from-rose-700 to-rose-900 text-white px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg z-10 flex items-center gap-1.5 border border-rose-400/30">
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                   Out of Stock
                 </div>
               )}
 
-              <div className="absolute bottom-3 right-3 bg-black/50 text-white p-1.5 rounded-full backdrop-blur-xs pointer-events-none">
+              <div className="absolute bottom-3.5 right-3.5 bg-black/60 text-white p-2 rounded-full backdrop-blur-md pointer-events-none transition-transform duration-300 group-hover:scale-110">
                 <ZoomIn className="w-4 h-4" />
               </div>
             </div>
 
             {/* Thumbnail Selector */}
             {images.length > 1 && (
-              <div className="flex space-x-3 overflow-x-auto pb-2">
+              <div className="flex space-x-3 overflow-x-auto pb-2 pt-1">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
@@ -221,10 +235,10 @@ export const ProductPage = () => {
                       setSelectedImage(idx);
                       setActiveImageOverride(null);
                     }}
-                    className={`w-20 h-24 rounded-xs overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
+                    className={`w-20 h-24 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer shrink-0 ${
                       selectedImage === idx && !activeImageOverride
-                        ? 'border-[#641B32] shadow-sm scale-102'
-                        : 'border-neutral-200 opacity-70 hover:opacity-100'
+                        ? 'border-[#641B32] ring-2 ring-[#D4AF37]/60 shadow-md scale-105'
+                        : 'border-neutral-200 opacity-70 hover:opacity-100 hover:border-[#D4AF37]'
                     }`}
                   >
                     <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
@@ -237,14 +251,16 @@ export const ProductPage = () => {
           {/* Right Column: Product Details & Purchase Actions */}
           <div className="lg:col-span-6 space-y-6">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono bg-[#641B32]/10 text-[#641B32] px-2.5 py-0.5 rounded font-semibold tracking-wider">
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <span className="text-xs font-mono bg-[#641B32]/10 text-[#641B32] border border-[#641B32]/20 px-3 py-1 rounded-full font-semibold tracking-wider">
                   SKU: {product.sku}
                 </span>
 
                 <span
-                  className={`text-xs font-semibold flex items-center space-x-1.5 ${
-                    isVariantOutOfStock ? 'text-rose-700' : 'text-emerald-700'
+                  className={`text-xs font-semibold px-3 py-1 rounded-full border flex items-center space-x-1.5 ${
+                    isVariantOutOfStock
+                      ? 'text-rose-700 bg-rose-50 border-rose-200'
+                      : 'text-emerald-800 bg-emerald-50 border-emerald-200 shadow-xs'
                   }`}
                 >
                   <span
@@ -262,80 +278,80 @@ export const ProductPage = () => {
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-heading font-bold text-[#641B32] leading-snug">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold text-[#140F11] leading-tight">
                 {product.name}
               </h1>
 
-              <p className="mt-2 text-xs sm:text-sm text-[#594E4E] leading-relaxed">
+              <p className="mt-3 text-xs sm:text-sm text-[#594E4E] leading-relaxed">
                 {product.shortDescription || product.description}
               </p>
             </div>
 
             {/* Pricing Box */}
-            <div className="p-4 bg-[#FFF9F0] border border-[#C5A05A]/30 rounded-xs flex flex-wrap items-baseline gap-3">
-              <span className="text-3xl font-bold text-[#641B32]">
+            <div className="p-5 bg-gradient-to-br from-[#FFFDF9] via-[#FAF5EB] to-[#F5EEDB] border border-[#D4AF37]/40 rounded-2xl shadow-xs flex flex-wrap items-baseline gap-3">
+              <span className="text-3xl sm:text-4xl font-extrabold text-[#641B32] tracking-tight">
                 {formatPrice(product.sellingPrice)}
               </span>
               {product.mrp > product.sellingPrice && (
-                <span className="text-sm text-neutral-400 line-through">
+                <span className="text-sm sm:text-base text-neutral-400 line-through">
                   {formatPrice(product.mrp)}
                 </span>
               )}
               {isVariantOutOfStock ? (
-                <span className="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded border border-rose-300 uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                <span className="text-xs font-bold text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-300 uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
                   <span className="w-2 h-2 rounded-full bg-rose-600 inline-block"></span>
                   Out of Stock
                 </span>
               ) : discount > 0 ? (
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-50/90 px-3 py-1 rounded-full border border-emerald-300 shadow-xs">
                   Save {formatPrice(product.mrp - product.sellingPrice)} ({discount}%)
                 </span>
               ) : null}
             </div>
 
             {/* Saree Attributes Specification Table */}
-            <div className="border border-neutral-200 rounded-xs divide-y divide-neutral-100 text-xs">
+            <div className="border border-[#D4AF37]/20 rounded-2xl overflow-hidden divide-y divide-amber-100/70 bg-[#FAF7F2]/40 text-xs">
               {product.fabric && (
-                <div className="grid grid-cols-3 p-2.5">
+                <div className="grid grid-cols-3 p-3">
                   <span className="font-semibold text-neutral-600">Fabric</span>
-                  <span className="col-span-2 text-[#292323]">{product.fabric}</span>
+                  <span className="col-span-2 text-[#140F11] font-medium">{product.fabric}</span>
                 </div>
               )}
               {(selectedVariant?.variantValue || product.colour) && (
-                <div className="grid grid-cols-3 p-2.5">
+                <div className="grid grid-cols-3 p-3">
                   <span className="font-semibold text-neutral-600">Colour Palette</span>
-                  <span className="col-span-2 text-[#292323]">{selectedVariant?.variantValue || product.colour}</span>
+                  <span className="col-span-2 text-[#140F11] font-medium">{selectedVariant?.variantValue || product.colour}</span>
                 </div>
               )}
               {product.sareeLength && (
-                <div className="grid grid-cols-3 p-2.5">
+                <div className="grid grid-cols-3 p-3">
                   <span className="font-semibold text-neutral-600">Saree Length</span>
-                  <span className="col-span-2 text-[#292323]">{product.sareeLength}</span>
+                  <span className="col-span-2 text-[#140F11] font-medium">{product.sareeLength}</span>
                 </div>
               )}
               {product.blouseDetails && (
-                <div className="grid grid-cols-3 p-2.5">
+                <div className="grid grid-cols-3 p-3">
                   <span className="font-semibold text-neutral-600">Blouse Details</span>
-                  <span className="col-span-2 text-[#292323]">{product.blouseDetails}</span>
+                  <span className="col-span-2 text-[#140F11] font-medium">{product.blouseDetails}</span>
                 </div>
               )}
               {product.washingInstructions && (
-                <div className="grid grid-cols-3 p-2.5">
+                <div className="grid grid-cols-3 p-3">
                   <span className="font-semibold text-neutral-600">Care Instructions</span>
-                  <span className="col-span-2 text-[#292323]">{product.washingInstructions}</span>
+                  <span className="col-span-2 text-[#140F11] font-medium">{product.washingInstructions}</span>
                 </div>
               )}
               {product.attributes?.map((attr) => (
-                <div key={attr.id} className="grid grid-cols-3 p-2.5">
+                <div key={attr.id} className="grid grid-cols-3 p-3">
                   <span className="font-semibold text-neutral-600">{attr.name}</span>
-                  <span className="col-span-2 text-[#292323]">{attr.value}</span>
+                  <span className="col-span-2 text-[#140F11] font-medium">{attr.value}</span>
                 </div>
               ))}
             </div>
 
-            {/* Color Variants Visual Thumbnail Grid (Matching Reference) */}
+            {/* Color Variants Visual Thumbnail Grid */}
             {product.variants && product.variants.length > 0 && (
-              <div className="space-y-3 pb-4 border-b border-neutral-100">
+              <div className="space-y-3 pb-4 border-b border-[#D4AF37]/20">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold uppercase tracking-wider text-neutral-800">
                     COLOR:{' '}
@@ -345,7 +361,7 @@ export const ProductPage = () => {
                   </div>
                   {selectedVariant && (
                     <span
-                      className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
                         isVariantOutOfStock
                           ? 'text-rose-700 bg-rose-50 border-rose-200'
                           : 'text-emerald-700 bg-emerald-50 border-emerald-200'
@@ -356,7 +372,7 @@ export const ProductPage = () => {
                   )}
                 </div>
 
-                {/* 5-column responsive visual thumbnail grid */}
+                {/* Responsive visual thumbnail grid */}
                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 gap-2.5 sm:gap-3 pt-1">
                   {product.variants.map((variant) => {
                     const isSelected = selectedVariant?.id === variant.id;
@@ -377,10 +393,10 @@ export const ProductPage = () => {
                         title={`${variant.variantValue} (${isOutOfStock ? 'Out of Stock' : `${variant.stockQuantity} in stock`})`}
                       >
                         <div
-                          className={`w-full aspect-square bg-neutral-100 rounded-none overflow-hidden relative transition-all duration-200 ${
+                          className={`w-full aspect-square bg-[#F7F2E7] rounded-xl overflow-hidden relative transition-all duration-300 ${
                             isSelected
-                              ? 'border-2 border-black ring-1 ring-black shadow-sm'
-                              : 'border border-neutral-300 hover:border-neutral-500'
+                              ? 'border-2 border-[#641B32] ring-2 ring-[#D4AF37] ring-offset-2 shadow-md scale-105'
+                              : 'border border-neutral-200 hover:border-[#D4AF37] hover:scale-102'
                           }`}
                         >
                           <img
@@ -395,12 +411,12 @@ export const ProductPage = () => {
                         </div>
 
                         <span
-                          className={`text-[11px] sm:text-xs text-center mt-1 truncate max-w-full tracking-tight transition-colors ${
+                          className={`text-[11px] sm:text-xs text-center mt-1.5 truncate max-w-full tracking-tight transition-colors ${
                             isSelected
-                              ? 'font-bold text-black'
+                              ? 'font-bold text-[#641B32]'
                               : isOutOfStock
-                              ? 'text-neutral-500 font-normal'
-                              : 'text-neutral-700 font-medium group-hover:text-black'
+                              ? 'text-neutral-400 font-normal'
+                              : 'text-neutral-700 font-medium group-hover:text-[#641B32]'
                           }`}
                         >
                           {variant.variantValue}
@@ -418,7 +434,7 @@ export const ProductPage = () => {
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#292323]">
                   Quantity
                 </span>
-                <div className={`flex items-center border border-neutral-300 rounded bg-white ${isVariantOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className={`flex items-center border border-neutral-300 rounded-full bg-white shadow-xs overflow-hidden ${isVariantOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                   <button
                     onClick={() => {
                       if (quantity > 1) {
@@ -427,11 +443,11 @@ export const ProductPage = () => {
                       }
                     }}
                     disabled={isVariantOutOfStock}
-                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer disabled:cursor-not-allowed"
+                    className="px-3.5 py-1 text-sm hover:bg-neutral-100 cursor-pointer disabled:cursor-not-allowed transition-colors"
                   >
                     -
                   </button>
-                  <span className="px-4 py-1 text-xs font-semibold">{quantity}</span>
+                  <span className="px-4 py-1 text-xs font-bold text-[#140F11]">{quantity}</span>
                   <button
                     onClick={() => {
                       const maxStock = selectedVariant ? selectedVariant.stockQuantity : product.stockQuantity;
@@ -443,7 +459,7 @@ export const ProductPage = () => {
                       setActionError('');
                     }}
                     disabled={isVariantOutOfStock}
-                    className="px-3 py-1 text-sm hover:bg-neutral-100 cursor-pointer disabled:cursor-not-allowed"
+                    className="px-3.5 py-1 text-sm hover:bg-neutral-100 cursor-pointer disabled:cursor-not-allowed transition-colors"
                   >
                     +
                   </button>
@@ -451,13 +467,13 @@ export const ProductPage = () => {
               </div>
 
               {actionError && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm">
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl">
                   {actionError}
                 </div>
               )}
 
               {isVariantOutOfStock && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-900 text-xs rounded-sm space-y-1">
+                <div className="p-4 bg-rose-50 border border-rose-200 text-rose-900 text-xs rounded-2xl space-y-1">
                   <div className="font-semibold text-rose-700 flex items-center gap-1.5">
                     <span>✕</span> This saree / shade ({selectedVariant?.variantValue || 'Selected'}) is currently Out of Stock.
                   </div>
@@ -467,13 +483,13 @@ export const ProductPage = () => {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button
                   onClick={handleAddToCart}
                   variant={isVariantOutOfStock ? 'outline' : 'primary'}
                   disabled={isVariantOutOfStock || isAddingToCart}
                   isLoading={isAddingToCart}
-                  className={`flex-1 py-3 text-sm flex items-center justify-center space-x-2 font-bold ${
+                  className={`flex-1 py-4 text-sm flex items-center justify-center space-x-2 font-bold rounded-full shadow-lg transition-transform active:scale-95 ${
                     isVariantOutOfStock ? 'bg-neutral-200 text-neutral-500 border border-neutral-300 cursor-not-allowed opacity-90' : ''
                   }`}
                 >
@@ -492,7 +508,7 @@ export const ProductPage = () => {
                     onClick={handleBuyNow}
                     variant="gold"
                     isLoading={isBuyingNow}
-                    className="flex-1 py-3 text-sm font-semibold text-[#292323]"
+                    className="flex-1 py-4 text-sm font-bold text-[#140F11] rounded-full shadow-lg"
                   >
                     Buy Now
                   </Button>
@@ -502,8 +518,9 @@ export const ProductPage = () => {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-sm flex items-center justify-center transition-colors shadow-xs"
+                  className="px-4 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 shadow-md shadow-emerald-900/20"
                   aria-label="Inquire via WhatsApp"
+                  title="Video Call & Inquiry via WhatsApp"
                 >
                   <MessageCircle className="w-5 h-5" />
                 </a>
@@ -511,10 +528,10 @@ export const ProductPage = () => {
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
                   aria-label="Wishlist"
-                  className="p-3 border border-neutral-300 rounded-sm hover:border-[#641B32] transition-colors flex items-center justify-center cursor-pointer"
+                  className="p-3.5 border border-neutral-300 rounded-full hover:border-rose-400 hover:bg-rose-50/50 transition-all duration-300 flex items-center justify-center cursor-pointer hover:scale-105 shadow-xs"
                 >
                   <Heart
-                    className={`w-5 h-5 ${
+                    className={`w-5 h-5 transition-colors ${
                       isWishlisted ? 'fill-red-600 text-red-600' : 'text-neutral-500'
                     }`}
                   />
@@ -523,23 +540,26 @@ export const ProductPage = () => {
             </div>
 
             {/* Trust Assurances */}
-            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-neutral-200 text-center text-[11px] text-[#594E4E]">
-              <div className="p-2">
-                <ShieldCheck className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
-                <span>100% Authentic Yeola Silk</span>
+            <div className="grid grid-cols-3 gap-3 pt-5 border-t border-[#D4AF37]/25 text-center text-[11px] text-[#594E4E]">
+              <div className="p-3 rounded-2xl bg-gradient-to-b from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/20 shadow-2xs hover:-translate-y-0.5 transition-all">
+                <ShieldCheck className="w-5 h-5 text-[#C5A05A] mx-auto mb-1.5" />
+                <span className="font-semibold block text-[#140F11]">100% Authentic</span>
+                <span className="text-[10px] text-neutral-400">Yeola Pure Silk</span>
               </div>
-              <div className="p-2">
-                <Truck className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
-                <span>Free Express Shipping</span>
+              <div className="p-3 rounded-2xl bg-gradient-to-b from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/20 shadow-2xs hover:-translate-y-0.5 transition-all">
+                <Truck className="w-5 h-5 text-[#C5A05A] mx-auto mb-1.5" />
+                <span className="font-semibold block text-[#140F11]">Free Express</span>
+                <span className="text-[10px] text-neutral-400">All-India Delivery</span>
               </div>
-              <div className="p-2">
-                <RotateCcw className="w-4 h-4 text-[#C5A05A] mx-auto mb-1" />
-                <span>7-Day Return Guarantee</span>
+              <div className="p-3 rounded-2xl bg-gradient-to-b from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/20 shadow-2xs hover:-translate-y-0.5 transition-all">
+                <RotateCcw className="w-5 h-5 text-[#C5A05A] mx-auto mb-1.5" />
+                <span className="font-semibold block text-[#140F11]">7-Day Return</span>
+                <span className="text-[10px] text-neutral-400">Keepsake Guarantee</span>
               </div>
             </div>
 
             {/* Pincode & Delivery Time Estimator */}
-            <div className="pt-4 border-t border-neutral-200">
+            <div className="pt-4 border-t border-[#D4AF37]/20">
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-600 block mb-2">
                 Check Estimated Delivery to Your Pincode:
               </span>
@@ -550,14 +570,14 @@ export const ProductPage = () => {
                   placeholder="Enter 6-digit PIN code (e.g. 416002)"
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                  className="w-full max-w-xs px-3 py-1.5 border border-neutral-300 rounded text-xs focus:outline-none focus:border-[#641B32]"
+                  className="w-full max-w-xs px-4 py-2 border border-neutral-300 rounded-full text-xs focus:outline-none focus:border-[#641B32] focus:ring-1 focus:ring-[#641B32] shadow-xs"
                 />
                 <Button
                   type="submit"
                   variant="outline"
                   size="sm"
                   disabled={checkingPincode || pincode.length !== 6}
-                  className="text-xs border-[#641B32] text-[#641B32]"
+                  className="text-xs border-[#641B32] text-[#641B32] rounded-full hover:bg-[#641B32] hover:text-white px-5"
                 >
                   {checkingPincode ? 'Checking...' : 'Check'}
                 </Button>
@@ -565,7 +585,7 @@ export const ProductPage = () => {
 
               {pincodeResult && (
                 <div
-                  className={`mt-2 p-2.5 rounded text-xs ${
+                  className={`mt-3 p-3 rounded-2xl text-xs ${
                     pincodeResult.serviceable
                       ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                       : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -573,8 +593,8 @@ export const ProductPage = () => {
                 >
                   {pincodeResult.serviceable ? (
                     <div>
-                      <div className="font-semibold flex items-center space-x-1">
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <div className="font-semibold flex items-center space-x-1.5">
+                        <Check className="w-4 h-4 text-emerald-600" />
                         <span>Available for Express Delivery to {pincodeResult.pincode}!</span>
                       </div>
                       <div className="text-[11px] text-emerald-700 mt-0.5">
@@ -591,34 +611,56 @@ export const ProductPage = () => {
         </div>
 
         {/* Customer Reviews Section */}
-        <div className="mt-12 bg-white p-6 sm:p-10 border border-[#C5A05A]/30 rounded-xs shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
+        <div className="mt-14 bg-white/95 backdrop-blur-md p-6 sm:p-10 border border-[#D4AF37]/30 rounded-3xl shadow-lg space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-5 gap-3">
             <div>
-              <h2 className="text-xl font-heading font-bold text-[#641B32]">
-                Customer Reviews & Handloom Feedback
+              <span className="text-xs font-semibold tracking-widest uppercase text-[#D4AF37]">
+                ✦ Connoisseur Testimonials ✦
+              </span>
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-[#641B32] mt-0.5">
+                Client Reviews & Handloom Feedback
               </h2>
-              <div className="flex items-center space-x-1 mt-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
-                ))}
-                <span className="text-xs text-neutral-500 ml-2">5.0 Star Rating (Verified Purchases)</span>
-              </div>
+            </div>
+            <div className="flex items-center space-x-1 bg-amber-50/80 border border-amber-200/60 px-3.5 py-1.5 rounded-full">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+              ))}
+              <span className="text-xs font-bold text-[#641B32] ml-2">5.0 Star Rating</span>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="p-4 bg-[#FFF9F0]/60 border border-[#C5A05A]/20 rounded-xs">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-[#292323]">Sneha M. (Pune)</span>
-                <span className="text-[10px] text-neutral-400">Verified Buyer</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#140F11]">Sneha M. (Pune)</span>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
+                  Verified Buyer
+                </span>
               </div>
-              <div className="flex space-x-1 mb-2">
+              <div className="flex space-x-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                 ))}
               </div>
-              <p className="text-xs text-[#594E4E]">
+              <p className="text-xs text-[#594E4E] leading-relaxed">
                 "The zari shine and peacock pallu are even more magnificent in person! Perfectly packed in the signature Swarada keepsake box. Truly made my festival celebration memorable."
+              </p>
+            </div>
+
+            <div className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#140F11]">Radhika Patil (Mumbai)</span>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
+                  Verified Buyer
+                </span>
+              </div>
+              <div className="flex space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                ))}
+              </div>
+              <p className="text-xs text-[#594E4E] leading-relaxed">
+                "Ordered for my sister's wedding reception. Authentic Yeola Paithani certified with Silk Mark. Customer care assisted us on WhatsApp video call to choose the exact shade."
               </p>
             </div>
           </div>
@@ -628,12 +670,13 @@ export const ProductPage = () => {
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <div className="text-center mb-8">
-              <span className="text-xs font-semibold tracking-widest uppercase text-[#C5A05A]">
-                You May Also Admire
+              <span className="text-xs font-semibold tracking-widest uppercase text-[#D4AF37]">
+                ✦ Curated Handlooms ✦
               </span>
               <h2 className="text-2xl sm:text-3xl font-heading font-bold text-[#641B32] mt-1">
-                Related Handloom Sarees
+                You May Also Admire
               </h2>
+              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mt-2.5" />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {relatedProducts.map((p) => (

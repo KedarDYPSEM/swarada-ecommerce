@@ -16,45 +16,48 @@ import { useSettings } from '../../context/SettingsContext';
 export const Footer = () => {
   const { settings } = useSettings();
   return (
-    <footer className="bg-[#292323] text-[#FFF9F0] pt-16 pb-8 border-t-2 border-[#C5A05A]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-[#140F11] text-[#FAF7F2] pt-18 pb-10 border-t-2 border-[#D4AF37] relative overflow-hidden">
+      {/* Decorative top gold ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-20 bg-radial from-[#D4AF37]/20 to-transparent blur-2xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Value Propositions Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-12 border-b border-neutral-750 text-center">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-[#641B32] text-[#C5A05A] flex items-center justify-center mb-3">
-              <ShieldCheck className="w-6 h-6" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-14 border-b border-white/10 text-center">
+          <div className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl bg-[#641B32] border border-[#D4AF37]/40 text-[#F3E2B8] flex items-center justify-center mb-3.5 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-300 shadow-md">
+              <ShieldCheck className="w-7 h-7" />
             </div>
-            <h4 className="font-heading text-sm font-semibold text-white">100% Authentic Handloom</h4>
-            <p className="text-xs text-neutral-400 mt-1">Direct from Yeola, Varanasi & Kanchi weavers</p>
+            <h4 className="font-heading text-sm font-bold text-[#FFFDF9]">100% Certified Silk</h4>
+            <p className="text-xs text-neutral-400 mt-1 font-light">Yeola, Varanasi & Kanchi master weavers</p>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-[#641B32] text-[#C5A05A] flex items-center justify-center mb-3">
-              <Truck className="w-6 h-6" />
+          <div className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl bg-[#641B32] border border-[#D4AF37]/40 text-[#F3E2B8] flex items-center justify-center mb-3.5 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-300 shadow-md">
+              <Truck className="w-7 h-7" />
             </div>
-            <h4 className="font-heading text-sm font-semibold text-white">Express Pan-India Shipping</h4>
-            <p className="text-xs text-neutral-400 mt-1">Free express delivery on orders above ₹2,999</p>
+            <h4 className="font-heading text-sm font-bold text-[#FFFDF9]">Insured Pan-India Express</h4>
+            <p className="text-xs text-neutral-400 mt-1 font-light">Free delivery on orders above ₹2,999</p>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-[#641B32] text-[#C5A05A] flex items-center justify-center mb-3">
-              <RotateCcw className="w-6 h-6" />
+          <div className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl bg-[#641B32] border border-[#D4AF37]/40 text-[#F3E2B8] flex items-center justify-center mb-3.5 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-300 shadow-md">
+              <RotateCcw className="w-7 h-7" />
             </div>
-            <h4 className="font-heading text-sm font-semibold text-white">7-Day Easy Returns</h4>
-            <p className="text-xs text-neutral-400 mt-1">Hassle-free replacement & exchange policy</p>
+            <h4 className="font-heading text-sm font-bold text-[#FFFDF9]">7-Day Easy Returns</h4>
+            <p className="text-xs text-neutral-400 mt-1 font-light">Hassle-free exchange policy</p>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-[#641B32] text-[#C5A05A] flex items-center justify-center mb-3">
-              <CreditCard className="w-6 h-6" />
+          <div className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl bg-[#641B32] border border-[#D4AF37]/40 text-[#F3E2B8] flex items-center justify-center mb-3.5 group-hover:scale-110 group-hover:border-[#D4AF37] transition-all duration-300 shadow-md">
+              <CreditCard className="w-7 h-7" />
             </div>
-            <h4 className="font-heading text-sm font-semibold text-white">Razorpay Secure Checkout</h4>
-            <p className="text-xs text-neutral-400 mt-1">UPI, Cards, Netbanking & Cash on Delivery</p>
+            <h4 className="font-heading text-sm font-bold text-[#FFFDF9]">Secure Instant Checkout</h4>
+            <p className="text-xs text-neutral-400 mt-1 font-light">Razorpay UPI, Cards & Cash on Delivery</p>
           </div>
         </div>
 
         {/* Main Footer Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 py-12 border-b border-neutral-750">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 py-14 border-b border-white/10">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <Link to="/" className="inline-block">
@@ -65,25 +68,25 @@ export const Footer = () => {
                   className="h-12 w-auto max-w-[220px] object-contain brightness-0 invert"
                 />
               ) : (
-                <>
-                  <span className="font-heading text-2xl font-bold tracking-wider text-white uppercase">
+                <div className="flex flex-col">
+                  <span className="font-royal text-2xl sm:text-3xl font-bold tracking-[0.1em] text-white uppercase">
                     Swarada
                   </span>
-                  <span className="block text-[10px] tracking-[0.25em] font-medium text-[#C5A05A] uppercase -mt-1">
+                  <span className="block text-[9px] tracking-[0.3em] font-medium text-[#D4AF37] uppercase -mt-0.5 font-royal">
                     Saree Center • Kolhapur
                   </span>
-                </>
+                </div>
               )}
             </Link>
-            <p className="text-xs text-neutral-300 leading-relaxed max-w-sm">
-              Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the unmatched majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.
+            <p className="text-xs text-neutral-300/90 leading-relaxed max-w-sm font-light">
+              Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the timeless majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.
             </p>
-            <div className="flex items-center space-x-3 pt-2">
+            <div className="flex items-center space-x-3 pt-3">
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-[#C5A05A] hover:bg-[#641B32] hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#641B32] border border-white/15 flex items-center justify-center text-[#F3E2B8] hover:text-white transition-all duration-300 hover:scale-110 shadow-sm"
                 aria-label="Instagram"
               >
                 <InstagramIcon className="w-4 h-4" />
@@ -92,7 +95,7 @@ export const Footer = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-[#C5A05A] hover:bg-[#641B32] hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#641B32] border border-white/15 flex items-center justify-center text-[#F3E2B8] hover:text-white transition-all duration-300 hover:scale-110 shadow-sm"
                 aria-label="Facebook"
               >
                 <FacebookIcon className="w-4 h-4" />
@@ -101,7 +104,7 @@ export const Footer = () => {
                 href="https://youtube.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-[#C5A05A] hover:bg-[#641B32] hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#641B32] border border-white/15 flex items-center justify-center text-[#F3E2B8] hover:text-white transition-all duration-300 hover:scale-110 shadow-sm"
                 aria-label="YouTube"
               >
                 <YoutubeIcon className="w-4 h-4" />
