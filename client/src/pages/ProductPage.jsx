@@ -14,7 +14,7 @@ import {
   Video,
   Play,
 } from 'lucide-react';
-import { formatPrice, calculateDiscount } from '../lib/utils';
+import { formatPrice, calculateDiscount, getYouTubeVideoId, getYouTubeEmbedUrl } from '../lib/utils';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import productService from '../services/productService';
@@ -208,30 +208,45 @@ export const ProductPage = () => {
             >
               {isVideoActive && product?.videoUrl ? (
                 <div className="w-full h-full bg-black flex items-center justify-center relative">
-                  <video
-                    ref={(el) => {
-                      if (el) {
-                        el.defaultMuted = true;
-                        el.muted = true;
-                        const p = el.play();
-                        if (p !== undefined) p.catch(() => {});
-                      }
-                    }}
-                    src={product.videoUrl}
-                    controls
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      if (product.videoUrl && product.videoUrl.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
-                        e.target.dataset.triedFallback = 'true';
-                        e.target.src = `http://localhost:5000${product.videoUrl}`;
-                        e.target.play?.().catch(() => {});
-                      }
-                    }}
-                  />
+                  {getYouTubeVideoId(product.videoUrl) ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(product.videoUrl, {
+                        autoPlay: true,
+                        loop: true,
+                        muted: true,
+                        controls: true,
+                      })}
+                      title={`${product.name} Video`}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      ref={(el) => {
+                        if (el) {
+                          el.defaultMuted = true;
+                          el.muted = true;
+                          const p = el.play();
+                          if (p !== undefined) p.catch(() => {});
+                        }
+                      }}
+                      src={product.videoUrl}
+                      controls
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        if (product.videoUrl && product.videoUrl.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                          e.target.dataset.triedFallback = 'true';
+                          e.target.src = `http://localhost:5000${product.videoUrl}`;
+                          e.target.play?.().catch(() => {});
+                        }
+                      }}
+                    />
+                  )}
                 </div>
               ) : (
                 <img
@@ -302,13 +317,17 @@ export const ProductPage = () => {
                         : 'border-neutral-200 opacity-80 hover:opacity-100 hover:border-[#D4AF37]'
                     }`}
                   >
-                    {images[0] && (
-                      <img
-                        src={images[0]}
-                        alt="Video poster"
-                        className="absolute inset-0 w-full h-full object-cover opacity-35"
-                      />
-                    )}
+                    {(() => {
+                      const ytThumbId = getYouTubeVideoId(product?.videoUrl);
+                      const poster = (ytThumbId ? `https://img.youtube.com/vi/${ytThumbId}/hqdefault.jpg` : null) || images[0];
+                      return poster ? (
+                        <img
+                          src={poster}
+                          alt="Video poster"
+                          className="absolute inset-0 w-full h-full object-cover opacity-40"
+                        />
+                      ) : null;
+                    })()}
                     <div className="relative z-10 flex flex-col items-center">
                       <div className="w-7 h-7 rounded-full bg-[#641B32]/90 border border-[#D4AF37] flex items-center justify-center text-white shadow-xs">
                         <Play className="w-3.5 h-3.5 ml-0.5 text-[#F3E2B8]" />

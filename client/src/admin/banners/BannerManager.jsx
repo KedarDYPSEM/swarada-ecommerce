@@ -13,6 +13,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
 import ImageUploader from '../components/ImageUploader';
+import { getYouTubeVideoId, getYouTubeEmbedUrl } from '../../lib/utils';
 
 const BANNER_TYPES = ['HERO', 'PROMOTIONAL', 'POPUP', 'CATEGORY'];
 
@@ -206,30 +207,46 @@ export const BannerManager = () => {
             >
               <div className="relative h-48 bg-neutral-900 group">
                 {b.isVideo && (b.videoUrl || b.imageUrl) ? (
-                  <video
-                    ref={(el) => {
-                      if (el) {
-                        el.defaultMuted = true;
-                        el.muted = true;
-                        const p = el.play();
-                        if (p !== undefined) p.catch(() => {});
-                      }
-                    }}
-                    src={b.videoUrl || b.imageUrl}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      const src = b.videoUrl || b.imageUrl;
-                      if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
-                        e.target.dataset.triedFallback = 'true';
-                        e.target.src = `http://localhost:5000${src}`;
-                        e.target.play?.().catch(() => {});
-                      }
-                    }}
-                  />
+                  getYouTubeVideoId(b.videoUrl || b.imageUrl) ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(b.videoUrl || b.imageUrl, {
+                        isBackground: true,
+                        autoPlay: true,
+                        loop: true,
+                        muted: true,
+                        controls: false,
+                      })}
+                      title={b.title}
+                      className="w-full h-full object-cover pointer-events-none scale-125 border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      ref={(el) => {
+                        if (el) {
+                          el.defaultMuted = true;
+                          el.muted = true;
+                          const p = el.play();
+                          if (p !== undefined) p.catch(() => {});
+                        }
+                      }}
+                      src={b.videoUrl || b.imageUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        const src = b.videoUrl || b.imageUrl;
+                        if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                          e.target.dataset.triedFallback = 'true';
+                          e.target.src = `http://localhost:5000${src}`;
+                          e.target.play?.().catch(() => {});
+                        }
+                      }}
+                    />
+                  )
                 ) : (
                   <img
                     src={b.imageUrl}
@@ -443,30 +460,45 @@ export const BannerManager = () => {
                             imageUrl: formData.imageUrl || e.target.value,
                           })
                         }
-                        placeholder="Or paste video URL (/uploads/... or .mp4)"
+                        placeholder="Paste YouTube link (e.g. youtu.be/... or watch?v=...) or video file URL"
                         className="w-full sm:flex-1 px-3 py-1.5 border border-neutral-200 rounded bg-white text-xs font-mono"
                       />
                     </div>
 
                     {formData.videoUrl && (
-                      <div className="relative h-28 bg-black rounded overflow-hidden">
-                        <video
-                          ref={(el) => {
-                            if (el) {
-                              el.defaultMuted = true;
-                              el.muted = true;
-                              const p = el.play();
-                              if (p !== undefined) p.catch(() => {});
-                            }
-                          }}
-                          src={formData.videoUrl}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          controls
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="relative h-32 bg-black rounded overflow-hidden">
+                        {getYouTubeVideoId(formData.videoUrl) ? (
+                          <iframe
+                            src={getYouTubeEmbedUrl(formData.videoUrl, {
+                              autoPlay: true,
+                              loop: true,
+                              muted: true,
+                              controls: true,
+                            })}
+                            title="YouTube Preview"
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video
+                            ref={(el) => {
+                              if (el) {
+                                el.defaultMuted = true;
+                                el.muted = true;
+                                const p = el.play();
+                                if (p !== undefined) p.catch(() => {});
+                              }
+                            }}
+                            src={formData.videoUrl}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            controls
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                       </div>
                     )}
                     <p className="text-[10px] text-neutral-500">

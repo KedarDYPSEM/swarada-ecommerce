@@ -17,6 +17,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
 import ImageUploader from '../components/ImageUploader';
+import { getYouTubeVideoId, getYouTubeEmbedUrl } from '../../lib/utils';
 
 export const ProductForm = () => {
   const { id } = useParams();
@@ -825,12 +826,12 @@ export const ProductForm = () => {
                   className="hidden"
                 />
               </label>
-              <span className="text-xs text-neutral-400 font-medium">OR enter direct Video URL:</span>
+              <span className="text-xs text-neutral-400 font-medium">OR enter Video / YouTube URL:</span>
               <input
                 type="text"
                 value={formData.videoUrl}
                 onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                placeholder="https://example.com/saree-video.mp4 or /uploads/..."
+                placeholder="YouTube link (e.g. youtu.be/... or watch?v=...) or /uploads/..."
                 className="w-full sm:flex-1 px-3 py-2 border border-neutral-200 rounded bg-white text-xs font-mono"
               />
             </div>
@@ -838,23 +839,38 @@ export const ProductForm = () => {
             {formData.videoUrl ? (
               <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-200 flex flex-col sm:flex-row gap-4 items-center">
                 <div className="w-48 h-28 bg-black rounded-lg overflow-hidden shrink-0 shadow-xs relative">
-                  <video
-                    ref={(el) => {
-                      if (el) {
-                        el.defaultMuted = true;
-                        el.muted = true;
-                        const p = el.play();
-                        if (p !== undefined) p.catch(() => {});
-                      }
-                    }}
-                    src={formData.videoUrl}
-                    controls
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
+                  {getYouTubeVideoId(formData.videoUrl) ? (
+                    <iframe
+                      src={getYouTubeEmbedUrl(formData.videoUrl, {
+                        autoPlay: true,
+                        loop: true,
+                        muted: true,
+                        controls: true,
+                      })}
+                      title="YouTube Drape Preview"
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      ref={(el) => {
+                        if (el) {
+                          el.defaultMuted = true;
+                          el.muted = true;
+                          const p = el.play();
+                          if (p !== undefined) p.catch(() => {});
+                        }
+                      }}
+                      src={formData.videoUrl}
+                      controls
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
                 <div className="text-xs space-y-1">
                   <div className="font-semibold text-emerald-700 flex items-center gap-1.5">

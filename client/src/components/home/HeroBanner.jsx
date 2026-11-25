@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { getYouTubeVideoId, getYouTubeEmbedUrl } from '../../lib/utils';
 
-// Dedicated autoplay video component that ensures muted=true and calls .play() reliably
+// Dedicated autoplay video component that supports direct MP4 files AND YouTube video links
 const HeroVideoSlide = ({ src, isActive }) => {
   const videoRef = useRef(null);
+  const ytId = getYouTubeVideoId(src);
 
   useEffect(() => {
+    if (ytId) return; // YouTube handles autoplay and looping via iframe embed parameters
     const el = videoRef.current;
     if (!el) return;
     el.defaultMuted = true;
@@ -20,7 +23,28 @@ const HeroVideoSlide = ({ src, isActive }) => {
     } else {
       el.pause();
     }
-  }, [isActive, src]);
+  }, [isActive, src, ytId]);
+
+  if (ytId) {
+    const embedUrl = getYouTubeEmbedUrl(src, {
+      isBackground: true,
+      autoPlay: true,
+      loop: true,
+      muted: true,
+      controls: false,
+    });
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <iframe
+          src={isActive ? embedUrl : 'about:blank'}
+          title="Hero Video Background"
+          className="w-full h-full object-cover scale-135 pointer-events-none border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
 
   return (
     <video
