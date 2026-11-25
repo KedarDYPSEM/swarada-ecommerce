@@ -4,8 +4,9 @@ const settingsController = require('../controllers/settingsController');
 
 const router = express.Router();
 
-// Public endpoint for storefront header, logo, menus, contacts
+// Public endpoints
 router.get('/public', settingsController.getPublicSettings);
+router.get('/youtube-live', settingsController.getYouTubeLiveInfo);
 
 // Admin-protected endpoints
 router.get('/', authenticate, requireRole('ADMIN', 'SUPER_ADMIN'), settingsController.getAdminSettings);

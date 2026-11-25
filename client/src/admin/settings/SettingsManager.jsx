@@ -11,6 +11,11 @@ import {
   Image as ImageIcon,
   Check,
   X,
+  Volume2,
+  Video,
+  PackageCheck,
+  Clock,
+  FileText,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import ImageUploader from '../components/ImageUploader';
@@ -53,13 +58,30 @@ export const SettingsManager = () => {
     storeName: 'Swarada Saree Center',
     tagline: 'Pure Handloom Paithani, Banarasi & Ethnic Fashion',
     logoUrl: '',
-    location: 'Mahadwar Road, Kolhapur, Maharashtra 416002',
+    location: 'Shop 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur - 416002',
     phone: '+91 98220 12345',
-    email: 'contact@swaradasarees.com',
+    email: 'orders@swaradasareecenter.com',
+    storeHours: 'Mon - Sun: 10:00 AM - 9:00 PM',
+    storeBio:
+      'Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the timeless majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.',
     gstin: '27AAAAA0000A1Z5',
     currency: 'INR (₹)',
     freeShippingThreshold: '2999',
     standardShippingFee: '150',
+  });
+
+  // Top Announcement Bar & Trust Badges
+  const [announcementSettings, setAnnouncementSettings] = useState({
+    enabled: true,
+    text: '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS • FLAT 10% OFF FIRST ORDER: USE SWARADA10 •',
+    ordersBase: '10000',
+  });
+
+  // YouTube Live Stream
+  const [youtubeSettings, setYoutubeSettings] = useState({
+    channelUrl: 'https://www.youtube.com/@swaradasareecentre776/',
+    channelId: 'UCOTYLwpl0sy46Tjkvm9OrYQ',
+    livestreamUrl: '',
   });
 
   // Navigation Menus State
@@ -98,10 +120,26 @@ export const SettingsManager = () => {
             phone: map.store_phone || prev.phone,
             email: map.store_email || prev.email,
             location: map.store_address || prev.location,
+            storeHours: map.store_hours || prev.storeHours,
+            storeBio: map.store_bio || prev.storeBio,
             gstin: map.gst_number || prev.gstin,
             freeShippingThreshold: map.free_shipping_threshold || prev.freeShippingThreshold,
             standardShippingFee: map.standard_shipping_charge || prev.standardShippingFee,
           }));
+
+          setAnnouncementSettings({
+            enabled: map.announcement_bar_enabled !== 'false',
+            text:
+              map.announcement_text ||
+              '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS • FLAT 10% OFF FIRST ORDER: USE SWARADA10 •',
+            ordersBase: map.orders_delivered_base || '10000',
+          });
+
+          setYoutubeSettings({
+            channelUrl: map.youtube_channel_url || 'https://www.youtube.com/@swaradasareecentre776/',
+            channelId: map.youtube_channel_id || 'UCOTYLwpl0sy46Tjkvm9OrYQ',
+            livestreamUrl: map.youtube_livestream_url || '',
+          });
 
           setRazorpaySettings({
             keyId: map.razorpay_key_id || '',
@@ -152,9 +190,17 @@ export const SettingsManager = () => {
         store_phone: storeSettings.phone,
         store_email: storeSettings.email,
         store_address: storeSettings.location,
+        store_hours: storeSettings.storeHours,
+        store_bio: storeSettings.storeBio,
         gst_number: storeSettings.gstin,
         free_shipping_threshold: storeSettings.freeShippingThreshold,
         standard_shipping_charge: storeSettings.standardShippingFee,
+        announcement_bar_enabled: announcementSettings.enabled ? 'true' : 'false',
+        announcement_text: announcementSettings.text,
+        orders_delivered_base: announcementSettings.ordersBase,
+        youtube_channel_url: youtubeSettings.channelUrl,
+        youtube_channel_id: youtubeSettings.channelId,
+        youtube_livestream_url: youtubeSettings.livestreamUrl,
         nav_menus: JSON.stringify(menus),
         razorpay_key_id: razorpaySettings.keyId?.trim() || '',
         razorpay_key_secret: razorpaySettings.keySecret?.trim() || '',
@@ -186,17 +232,17 @@ export const SettingsManager = () => {
           Platform Preferences
         </span>
         <h1 className="text-2xl font-heading font-bold text-[#292323]">
-          Store Settings & Navigation
+          Store Settings & Merchandising
         </h1>
         <p className="text-xs text-neutral-500 mt-0.5">
-          Upload custom store logo, toggle navigation menus, and configure business details
+          Manage header marquee, YouTube live streaming, order counter, shop details, and branding
         </p>
       </div>
 
       {saveSuccess && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center space-x-2">
           <CheckCircle className="w-4 h-4 text-emerald-600" />
-          <span>Settings and navigation menus successfully updated!</span>
+          <span>Settings successfully updated across storefront!</span>
         </div>
       )}
 
@@ -208,21 +254,43 @@ export const SettingsManager = () => {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-1 border-b border-neutral-200 text-xs font-medium">
+      <div className="flex flex-wrap gap-1 border-b border-neutral-200 text-xs font-medium">
         <button
           onClick={() => setActiveTab('general')}
-          className={`px-4 py-2 rounded-t-lg transition-colors cursor-pointer ${
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
             activeTab === 'general'
               ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
               : 'text-neutral-600 hover:bg-neutral-50'
           }`}
         >
-          General & Logo
+          General & Shop Details
+        </button>
+
+        <button
+          onClick={() => setActiveTab('announcement')}
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
+            activeTab === 'announcement'
+              ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
+              : 'text-neutral-600 hover:bg-neutral-50'
+          }`}
+        >
+          Header Marquee & Orders Counter
+        </button>
+
+        <button
+          onClick={() => setActiveTab('youtube')}
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
+            activeTab === 'youtube'
+              ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
+              : 'text-neutral-600 hover:bg-neutral-50'
+          }`}
+        >
+          YouTube Live Showcase
         </button>
 
         <button
           onClick={() => setActiveTab('menus')}
-          className={`px-4 py-2 rounded-t-lg transition-colors cursor-pointer ${
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
             activeTab === 'menus'
               ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
               : 'text-neutral-600 hover:bg-neutral-50'
@@ -233,7 +301,7 @@ export const SettingsManager = () => {
 
         <button
           onClick={() => setActiveTab('payments')}
-          className={`px-4 py-2 rounded-t-lg transition-colors cursor-pointer ${
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
             activeTab === 'payments'
               ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
               : 'text-neutral-600 hover:bg-neutral-50'
@@ -244,7 +312,7 @@ export const SettingsManager = () => {
 
         <button
           onClick={() => setActiveTab('shipping')}
-          className={`px-4 py-2 rounded-t-lg transition-colors cursor-pointer ${
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
             activeTab === 'shipping'
               ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
               : 'text-neutral-600 hover:bg-neutral-50'
@@ -255,7 +323,7 @@ export const SettingsManager = () => {
       </div>
 
       <form onSubmit={handleSave} className="bg-white p-6 rounded-lg border border-neutral-200 shadow-sm space-y-6 text-xs">
-        {/* Tab 1: General & Logo */}
+        {/* Tab 1: General & Shop Details */}
         {activeTab === 'general' && (
           <div className="space-y-6">
             {/* Custom Logo Upload Section */}
@@ -267,7 +335,7 @@ export const SettingsManager = () => {
                     <span>Store Logo (Client Storefront Header & Footer)</span>
                   </h3>
                   <p className="text-[11px] text-[#594E4E] mt-0.5">
-                    Upload your official brand logo file. When uploaded, this replaces the plain text "Swarada Saree Center" on the website header and footer.
+                    Upload your official brand logo. Replaces plain text brand name on header and footer.
                   </p>
                 </div>
                 {storeSettings.logoUrl && (
@@ -312,7 +380,7 @@ export const SettingsManager = () => {
 
             {/* Store Text Details */}
             <h3 className="font-heading font-bold text-sm text-[#292323] pt-2">
-              Store Identity & Contact Details
+              Store Identity, Location & Operating Hours
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -338,14 +406,36 @@ export const SettingsManager = () => {
                 />
               </div>
 
+              <div className="sm:col-span-2">
+                <label className="block font-semibold text-neutral-700 mb-1">About Store / Footer Bio</label>
+                <textarea
+                  rows={3}
+                  value={storeSettings.storeBio}
+                  onChange={(e) => setStoreSettings({ ...storeSettings, storeBio: e.target.value })}
+                  placeholder="Write your brand legacy narrative for the footer..."
+                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                />
+              </div>
+
               <div>
-                <label className="block font-semibold text-neutral-700 mb-1">Store GSTIN</label>
+                <label className="block font-semibold text-neutral-700 mb-1">Flagship Store Address</label>
                 <input
                   type="text"
-                  value={storeSettings.gstin}
-                  onChange={(e) => setStoreSettings({ ...storeSettings, gstin: e.target.value })}
-                  placeholder="e.g. 27AAAAA0000A1Z5"
-                  className="w-full px-3 py-2 border border-neutral-200 rounded font-mono"
+                  value={storeSettings.location}
+                  onChange={(e) => setStoreSettings({ ...storeSettings, location: e.target.value })}
+                  placeholder="e.g. Shop 12, Mahadwar Road, Kolhapur"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">Store Hours</label>
+                <input
+                  type="text"
+                  value={storeSettings.storeHours}
+                  onChange={(e) => setStoreSettings({ ...storeSettings, storeHours: e.target.value })}
+                  placeholder="e.g. Mon - Sun: 10:00 AM - 9:00 PM"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded"
                 />
               </div>
 
@@ -366,26 +456,150 @@ export const SettingsManager = () => {
                   type="email"
                   value={storeSettings.email}
                   onChange={(e) => setStoreSettings({ ...storeSettings, email: e.target.value })}
-                  placeholder="e.g. contact@swaradasarees.com"
+                  placeholder="e.g. orders@swaradasareecenter.com"
                   className="w-full px-3 py-2 border border-neutral-200 rounded"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-700 mb-1">Physical Store Location</label>
+                <label className="block font-semibold text-neutral-700 mb-1">Store GSTIN</label>
                 <input
                   type="text"
-                  value={storeSettings.location}
-                  onChange={(e) => setStoreSettings({ ...storeSettings, location: e.target.value })}
-                  placeholder="e.g. Mahadwar Road, Kolhapur, Maharashtra 416002"
-                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                  value={storeSettings.gstin}
+                  onChange={(e) => setStoreSettings({ ...storeSettings, gstin: e.target.value })}
+                  placeholder="e.g. 27AAAAA0000A1Z5"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-mono"
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* Tab 2: Navigation Menus Toggle Center */}
+        {/* Tab 2: Header Marquee & Orders Counter */}
+        {activeTab === 'announcement' && (
+          <div className="space-y-6">
+            <div className="p-4 bg-amber-50/50 border border-amber-200/70 rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading font-bold text-sm text-[#641B32] flex items-center space-x-2">
+                    <Volume2 className="w-4 h-4 text-[#D4AF37]" />
+                    <span>Top Scrolling Marquee Announcement Bar</span>
+                  </h3>
+                  <p className="text-[11px] text-neutral-600 mt-0.5">
+                    Continuous scrolling text strip displayed at the very top of every page.
+                  </p>
+                </div>
+
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={announcementSettings.enabled}
+                    onChange={(e) =>
+                      setAnnouncementSettings({ ...announcementSettings, enabled: e.target.checked })
+                    }
+                    className="rounded text-[#641B32] focus:ring-[#641B32]"
+                  />
+                  <span className="font-semibold text-xs text-neutral-700">Enable Marquee</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">Announcement Text</label>
+                <textarea
+                  rows={3}
+                  value={announcementSettings.text}
+                  onChange={(e) =>
+                    setAnnouncementSettings({ ...announcementSettings, text: e.target.value })
+                  }
+                  placeholder="e.g. • NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS •"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-mono text-xs"
+                />
+                <p className="text-[10px] text-neutral-400 mt-1">
+                  Tip: Separate messages with bullets (•) or stars (★) for clear scrolling readability.
+                </p>
+              </div>
+            </div>
+
+            {/* Total Orders Delivered Counter */}
+            <div className="p-4 bg-emerald-50/50 border border-emerald-200/70 rounded-lg space-y-3">
+              <h3 className="font-heading font-bold text-sm text-[#0D5C46] flex items-center space-x-2">
+                <PackageCheck className="w-4 h-4 text-emerald-600" />
+                <span>Total Orders Delivered Trust Counter</span>
+              </h3>
+              <p className="text-[11px] text-neutral-600">
+                Displayed in the footer and homepage trust badges (e.g. 10,000+ Orders Delivered). This automatically increments on every completed order.
+              </p>
+
+              <div className="max-w-xs">
+                <label className="block font-semibold text-neutral-700 mb-1">Starting Base Count</label>
+                <input
+                  type="number"
+                  value={announcementSettings.ordersBase}
+                  onChange={(e) =>
+                    setAnnouncementSettings({ ...announcementSettings, ordersBase: e.target.value })
+                  }
+                  placeholder="10000"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-bold text-[#0D5C46]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: YouTube Live */}
+        {activeTab === 'youtube' && (
+          <div className="space-y-4">
+            <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
+              <Video className="w-4 h-4 text-red-600" />
+              <span>YouTube Channel & Live Showcase Integration</span>
+            </h3>
+            <p className="text-[11px] text-neutral-500">
+              Link your official YouTube channel. The website automatically fetches your latest broadcast from your channel feed.
+            </p>
+
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">Official YouTube Channel URL</label>
+                <input
+                  type="text"
+                  value={youtubeSettings.channelUrl}
+                  onChange={(e) => setYoutubeSettings({ ...youtubeSettings, channelUrl: e.target.value })}
+                  placeholder="https://www.youtube.com/@swaradasareecentre776/"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">YouTube Channel ID (Internal)</label>
+                <input
+                  type="text"
+                  value={youtubeSettings.channelId}
+                  onChange={(e) => setYoutubeSettings({ ...youtubeSettings, channelId: e.target.value })}
+                  placeholder="UCOTYLwpl0sy46Tjkvm9OrYQ"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Custom / Direct Live Video Link (Optional Override)
+                </label>
+                <input
+                  type="text"
+                  value={youtubeSettings.livestreamUrl}
+                  onChange={(e) => setYoutubeSettings({ ...youtubeSettings, livestreamUrl: e.target.value })}
+                  placeholder="e.g. https://www.youtube.com/watch?v=... (Leave blank to use automatic channel feed)"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                />
+                <p className="text-[10px] text-neutral-400 mt-1">
+                  When left blank, the platform automatically streams your channel's latest live or recorded video.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Navigation Menus Toggle Center */}
         {activeTab === 'menus' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
@@ -395,7 +609,7 @@ export const SettingsManager = () => {
                   <span>Storefront Navigation Menu Visibility</span>
                 </h3>
                 <p className="text-[11px] text-neutral-500 mt-0.5">
-                  Toggle menu items on or off. Only active menu pages will be displayed on the website navigation bar across all screen sizes.
+                  Toggle menu items on or off. Only active menu pages will be displayed on the website navigation bar.
                 </p>
               </div>
               <span className="text-xs font-semibold px-2.5 py-1 bg-[#641B32]/10 text-[#641B32] rounded">
@@ -443,7 +657,6 @@ export const SettingsManager = () => {
                       {menu.active ? 'Active (Visible)' : 'Disabled (Hidden)'}
                     </span>
 
-                    {/* Toggle Button Switch */}
                     <button
                       type="button"
                       onClick={() => toggleMenu(idx)}
@@ -467,7 +680,7 @@ export const SettingsManager = () => {
           </div>
         )}
 
-        {/* Tab 3: Razorpay */}
+        {/* Tab 5: Razorpay */}
         {activeTab === 'payments' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -487,7 +700,7 @@ export const SettingsManager = () => {
             </div>
 
             <p className="text-[11px] text-neutral-500">
-              Enter your official Razorpay Test Key ID & Key Secret below to process real test cards and UPI. If left blank, checkout automatically uses smooth local sandbox simulation so testing never breaks.
+              Enter your official Razorpay Test Key ID & Key Secret below to process real test cards and UPI.
             </p>
 
             <div className="space-y-3">
@@ -549,7 +762,7 @@ export const SettingsManager = () => {
           </div>
         )}
 
-        {/* Tab 4: Shipping & Logistics */}
+        {/* Tab 6: Shipping & Logistics */}
         {activeTab === 'shipping' && (
           <div className="space-y-4">
             <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">

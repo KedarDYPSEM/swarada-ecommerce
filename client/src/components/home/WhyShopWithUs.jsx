@@ -1,30 +1,34 @@
 import React from 'react';
-import { ShieldCheck, Video, Award, Truck } from 'lucide-react';
-
-const REASONS = [
-  {
-    icon: ShieldCheck,
-    title: 'Silk Mark Certified Purity',
-    description: 'Every Paithani and Banarasi saree is woven with pure natural silk and tested gold zari, complete with authenticity guarantees.',
-  },
-  {
-    icon: Award,
-    title: 'Direct Weaver Heritage',
-    description: 'Handpicked directly from master weavers across Yeola, Paithan, Varanasi, and Kanchipuram with zero middleman markups.',
-  },
-  {
-    icon: Video,
-    title: 'Personalized Video Shopping',
-    description: 'Book a 1-on-1 WhatsApp video consultation with our Kolhapur saree specialists to inspect pallu weaves and fabric drape live.',
-  },
-  {
-    icon: Truck,
-    title: 'Insured Pan-India Express Delivery',
-    description: 'Free express shipping on orders above ₹2,999 in tamper-proof premium bridal keepsake packaging with real-time tracking.',
-  },
-];
+import { PackageCheck, Video, Award, Truck } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 export const WhyShopWithUs = () => {
+  const { settings } = useSettings();
+  const ordersCount = (settings?.ordersDeliveredCount || 10000).toLocaleString('en-IN');
+
+  const REASONS = [
+    {
+      icon: PackageCheck,
+      title: `${ordersCount}+ Orders Delivered`,
+      description: 'Trusted by brides and saree connoisseurs across India & globally with 100% verified authentic delivery track record.',
+    },
+    {
+      icon: Award,
+      title: 'Direct Weaver Heritage',
+      description: 'Handpicked directly from master weavers across Yeola, Paithan, Varanasi, and Kanchipuram with zero middleman markups.',
+    },
+    {
+      icon: Video,
+      title: 'Personalized Video Shopping',
+      description: 'Book a 1-on-1 WhatsApp video consultation with our Kolhapur saree specialists to inspect pallu weaves and fabric drape live.',
+    },
+    {
+      icon: Truck,
+      title: 'Insured Pan-India Express Delivery',
+      description: `Free express shipping on orders above ₹${settings?.freeShippingThreshold?.toLocaleString('en-IN') || '2,999'} in tamper-proof premium bridal keepsake packaging.`,
+    },
+  ];
+
   return (
     <section className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -45,7 +49,7 @@ export const WhyShopWithUs = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {REASONS.map((reason, idx) => {
+          {REASONS.map((reason) => {
             const Icon = reason.icon;
             return (
               <div

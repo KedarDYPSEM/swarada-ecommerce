@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import HeroBanner from '../components/home/HeroBanner';
+import CircularCategoryScroll from '../components/home/CircularCategoryScroll';
 import CategoryShowcase from '../components/home/CategoryShowcase';
 import FeaturedProducts from '../components/home/FeaturedProducts';
+import YouTubeLiveSection from '../components/home/YouTubeLiveSection';
 import PromoBanner from '../components/home/PromoBanner';
 import WhyShopWithUs from '../components/home/WhyShopWithUs';
 import Testimonials from '../components/home/Testimonials';
 import InstagramGallery from '../components/home/InstagramGallery';
 import Newsletter from '../components/home/Newsletter';
 import PromoPopup from '../components/home/PromoPopup';
+import RecentPurchaseToast from '../components/common/RecentPurchaseToast';
 import homepageService from '../services/homepageService';
 
 export const Home = () => {
@@ -37,43 +40,52 @@ export const Home = () => {
 
   return (
     <div className="space-y-0">
-      {/* 6. Multi-Slide Hero Banner */}
+      {/* 1. Multi-Slide Hero Banner */}
       <HeroBanner banners={data?.banners?.hero} />
 
-      {/* 7. Shop by Category */}
+      {/* 2. Infinite Circular Categories Scroll Row */}
+      <CircularCategoryScroll categories={data?.categories} />
+
+      {/* 3. Shop by Category Showcase */}
       <CategoryShowcase categories={data?.categories} />
 
-      {/* 8, 10, 11. New Arrivals & Trending Sarees */}
+      {/* 4. New Arrivals & Trending Sarees */}
       <FeaturedProducts
         title="New Arrivals & Trending Sarees"
         defaultTab="new"
         products={data?.newArrivals}
       />
 
-      {/* 12, 13. Festival Collections & Promotional Sale Banner */}
+      {/* 5. Live YouTube Showcase & Shopping */}
+      <YouTubeLiveSection />
+
+      {/* 6. Festival Collections & Promotional Sale Banner */}
       <PromoBanner banners={data?.banners?.promotional} />
 
-      {/* 9. Best Sellers Showcase */}
+      {/* 7. Best Sellers Showcase */}
       <FeaturedProducts
         title="Best Selling Handlooms"
         defaultTab="bestseller"
         products={data?.bestSellers}
       />
 
-      {/* 14. Why Shop With Us */}
+      {/* 8. Why Shop With Us (10,000+ Orders Delivered Counter) */}
       <WhyShopWithUs />
 
-      {/* 15. Customer Testimonials */}
+      {/* 9. Customer Testimonials */}
       <Testimonials />
 
-      {/* 16. Instagram Gallery */}
+      {/* 10. Instagram Gallery */}
       <InstagramGallery />
 
-      {/* 17. Newsletter Subscription */}
+      {/* 11. Newsletter Subscription */}
       <Newsletter />
 
       {/* Promotional / Announcement Modal Popup */}
       <PromoPopup banners={data?.banners?.popup} />
+
+      {/* Live Social Proof "Recently Purchased" Notification Toast */}
+      <RecentPurchaseToast />
     </div>
   );
 };

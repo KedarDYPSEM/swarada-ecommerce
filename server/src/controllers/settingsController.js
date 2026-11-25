@@ -24,13 +24,22 @@ const DEFAULT_MENUS = [
   { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
 ];
 
+const DEFAULT_ANNOUNCEMENT =
+  '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS • FLAT 10% OFF FIRST ORDER: USE SWARADA10 •';
+
 const sanitizeUploadUrl = (url) => {
   if (!url || typeof url !== 'string') return url;
   return url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
 };
 
+// In-memory cache for YouTube latest feed (cache for 10 minutes)
+let youtubeCache = {
+  data: null,
+  timestamp: 0,
+};
+
 /**
- * Public Settings (Storefront identity, logo, active menus, contacts)
+ * Public Settings (Storefront identity, logo, active menus, contacts, announcement, orders count)
  */
 const getPublicSettings = catchAsync(async (req, res) => {
   const settings = await prisma.setting.findMany();
@@ -48,22 +57,119 @@ const getPublicSettings = catchAsync(async (req, res) => {
     }
   }
 
+  // Calculate dynamic delivered orders count starting from 10,000 + actual orders
+  const baseDelivered = parseInt(map.orders_delivered_base, 10) || 10000;
+  let orderCount = 0;
+  try {
+    orderCount = await prisma.order.count({
+      where: {
+        status: { notIn: ['CANCELLED', 'REFUNDED'] },
+      },
+    });
+  } catch (err) {
+    console.warn('Could not count orders for public settings:', err.message);
+  }
+  const ordersDeliveredCount = baseDelivered + orderCount;
+
   res.json({
     success: true,
     data: {
       storeName: map.store_name || 'Swarada Saree Center',
-      tagline: map.store_tagline || "Kolhapur's Destination for Premium Sarees",
+      tagline: map.store_tagline || "Kolhapur's Destination for Premium Sarees & Ethnic Fashion",
       logoUrl: sanitizeUploadUrl(map.store_logo_url) || null,
       phone: map.store_phone || '+91 98220 12345',
       whatsapp: map.store_whatsapp || '+91 98220 12345',
-      email: map.store_email || 'contact@swaradasarees.com',
-      address: map.store_address || 'Mahadwar Road, Kolhapur',
+      email: map.store_email || 'orders@swaradasareecenter.com',
+      address: map.store_address || 'Shop 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur - 416002',
+      storeHours: map.store_hours || 'Mon - Sun: 10:00 AM - 9:00 PM',
+      storeBio:
+        map.store_bio ||
+        'Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the timeless majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.',
       freeShippingThreshold: parseFloat(map.free_shipping_threshold) || 2999,
       standardShippingFee: parseFloat(map.standard_shipping_charge) || 150,
-      announcementText: map.announcement_text || '',
+      announcementBarEnabled: map.announcement_bar_enabled !== 'false',
+      announcementText: map.announcement_text || DEFAULT_ANNOUNCEMENT,
+      ordersDeliveredCount,
+      ordersDeliveredBase: baseDelivered,
+      youtubeChannelUrl: map.youtube_channel_url || 'https://www.youtube.com/@swaradasareecentre776/',
+      youtubeChannelId: map.youtube_channel_id || 'UCOTYLwpl0sy46Tjkvm9OrYQ',
+      youtubeLivestreamUrl: map.youtube_livestream_url || '',
+      socialInstagram: map.social_instagram || 'https://instagram.com/swaradasareecentre',
+      socialFacebook: map.social_facebook || 'https://facebook.com/swaradasareecentre',
+      socialYoutube: map.social_youtube || 'https://www.youtube.com/@swaradasareecentre776/',
       menus,
     },
   });
+});
+
+/**
+ * Fetch latest YouTube livestream / latest video from channel RSS feed
+ */
+const getYouTubeLiveInfo = catchAsync(async (req, res) => {
+  const channelId = req.query.channelId || 'UCOTYLwpl0sy46Tjkvm9OrYQ';
+  const now = Date.now();
+
+  if (youtubeCache.data && now - youtubeCache.timestamp < 10 * 60 * 1000) {
+    return res.json({
+      success: true,
+      data: youtubeCache.data,
+      cached: true,
+    });
+  }
+
+  try {
+    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+    const response = await fetch(rssUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+    });
+    if (!response.ok) {
+      throw new Error(`YouTube RSS returned status ${response.status}`);
+    }
+
+    const xml = await response.text();
+    const videoMatches = [...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)];
+    const titleMatches = [...xml.matchAll(/<title>([^<]+)<\/title>/g)];
+
+    const latestVideoId = videoMatches.length > 0 ? videoMatches[0][1] : 'ztDEvXrLaR4';
+    // skip the channel title at index 0, get first video title
+    const latestTitle = titleMatches.length > 1 ? titleMatches[1][1] : 'Latest Live Showcase';
+
+    const result = {
+      channelId,
+      latestVideoId,
+      latestTitle,
+      liveEmbedUrl: `https://www.youtube-nocookie.com/embed/live_stream?channel=${channelId}`,
+      videoEmbedUrl: `https://www.youtube-nocookie.com/embed/${latestVideoId}`,
+      channelUrl: 'https://www.youtube.com/@swaradasareecentre776/',
+      isLiveConfigured: true,
+    };
+
+    youtubeCache = {
+      data: result,
+      timestamp: now,
+    };
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    console.warn('Failed to fetch YouTube RSS, using fallback:', err.message);
+    const fallback = {
+      channelId,
+      latestVideoId: 'ztDEvXrLaR4',
+      latestTitle: 'Swarada Saree Center Live Showcase',
+      liveEmbedUrl: `https://www.youtube-nocookie.com/embed/live_stream?channel=${channelId}`,
+      videoEmbedUrl: 'https://www.youtube-nocookie.com/embed/ztDEvXrLaR4',
+      channelUrl: 'https://www.youtube.com/@swaradasareecentre776/',
+      isLiveConfigured: true,
+    };
+    res.json({
+      success: true,
+      data: fallback,
+      fallback: true,
+    });
+  }
 });
 
 /**
@@ -84,6 +190,22 @@ const getAdminSettings = catchAsync(async (req, res) => {
     map.nav_menus = JSON.stringify(DEFAULT_MENUS);
   }
 
+  if (!map.announcement_text) {
+    map.announcement_text = DEFAULT_ANNOUNCEMENT;
+  }
+
+  if (!map.announcement_bar_enabled) {
+    map.announcement_bar_enabled = 'true';
+  }
+
+  if (!map.orders_delivered_base) {
+    map.orders_delivered_base = '10000';
+  }
+
+  if (!map.youtube_channel_url) {
+    map.youtube_channel_url = 'https://www.youtube.com/@swaradasareecentre776/';
+  }
+
   res.json({
     success: true,
     data: map,
@@ -94,7 +216,7 @@ const getAdminSettings = catchAsync(async (req, res) => {
  * Update Settings (Bulk upsert)
  */
 const updateSettings = catchAsync(async (req, res) => {
-  const updates = req.body; // e.g. { store_logo_url: '...', nav_menus: '...', ... }
+  const updates = req.body;
 
   if (updates.store_logo_url) {
     updates.store_logo_url = sanitizeUploadUrl(updates.store_logo_url);
@@ -130,6 +252,7 @@ const updateSettings = catchAsync(async (req, res) => {
 
 module.exports = {
   getPublicSettings,
+  getYouTubeLiveInfo,
   getAdminSettings,
   updateSettings,
 };

@@ -73,6 +73,30 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-[#D4AF37]/25 shadow-xs transition-all duration-300">
+      {/* 1. Top Scrolling Announcement Marquee Bar (Editable via Admin Panel) */}
+      {settings?.announcementBarEnabled !== false && (
+        <div className="bg-[#0F0C0D] text-[#FAF7F2] border-b border-[#D4AF37]/25 py-2 overflow-hidden select-none relative z-50">
+          <div className="flex w-full overflow-hidden">
+            <div className="animate-marquee whitespace-nowrap flex items-center shrink-0">
+              <span className="text-[11px] sm:text-xs tracking-[0.22em] font-medium uppercase text-[#F3E2B8] mx-6">
+                {settings?.announcementText || '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS •'}
+              </span>
+              <span className="text-[11px] sm:text-xs tracking-[0.22em] font-medium uppercase text-[#F3E2B8] mx-6">
+                {settings?.announcementText || '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS •'}
+              </span>
+            </div>
+            <div className="animate-marquee whitespace-nowrap flex items-center shrink-0" aria-hidden="true">
+              <span className="text-[11px] sm:text-xs tracking-[0.22em] font-medium uppercase text-[#F3E2B8] mx-6">
+                {settings?.announcementText || '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS •'}
+              </span>
+              <span className="text-[11px] sm:text-xs tracking-[0.22em] font-medium uppercase text-[#F3E2B8] mx-6">
+                {settings?.announcementText || '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS •'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Utility Bar */}
       <div className="bg-[#FAF7F2] border-b border-amber-900/10 hidden md:block py-2 px-6 text-xs text-[#5A4E51]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
