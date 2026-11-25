@@ -24,6 +24,14 @@ const DEFAULT_MENUS = [
   { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
 ];
 
+const DEFAULT_FOOTER_MENUS = [
+  { id: 'track-order', name: 'Track Your Order', href: '/track-order', active: true },
+  { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies', active: true },
+  { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies', active: true },
+  { id: 'faq', name: 'Frequently Asked Questions', href: '/faq', active: true },
+  { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact', active: true },
+];
+
 const DEFAULT_ANNOUNCEMENT =
   '• NEW ARRIVALS • FREE SHIPPING ON ORDERS ABOVE ₹999 • 100% AUTHENTIC PRODUCTS • SECURE PAYMENTS • FLAT 10% OFF FIRST ORDER: USE SWARADA10 •';
 
@@ -39,7 +47,7 @@ let youtubeCache = {
 };
 
 /**
- * Public Settings (Storefront identity, logo, active menus, contacts, announcement, orders count)
+ * Public Settings (Storefront identity, logo, active menus, contacts, announcement, orders count, footer menus)
  */
 const getPublicSettings = catchAsync(async (req, res) => {
   const settings = await prisma.setting.findMany();
@@ -54,6 +62,15 @@ const getPublicSettings = catchAsync(async (req, res) => {
       menus = JSON.parse(map.nav_menus);
     } catch (e) {
       menus = DEFAULT_MENUS;
+    }
+  }
+
+  let footerMenus = DEFAULT_FOOTER_MENUS;
+  if (map.footer_menus) {
+    try {
+      footerMenus = JSON.parse(map.footer_menus);
+    } catch (e) {
+      footerMenus = DEFAULT_FOOTER_MENUS;
     }
   }
 
@@ -98,6 +115,7 @@ const getPublicSettings = catchAsync(async (req, res) => {
       socialFacebook: map.social_facebook || 'https://facebook.com/swaradasareecentre',
       socialYoutube: map.social_youtube || 'https://www.youtube.com/@swaradasareecentre776/',
       menus,
+      footerMenus,
     },
   });
 });
@@ -131,7 +149,6 @@ const getYouTubeLiveInfo = catchAsync(async (req, res) => {
     const titleMatches = [...xml.matchAll(/<title>([^<]+)<\/title>/g)];
 
     const latestVideoId = videoMatches.length > 0 ? videoMatches[0][1] : 'ztDEvXrLaR4';
-    // skip the channel title at index 0, get first video title
     const latestTitle = titleMatches.length > 1 ? titleMatches[1][1] : 'Latest Live Showcase';
 
     const result = {
@@ -188,6 +205,10 @@ const getAdminSettings = catchAsync(async (req, res) => {
 
   if (!map.nav_menus) {
     map.nav_menus = JSON.stringify(DEFAULT_MENUS);
+  }
+
+  if (!map.footer_menus) {
+    map.footer_menus = JSON.stringify(DEFAULT_FOOTER_MENUS);
   }
 
   if (!map.announcement_text) {

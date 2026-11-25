@@ -129,37 +129,39 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Customer Care & Policies */}
+          {/* Customer Care & Policies (Admin Configurable) */}
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#C5A05A] mb-4">
               Customer Care & Policies
             </h4>
             <ul className="space-y-2.5 text-xs text-neutral-300">
-              <li>
-                <Link to="/track-order" className="hover:text-[#F3E2B8] transition-colors">
-                  Track Your Order
-                </Link>
-              </li>
-              <li>
-                <Link to="/policies" className="hover:text-[#F3E2B8] transition-colors">
-                  Shipping & Delivery Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/policies" className="hover:text-[#F3E2B8] transition-colors">
-                  Returns & Exchange Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="hover:text-[#F3E2B8] transition-colors">
-                  Frequently Asked Questions
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-[#F3E2B8] transition-colors">
-                  Video Call Shopping Booking
-                </Link>
-              </li>
+              {(settings?.footerMenus && settings.footerMenus.length > 0
+                ? settings.footerMenus.filter((m) => m.active !== false)
+                : [
+                    { id: 'track-order', name: 'Track Your Order', href: '/track-order' },
+                    { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies' },
+                    { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies' },
+                    { id: 'faq', name: 'Frequently Asked Questions', href: '/faq' },
+                    { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact' },
+                  ]
+              ).map((item) => (
+                <li key={item.id || item.name}>
+                  {item.href.startsWith('http') ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-[#F3E2B8] transition-colors"
+                    >
+                      {item.name}
+                    </a>
+                  ) : (
+                    <Link to={item.href} className="hover:text-[#F3E2B8] transition-colors">
+                      {item.name}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
 

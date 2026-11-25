@@ -16,6 +16,9 @@ import {
   PackageCheck,
   Clock,
   FileText,
+  Plus,
+  Trash2,
+  List,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import ImageUploader from '../components/ImageUploader';
@@ -43,6 +46,14 @@ const DEFAULT_MENUS = [
   { id: 'accessories', name: 'Accessories', href: '/shop?category=accessories', active: true },
   { id: 'festive_sale', name: 'Festive Sale', href: '/shop?sale=true', highlight: true, active: true },
   { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
+];
+
+const DEFAULT_FOOTER_MENUS = [
+  { id: 'track-order', name: 'Track Your Order', href: '/track-order', active: true },
+  { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies', active: true },
+  { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies', active: true },
+  { id: 'faq', name: 'Frequently Asked Questions', href: '/faq', active: true },
+  { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact', active: true },
 ];
 
 export const SettingsManager = () => {
@@ -86,6 +97,11 @@ export const SettingsManager = () => {
 
   // Navigation Menus State
   const [menus, setMenus] = useState(DEFAULT_MENUS);
+
+  // Footer Menus & Policies State
+  const [footerMenus, setFooterMenus] = useState(DEFAULT_FOOTER_MENUS);
+  const [newFooterLink, setNewFooterLink] = useState({ name: '', href: '' });
+
   const [showKeySecret, setShowKeySecret] = useState(false);
 
   // Razorpay Settings
@@ -156,6 +172,15 @@ export const SettingsManager = () => {
               }
             } catch (e) {}
           }
+
+          if (map.footer_menus) {
+            try {
+              const parsed = JSON.parse(map.footer_menus);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setFooterMenus(parsed);
+              }
+            } catch (e) {}
+          }
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -176,6 +201,33 @@ export const SettingsManager = () => {
       };
       return updated;
     });
+  };
+
+  const toggleFooterMenu = (index) => {
+    setFooterMenus((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        active: !updated[index].active,
+      };
+      return updated;
+    });
+  };
+
+  const handleAddFooterLink = () => {
+    if (!newFooterLink.name.trim() || !newFooterLink.href.trim()) return;
+    const newItem = {
+      id: `custom-${Date.now()}`,
+      name: newFooterLink.name.trim(),
+      href: newFooterLink.href.trim(),
+      active: true,
+    };
+    setFooterMenus((prev) => [...prev, newItem]);
+    setNewFooterLink({ name: '', href: '' });
+  };
+
+  const handleDeleteFooterLink = (index) => {
+    setFooterMenus((prev) => prev.filter((_, idx) => idx !== index));
   };
 
   const handleSave = async (e) => {
@@ -202,6 +254,7 @@ export const SettingsManager = () => {
         youtube_channel_id: youtubeSettings.channelId,
         youtube_livestream_url: youtubeSettings.livestreamUrl,
         nav_menus: JSON.stringify(menus),
+        footer_menus: JSON.stringify(footerMenus),
         razorpay_key_id: razorpaySettings.keyId?.trim() || '',
         razorpay_key_secret: razorpaySettings.keySecret?.trim() || '',
         razorpay_webhook_secret: razorpaySettings.webhookSecret?.trim() || '',
@@ -235,7 +288,7 @@ export const SettingsManager = () => {
           Store Settings & Merchandising
         </h1>
         <p className="text-xs text-neutral-500 mt-0.5">
-          Manage header marquee, YouTube live streaming, order counter, shop details, and branding
+          Manage header marquee, footer policies/menus, YouTube live streaming, order counter, shop details, and branding
         </p>
       </div>
 
@@ -297,6 +350,17 @@ export const SettingsManager = () => {
           }`}
         >
           Storefront Menus
+        </button>
+
+        <button
+          onClick={() => setActiveTab('footer-menus')}
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
+            activeTab === 'footer-menus'
+              ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
+              : 'text-neutral-600 hover:bg-neutral-50'
+          }`}
+        >
+          Footer Menus & Policies
         </button>
 
         <button
@@ -609,7 +673,7 @@ export const SettingsManager = () => {
                   <span>Storefront Navigation Menu Visibility</span>
                 </h3>
                 <p className="text-[11px] text-neutral-500 mt-0.5">
-                  Toggle menu items on or off. Only active menu pages will be displayed on the website navigation bar.
+                  Toggle menu items on or off. Only active menu pages will be displayed on the top navigation bar.
                 </p>
               </div>
               <span className="text-xs font-semibold px-2.5 py-1 bg-[#641B32]/10 text-[#641B32] rounded">
@@ -680,7 +744,137 @@ export const SettingsManager = () => {
           </div>
         )}
 
-        {/* Tab 5: Razorpay */}
+        {/* Tab 5: Footer Menus & Policies (Admin Configurable) */}
+        {activeTab === 'footer-menus' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <div>
+                <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
+                  <List className="w-4 h-4 text-[#641B32]" />
+                  <span>Footer Customer Care, Policies & Menus</span>
+                </h3>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  Control the links displayed under "Customer Care & Policies" in the footer. Toggle visibility or add your own custom links.
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-[#641B32]/10 text-[#641B32] rounded">
+                {footerMenus.filter((m) => m.active).length} of {footerMenus.length} Active
+              </span>
+            </div>
+
+            {/* List of current footer links */}
+            <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-lg overflow-hidden">
+              {footerMenus.map((link, idx) => (
+                <div
+                  key={link.id || link.name}
+                  className={`p-3.5 flex items-center justify-between transition-colors ${
+                    link.active ? 'bg-white' : 'bg-neutral-50/70 opacity-75'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`w-8 h-8 rounded flex items-center justify-center ${
+                        link.active ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-200 text-neutral-400'
+                      }`}
+                    >
+                      {link.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-sm text-[#292323]">{link.name}</span>
+                      <p className="text-[11px] text-neutral-400 font-mono mt-0.5">{link.href}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
+                        link.active
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-neutral-100 text-neutral-500'
+                      }`}
+                    >
+                      {link.active ? 'Active' : 'Disabled'}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleFooterMenu(idx)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        link.active ? 'bg-[#641B32]' : 'bg-neutral-300'
+                      }`}
+                      role="switch"
+                      aria-checked={link.active}
+                      aria-label={`Toggle ${link.name} footer link`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          link.active ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+
+                    {/* Delete Custom Link */}
+                    {link.id?.startsWith('custom-') && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFooterLink(idx)}
+                        className="text-neutral-400 hover:text-rose-600 transition-colors p-1"
+                        title="Remove custom link"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add New Footer Link Section */}
+            <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg space-y-3">
+              <h4 className="font-heading font-bold text-xs text-[#292323] flex items-center space-x-1.5">
+                <Plus className="w-3.5 h-3.5 text-[#641B32]" />
+                <span>Add New Footer Link / Policy</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-neutral-600 mb-1">
+                    Link Title / Label
+                  </label>
+                  <input
+                    type="text"
+                    value={newFooterLink.name}
+                    onChange={(e) => setNewFooterLink({ ...newFooterLink, name: e.target.value })}
+                    placeholder="e.g. Terms of Service, Size Guide, Wholesale"
+                    className="w-full px-3 py-2 border border-neutral-200 rounded bg-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-neutral-600 mb-1">
+                    URL or Path
+                  </label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newFooterLink.href}
+                      onChange={(e) => setNewFooterLink({ ...newFooterLink, href: e.target.value })}
+                      placeholder="e.g. /terms or https://..."
+                      className="w-full px-3 py-2 border border-neutral-200 rounded bg-white text-xs font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddFooterLink}
+                      className="bg-[#641B32] hover:bg-[#851C3B] text-white px-4 py-2 rounded font-semibold text-xs shrink-0 cursor-pointer transition-colors"
+                    >
+                      Add Link
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Razorpay */}
         {activeTab === 'payments' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -762,7 +956,7 @@ export const SettingsManager = () => {
           </div>
         )}
 
-        {/* Tab 6: Shipping & Logistics */}
+        {/* Tab 7: Shipping & Logistics */}
         {activeTab === 'shipping' && (
           <div className="space-y-4">
             <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
