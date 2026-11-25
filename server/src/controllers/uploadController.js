@@ -22,13 +22,25 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter for images only
+// File filter for images and videos
 const fileFilter = (req, file, cb) => {
-  const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+  const allowedMimes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'image/avif',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+    'video/ogg',
+    'video/x-m4v',
+    'video/mpeg',
+  ];
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new AppError('Only valid image files (JPEG, PNG, WEBP, GIF, AVIF) are permitted.', 400), false);
+    cb(new AppError('Only valid image files (JPEG, PNG, WEBP, GIF) or video files (MP4, WEBM, MOV) are permitted.', 400), false);
   }
 };
 
@@ -36,29 +48,31 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 50 * 1024 * 1024, // 50MB (supports high-res saree drape videos and hero loops)
   },
 });
 
 /**
- * Handle single image upload
+ * Handle single image or video upload
  */
 const uploadSingle = (req, res, next) => {
   if (!req.file) {
-    return next(new AppError('Please select an image file to upload.', 400));
+    return next(new AppError('Please select an image or video file to upload.', 400));
   }
 
   // Use root-relative URL so it works seamlessly under HTTP, HTTPS, localhost, or reverse proxies
   const fileUrl = `/uploads/${req.file.filename}`;
+  const isVideo = req.file.mimetype.startsWith('video/');
 
   res.status(200).json({
     status: 'success',
-    message: 'Image uploaded successfully.',
+    message: isVideo ? 'Video uploaded successfully.' : 'Image uploaded successfully.',
     data: {
       url: fileUrl,
       filename: req.file.filename,
       size: req.file.size,
       mimetype: req.file.mimetype,
+      isVideo,
     },
   });
 };

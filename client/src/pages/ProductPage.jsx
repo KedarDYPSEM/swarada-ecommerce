@@ -11,6 +11,8 @@ import {
   Star,
   ChevronRight,
   ZoomIn,
+  Video,
+  Play,
 } from 'lucide-react';
 import { formatPrice, calculateDiscount } from '../lib/utils';
 import { Button } from '../components/ui/Button';
@@ -30,6 +32,7 @@ export const ProductPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeImageOverride, setActiveImageOverride] = useState(null);
+  const [isVideoActive, setIsVideoActive] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
@@ -68,6 +71,7 @@ export const ProductPage = () => {
           setProduct(data.product);
           setRelatedProducts(data.relatedProducts || []);
           setSelectedImage(0);
+          setIsVideoActive(false);
           if (data.product.variants && data.product.variants.length > 0) {
             // Select first in-stock variant if available, otherwise first variant
             const firstInStock = data.product.variants.find((v) => (v.stockQuantity || 0) > 0);
@@ -193,21 +197,37 @@ export const ProductPage = () => {
           {/* Subtle decorative background ambient glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-radial from-[#D4AF37]/10 to-transparent blur-3xl pointer-events-none" />
 
-          {/* Left Column: Image Gallery with Zoom */}
+          {/* Left Column: Image & Video Gallery with Zoom */}
           <div className="lg:col-span-6 space-y-4">
             <div
-              className="aspect-3/4 overflow-hidden rounded-2xl bg-[#F7F2E7] border border-[#D4AF37]/25 relative cursor-zoom-in group shadow-md"
-              onMouseEnter={() => setIsZoomed(true)}
-              onMouseLeave={() => setIsZoomed(false)}
+              className={`aspect-3/4 overflow-hidden rounded-2xl bg-[#F7F2E7] border border-[#D4AF37]/25 relative shadow-md ${
+                isVideoActive ? 'bg-black' : 'cursor-zoom-in group'
+              }`}
+              onMouseEnter={() => !isVideoActive && setIsZoomed(true)}
+              onMouseLeave={() => !isVideoActive && setIsZoomed(false)}
             >
-              <img
-                src={activeImageOverride || images[selectedImage]}
-                alt={product.name}
-                className={`w-full h-full object-cover object-center transition-transform duration-700 ease-out ${
-                  isZoomed ? 'scale-125' : 'scale-100'
-                }`}
-              />
+              {isVideoActive && product?.videoUrl ? (
+                <div className="w-full h-full bg-black flex items-center justify-center relative">
+                  <video
+                    src={product.videoUrl}
+                    controls
+                    autoPlay
+                    loop
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <img
+                  src={activeImageOverride || images[selectedImage]}
+                  alt={product.name}
+                  className={`w-full h-full object-cover object-center transition-transform duration-700 ease-out ${
+                    isZoomed ? 'scale-125' : 'scale-100'
+                  }`}
+                />
+              )}
 
+              {/* Floating badges */}
               <div className="absolute top-3.5 left-3.5 flex flex-col space-y-2 pointer-events-none z-10">
                 <Badge variant="gold" className="shadow-md">✦ Silk Mark Certified</Badge>
                 {discount > 0 && <Badge variant="discount" className="shadow-md">{discount}% OFF</Badge>}
@@ -220,23 +240,73 @@ export const ProductPage = () => {
                 </div>
               )}
 
-              <div className="absolute bottom-3.5 right-3.5 bg-black/60 text-white p-2 rounded-full backdrop-blur-md pointer-events-none transition-transform duration-300 group-hover:scale-110">
-                <ZoomIn className="w-4 h-4" />
-              </div>
+              {/* Video toggle pill on main stage if product has video */}
+              {product?.videoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setIsVideoActive(!isVideoActive)}
+                  className={`absolute bottom-3.5 left-3.5 z-20 flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-300 shadow-lg cursor-pointer ${
+                    isVideoActive
+                      ? 'bg-[#641B32] text-white border border-[#D4AF37] ring-2 ring-[#D4AF37]/50'
+                      : 'bg-black/75 hover:bg-black/90 text-[#F3E2B8] border border-white/20 hover:scale-105'
+                  }`}
+                >
+                  <Video className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>{isVideoActive ? 'View High-Res Photos' : '🎥 Drape Video Preview'}</span>
+                </button>
+              )}
+
+              {!isVideoActive && (
+                <div className="absolute bottom-3.5 right-3.5 bg-black/60 text-white p-2 rounded-full backdrop-blur-md pointer-events-none transition-transform duration-300 group-hover:scale-110">
+                  <ZoomIn className="w-4 h-4" />
+                </div>
+              )}
             </div>
 
-            {/* Thumbnail Selector */}
-            {images.length > 1 && (
+            {/* Thumbnail Selector (Images + Video) */}
+            {(images.length > 1 || product?.videoUrl) && (
               <div className="flex space-x-3 overflow-x-auto pb-2 pt-1">
+                {product?.videoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsVideoActive(true);
+                      setActiveImageOverride(null);
+                    }}
+                    className={`w-20 h-24 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer shrink-0 relative bg-neutral-900 flex flex-col items-center justify-center p-1 text-center ${
+                      isVideoActive
+                        ? 'border-[#641B32] ring-2 ring-[#D4AF37]/80 shadow-md scale-105'
+                        : 'border-neutral-200 opacity-80 hover:opacity-100 hover:border-[#D4AF37]'
+                    }`}
+                  >
+                    {images[0] && (
+                      <img
+                        src={images[0]}
+                        alt="Video poster"
+                        className="absolute inset-0 w-full h-full object-cover opacity-35"
+                      />
+                    )}
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-7 h-7 rounded-full bg-[#641B32]/90 border border-[#D4AF37] flex items-center justify-center text-white shadow-xs">
+                        <Play className="w-3.5 h-3.5 ml-0.5 text-[#F3E2B8]" />
+                      </div>
+                      <span className="text-[10px] font-bold text-[#FFFDF9] mt-1 tracking-wider uppercase drop-shadow-sm">
+                        Drape Video
+                      </span>
+                    </div>
+                  </button>
+                )}
+
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
                       setSelectedImage(idx);
                       setActiveImageOverride(null);
+                      setIsVideoActive(false);
                     }}
                     className={`w-20 h-24 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer shrink-0 ${
-                      selectedImage === idx && !activeImageOverride
+                      !isVideoActive && selectedImage === idx && !activeImageOverride
                         ? 'border-[#641B32] ring-2 ring-[#D4AF37]/60 shadow-md scale-105'
                         : 'border-neutral-200 opacity-70 hover:opacity-100 hover:border-[#D4AF37]'
                     }`}
@@ -385,6 +455,7 @@ export const ProductPage = () => {
                         type="button"
                         onClick={() => {
                           setSelectedVariant(variant);
+                          setIsVideoActive(false);
                           if (variant.imageUrl) {
                             setActiveImageOverride(variant.imageUrl);
                           }

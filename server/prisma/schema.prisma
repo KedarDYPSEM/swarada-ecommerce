@@ -134,6 +134,7 @@ model Product {
   isFeatured          Boolean           @default(false) @map("is_featured")
   isNewArrival        Boolean           @default(false) @map("is_new_arrival")
   isBestSeller        Boolean           @default(false) @map("is_best_seller")
+  videoUrl            String?           @map("video_url") @db.Text
   stockQuantity       Int               @default(0) @map("stock_quantity")
   lowStockThreshold   Int               @default(5) @map("low_stock_threshold")
   metaTitle           String?           @map("meta_title")
@@ -637,6 +638,9 @@ model Banner {
   subtitle       String?
   imageUrl       String     @map("image_url")
   mobileImageUrl String?    @map("mobile_image_url")
+  videoUrl       String?    @map("video_url") @db.Text
+  isVideo        Boolean    @default(false) @map("is_video")
+  showText       Boolean    @default(true) @map("show_text")
   linkUrl        String?    @map("link_url")
   type           BannerType @default(HERO)
   displayOrder   Int        @default(0) @map("display_order")

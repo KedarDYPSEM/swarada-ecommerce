@@ -12,6 +12,7 @@ import {
   Layers,
   Sparkles,
   Palette,
+  Video,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
@@ -24,6 +25,7 @@ export const ProductForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEdit);
+  const [videoUploading, setVideoUploading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
 
@@ -53,6 +55,7 @@ export const ProductForm = () => {
     isHandloom: true,
     isFeatured: false,
     isActive: true,
+    videoUrl: '',
     categoryIds: [],
     images: [
       {
@@ -115,6 +118,7 @@ export const ProductForm = () => {
               isHandloom: attrMap['Handloom Certified'] ? attrMap['Handloom Certified'].includes('Yes') : Boolean(p.isHandloom),
               isFeatured: Boolean(p.isFeatured),
               isActive: Boolean(p.isActive),
+              videoUrl: p.videoUrl || '',
               categoryIds: p.categories?.map((c) => c.categoryId) || [],
               images: p.images?.length > 0 ? p.images : [{ url: '', altText: '', isPrimary: true, displayOrder: 0 }],
               variants: p.variants?.map((v) => ({
@@ -205,6 +209,23 @@ export const ProductForm = () => {
     });
   };
 
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVideoUploading(true);
+    try {
+      const res = await adminService.uploadVideo(file);
+      if (res?.data?.url) {
+        setFormData((prev) => ({ ...prev, videoUrl: res.data.url }));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to upload video');
+    } finally {
+      setVideoUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleAddVariant = () => {
     setFormData((prev) => ({
       ...prev,
@@ -281,6 +302,7 @@ export const ProductForm = () => {
         stockQuantity: totalStock,
         lowStockThreshold: parseInt(formData.lowStockThreshold, 10) || 3,
         barcode: formData.barcode?.trim() || null,
+        videoUrl: formData.videoUrl?.trim() || null,
         images: formData.images.filter((img) => img.url && img.url.trim() !== ''),
         variants: validVariants,
       };
@@ -755,6 +777,85 @@ export const ProductForm = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* 5B. Product Video & Drape Preview */}
+        <div className="bg-white p-5 rounded-lg border border-neutral-200 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-neutral-100 pb-3 gap-2">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Video className="w-4 h-4 text-[#641B32]" />
+                <h2 className="text-sm font-heading font-bold text-[#292323]">
+                  5B. Saree Drape Video / Product Reel (Optional)
+                </h2>
+              </div>
+              <p className="text-neutral-500 text-[11px] mt-0.5">
+                Upload a real video of the saree drape, pallu flow, or model reel (MP4, WebM up to 50MB).
+              </p>
+            </div>
+            {formData.videoUrl && (
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, videoUrl: '' })}
+                className="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"
+              >
+                Remove Video
+              </button>
+            )}
+          </div>
+
+          <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200 space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              <label className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#641B32] hover:bg-[#7B1E35] text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors shrink-0">
+                <Video className="w-3.5 h-3.5 mr-1.5" />
+                <span>{videoUploading ? 'Uploading Video...' : 'Upload Video File'}</span>
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime,video/ogg"
+                  onChange={handleVideoUpload}
+                  disabled={videoUploading}
+                  className="hidden"
+                />
+              </label>
+              <span className="text-xs text-neutral-400 font-medium">OR enter direct Video URL:</span>
+              <input
+                type="text"
+                value={formData.videoUrl}
+                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                placeholder="https://example.com/saree-video.mp4 or /uploads/..."
+                className="w-full sm:flex-1 px-3 py-2 border border-neutral-200 rounded bg-white text-xs font-mono"
+              />
+            </div>
+
+            {formData.videoUrl ? (
+              <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-200 flex flex-col sm:flex-row gap-4 items-center">
+                <div className="w-48 h-28 bg-black rounded-lg overflow-hidden shrink-0 shadow-xs relative">
+                  <video
+                    src={formData.videoUrl}
+                    controls
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="text-xs space-y-1">
+                  <div className="font-semibold text-emerald-700 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Video Attached & Active
+                  </div>
+                  <p className="text-neutral-500 text-[11px] line-clamp-1 font-mono">
+                    {formData.videoUrl}
+                  </p>
+                  <p className="text-neutral-400 text-[10px]">
+                    This video will appear with a "🎥 Drape Video" preview player on the customer product page.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] text-neutral-400 italic">
+                No video attached yet. You can attach a smartphone video or boutique shoot reel showing how the saree falls and glitters.
+              </p>
+            )}
           </div>
         </div>
 

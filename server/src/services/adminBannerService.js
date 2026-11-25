@@ -19,6 +19,9 @@ const createBanner = async (data) => {
     subtitle,
     imageUrl,
     mobileImageUrl,
+    videoUrl,
+    isVideo = false,
+    showText = true,
     linkUrl,
     type = 'HERO',
     displayOrder = 0,
@@ -27,16 +30,20 @@ const createBanner = async (data) => {
     expiresAt,
   } = data;
 
-  if (!title || !imageUrl) {
-    throw new AppError('Banner title and image URL are required.', 400);
+  const resolvedImageUrl = (imageUrl && imageUrl.trim()) || (videoUrl && videoUrl.trim()) || '';
+  if (!title || (!resolvedImageUrl && !videoUrl)) {
+    throw new AppError('Banner title and media URL (image or video) are required.', 400);
   }
 
   return prisma.banner.create({
     data: {
       title: title.trim(),
       subtitle: subtitle ? subtitle.trim() : null,
-      imageUrl: imageUrl.trim(),
+      imageUrl: resolvedImageUrl,
       mobileImageUrl: mobileImageUrl ? mobileImageUrl.trim() : null,
+      videoUrl: videoUrl ? videoUrl.trim() : null,
+      isVideo: Boolean(isVideo),
+      showText: showText !== undefined ? Boolean(showText) : true,
       linkUrl: linkUrl ? linkUrl.trim() : null,
       type,
       displayOrder: parseInt(displayOrder, 10) || 0,
@@ -62,6 +69,9 @@ const updateBanner = async (id, data) => {
   if (data.subtitle !== undefined) updateData.subtitle = data.subtitle ? data.subtitle.trim() : null;
   if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl.trim();
   if (data.mobileImageUrl !== undefined) updateData.mobileImageUrl = data.mobileImageUrl ? data.mobileImageUrl.trim() : null;
+  if (data.videoUrl !== undefined) updateData.videoUrl = data.videoUrl ? data.videoUrl.trim() : null;
+  if (data.isVideo !== undefined) updateData.isVideo = Boolean(data.isVideo);
+  if (data.showText !== undefined) updateData.showText = Boolean(data.showText);
   if (data.linkUrl !== undefined) updateData.linkUrl = data.linkUrl ? data.linkUrl.trim() : null;
   if (data.type !== undefined) updateData.type = data.type;
   if (data.displayOrder !== undefined) updateData.displayOrder = parseInt(data.displayOrder, 10) || 0;

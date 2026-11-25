@@ -151,10 +151,20 @@ const adminService = {
     return res.data;
   },
 
-  // Image Upload
+  // Media Upload (Images & Videos)
   uploadImage: async (file) => {
     const formData = new FormData();
     formData.append('image', file);
+    formData.append('file', file);
+    const res = await api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+  uploadVideo: async (file) => {
+    const formData = new FormData();
+    formData.append('video', file);
+    formData.append('file', file);
     const res = await api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

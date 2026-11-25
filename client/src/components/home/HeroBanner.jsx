@@ -47,11 +47,14 @@ export const HeroBanner = ({ banners }) => {
         subtitle: b.subtitle || '',
         description: b.description || 'Authentic handloom sarees with signature motifs directly from our master weavers in Kolhapur.',
         image: b.imageUrl || b.image || SLIDES[0].image,
+        videoUrl: b.videoUrl || null,
+        isVideo: Boolean(b.isVideo || (b.videoUrl && b.videoUrl.trim())),
+        showText: b.showText !== undefined ? Boolean(b.showText) : true,
         ctaText: b.buttonText || 'Explore Collection',
         ctaLink: b.linkUrl || '/shop',
         badge: 'Certified Handloom',
       }))
-    : SLIDES;
+    : SLIDES.map((s) => ({ ...s, isVideo: false, showText: true }));
 
   useEffect(() => {
     if (isPaused || activeSlides.length <= 1) return;
@@ -89,71 +92,93 @@ export const HeroBanner = ({ banners }) => {
               isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
-            {/* Background Image with Gradient Overlay */}
+            {/* Background Image or Video with Gradient Overlay */}
             <div className="absolute inset-0">
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className={`w-full h-full object-cover object-center transition-transform duration-10000 ease-out ${
-                  isActive ? 'scale-110' : 'scale-100'
-                }`}
-              />
-              {/* Multilayer gradient for optimal legibility */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#140F11]/95 via-[#1E1719]/75 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#140F11]/90 via-transparent to-black/40" />
+              {slide.isVideo && (slide.videoUrl || slide.image) ? (
+                <video
+                  src={slide.videoUrl || slide.image}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className={`w-full h-full object-cover object-center transition-transform duration-10000 ease-out ${
+                    isActive ? 'scale-110' : 'scale-100'
+                  }`}
+                />
+              )}
+              {/* Multilayer gradient for legibility when text is visible */}
+              {slide.showText ? (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#140F11]/95 via-[#1E1719]/75 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#140F11]/90 via-transparent to-black/40" />
+                </>
+              ) : (
+                <div className="absolute inset-0 bg-black/10 hover:bg-black/0 transition-colors pointer-events-none" />
+              )}
             </div>
 
-            {/* Slide Content */}
-            <div className="relative max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center">
-              <div className="max-w-2xl text-white space-y-4 sm:space-y-6">
-                {/* Badge */}
-                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#641B32]/95 to-[#851C3B]/90 border border-[#D4AF37]/70 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase text-[#FFFDF9] shadow-md backdrop-blur-md">
-                  <Sparkles className="w-3.5 h-3.5 text-[#F3E2B8] animate-pulse" />
-                  <span>{slide.badge}</span>
-                  <span className="text-[#D4AF37]">✦</span>
-                </div>
+            {/* Slide Content (Toggled on/off) */}
+            {slide.showText ? (
+              <div className="relative max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center">
+                <div className="max-w-2xl text-white space-y-4 sm:space-y-6">
+                  {/* Badge */}
+                  <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#641B32]/95 to-[#851C3B]/90 border border-[#D4AF37]/70 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase text-[#FFFDF9] shadow-md backdrop-blur-md">
+                    <Sparkles className="w-3.5 h-3.5 text-[#F3E2B8] animate-pulse" />
+                    <span>{slide.badge}</span>
+                    <span className="text-[#D4AF37]">✦</span>
+                  </div>
 
-                {/* Heading */}
-                <h1 className="font-heading text-3.5xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#FFFDF9] leading-[1.15] drop-shadow-sm">
-                  {slide.title}
-                </h1>
+                  {/* Heading */}
+                  <h1 className="font-heading text-3.5xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#FFFDF9] leading-[1.15] drop-shadow-sm">
+                    {slide.title}
+                  </h1>
 
-                {/* Subtitle with gold accent line */}
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-0.5 bg-[#D4AF37]" />
-                  <p className="text-sm sm:text-lg font-medium text-[#F3E2B8] tracking-wide font-body">
-                    {slide.subtitle}
+                  {/* Subtitle with gold accent line */}
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-0.5 bg-[#D4AF37]" />
+                    <p className="text-sm sm:text-lg font-medium text-[#F3E2B8] tracking-wide font-body">
+                      {slide.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs sm:text-base text-neutral-200/90 max-w-xl leading-relaxed hidden sm:block font-light">
+                    {slide.description}
                   </p>
-                </div>
 
-                {/* Description */}
-                <p className="text-xs sm:text-base text-neutral-200/90 max-w-xl leading-relaxed hidden sm:block font-light">
-                  {slide.description}
-                </p>
+                  {/* Call to Action */}
+                  <div className="pt-2 sm:pt-4 flex flex-wrap gap-4 items-center">
+                    <Link to={slide.ctaLink}>
+                      <button
+                        type="button"
+                        className="inline-flex items-center space-x-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E2B8] to-[#C5A05A] text-[#1E1719] font-bold text-xs sm:text-sm tracking-wider uppercase shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-103 cursor-pointer group gold-shimmer-btn"
+                      >
+                        <span>{slide.ctaText}</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                      </button>
+                    </Link>
 
-                {/* Call to Action */}
-                <div className="pt-2 sm:pt-4 flex flex-wrap gap-4 items-center">
-                  <Link to={slide.ctaLink}>
-                    <button
-                      type="button"
-                      className="inline-flex items-center space-x-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E2B8] to-[#C5A05A] text-[#1E1719] font-bold text-xs sm:text-sm tracking-wider uppercase shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-103 cursor-pointer group gold-shimmer-btn"
+                    <a
+                      href="https://wa.me/919822012345?text=Hello%20Swarada%20Saree%20Center,%20I%20would%20like%20to%20book%20a%20video%20shopping%20call."
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 hover:scale-102 cursor-pointer shadow-md"
                     >
-                      <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
-                    </button>
-                  </Link>
-
-                  <a
-                    href="https://wa.me/919822012345?text=Hello%20Swarada%20Saree%20Center,%20I%20would%20like%20to%20book%20a%20video%20shopping%20call."
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 hover:scale-102 cursor-pointer shadow-md"
-                  >
-                    <span>Book Video Consultation</span>
-                  </a>
+                      <span>Book Video Consultation</span>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* When text overlay is hidden (e.g. Graphic Banner with text baked in), make entire banner clickable */
+              <Link to={slide.ctaLink} className="absolute inset-0 z-10" aria-label={slide.title} />
+            )}
           </div>
         );
       })}
