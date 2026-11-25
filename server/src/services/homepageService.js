@@ -90,6 +90,7 @@ const getHomepageData = async () => {
     banners: {
       hero: banners.filter((b) => b.type === 'HERO'),
       promotional: banners.filter((b) => b.type === 'PROMOTIONAL'),
+      popup: banners.filter((b) => b.type === 'POPUP'),
       all: banners,
     },
     categories,

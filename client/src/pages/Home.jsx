@@ -7,6 +7,7 @@ import WhyShopWithUs from '../components/home/WhyShopWithUs';
 import Testimonials from '../components/home/Testimonials';
 import InstagramGallery from '../components/home/InstagramGallery';
 import Newsletter from '../components/home/Newsletter';
+import PromoPopup from '../components/home/PromoPopup';
 import homepageService from '../services/homepageService';
 
 export const Home = () => {
@@ -70,6 +71,9 @@ export const Home = () => {
 
       {/* 17. Newsletter Subscription */}
       <Newsletter />
+
+      {/* Promotional / Announcement Modal Popup */}
+      <PromoPopup banners={data?.banners?.popup} />
     </div>
   );
 };
