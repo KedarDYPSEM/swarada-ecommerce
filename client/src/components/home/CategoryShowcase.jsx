@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 
-const CATEGORIES = [
+const STATIC_FALLBACK = [
   {
     name: 'Handloom Sarees',
     subtitle: 'Paithani, Banarasi & Nauvari',
@@ -36,7 +36,21 @@ const CATEGORIES = [
   },
 ];
 
-export const CategoryShowcase = () => {
+export const CategoryShowcase = ({ categories = [] }) => {
+  // Use database categories from admin panel if available, otherwise fallback
+  const displayCategories =
+    Array.isArray(categories) && categories.length > 0
+      ? categories.filter((c) => c.isActive !== false).slice(0, 5).map((cat, idx) => ({
+          name: cat.name,
+          subtitle: cat.description || 'Exclusive Handcrafted Collection',
+          image: cat.imageUrl
+            ? cat.imageUrl.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1')
+            : STATIC_FALLBACK[idx % STATIC_FALLBACK.length].image,
+          link: `/shop?category=${cat.slug}`,
+          featured: idx === 0,
+        }))
+      : STATIC_FALLBACK;
+
   return (
     <section className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden">
       {/* Decorative background glow */}
@@ -65,41 +79,46 @@ export const CategoryShowcase = () => {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-          {CATEGORIES.map((cat, idx) => (
+          {displayCategories.map((cat, idx) => (
             <Link
               key={cat.name}
               to={cat.link}
-              className={`group relative overflow-hidden rounded-2xl bg-neutral-900 shadow-md transition-all duration-500 hover:shadow-2xl hover:-translate-y-1.5 border border-amber-900/10 hover:border-[#D4AF37]/60 ${
-                cat.featured ? 'col-span-2 lg:col-span-1' : ''
+              className={`group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 border border-amber-900/10 ${
+                cat.featured ? 'col-span-2 lg:col-span-1 sm:row-span-1' : ''
               }`}
             >
-              {/* Image with zoom effect */}
-              <div className="aspect-4/5 sm:aspect-3/4 overflow-hidden relative">
+              {/* Image Container with Aspect Ratio */}
+              <div className="aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden bg-neutral-900 relative">
                 <img
                   src={cat.image}
                   alt={cat.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 filter brightness-[0.88] group-hover:brightness-95"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = STATIC_FALLBACK[0].image;
+                  }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#140F11]/95 via-[#1E1719]/40 to-transparent transition-opacity duration-300 group-hover:from-[#641B32]/95" />
-              </div>
 
-              {/* Text Card Overlay */}
-              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 text-white">
-                <div className="flex items-end justify-between gap-2">
-                  <div>
-                    <span className="text-[9px] font-royal tracking-widest text-[#F3E2B8] uppercase block mb-0.5">
-                      Heritage Edition
-                    </span>
-                    <h3 className="font-heading text-base sm:text-lg font-bold tracking-wide text-[#FFFDF9] group-hover:text-[#F3E2B8] transition-colors leading-snug">
-                      {cat.name}
-                    </h3>
-                    <p className="text-[11px] text-neutral-300 tracking-wide mt-0.5 line-clamp-1 font-light">
-                      {cat.subtitle}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-[#D4AF37] group-hover:text-[#1E1719] transition-all duration-300 shrink-0 group-hover:scale-110 shadow-md">
-                    <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
-                  </div>
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#140F11]/90 via-[#140F11]/25 to-transparent transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-[#641B32]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-multiply" />
+
+                {/* Subtle Gold Corner Accents on Hover */}
+                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <ArrowUpRight className="w-4 h-4 text-[#F3E2B8]" />
+                </div>
+
+                {/* Text Content */}
+                <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-left transform transition-transform duration-300 group-hover:translate-y-[-2px]">
+                  <span className="text-[10px] sm:text-[11px] font-royal tracking-[0.18em] text-[#D4AF37] uppercase block mb-1">
+                    Collection
+                  </span>
+                  <h3 className="font-heading text-base sm:text-lg font-bold text-white group-hover:text-[#F3E2B8] transition-colors leading-snug">
+                    {cat.name}
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-neutral-300/80 font-light mt-0.5 line-clamp-1">
+                    {cat.subtitle}
+                  </p>
                 </div>
               </div>
             </Link>

@@ -25,9 +25,8 @@ const getHomepageData = async () => {
       orderBy: { displayOrder: 'asc' },
     }),
     prisma.category.findMany({
-      where: { isActive: true, parentId: null },
+      where: { isActive: true },
       orderBy: { displayOrder: 'asc' },
-      take: 6,
     }),
     prisma.product.findMany({
       where: { isActive: true, isNewArrival: true },
