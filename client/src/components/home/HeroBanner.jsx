@@ -1,7 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
+
+// Dedicated autoplay video component that ensures muted=true and calls .play() reliably
+const HeroVideoSlide = ({ src, isActive }) => {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.defaultMuted = true;
+    el.muted = true;
+    if (isActive) {
+      const playPromise = el.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    } else {
+      el.pause();
+    }
+  }, [isActive, src]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="w-full h-full object-cover object-center pointer-events-none"
+      onError={(e) => {
+        if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+          e.target.dataset.triedFallback = 'true';
+          e.target.src = `http://localhost:5000${src}`;
+          e.target.play?.().catch(() => {});
+        }
+      }}
+    />
+  );
+};
 
 const SLIDES = [
   {
@@ -95,21 +134,7 @@ export const HeroBanner = ({ banners }) => {
             {/* Background Image or Video with Gradient Overlay */}
             <div className="absolute inset-0">
               {slide.isVideo && (slide.videoUrl || slide.image) ? (
-                <video
-                  src={slide.videoUrl || slide.image}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover object-center"
-                  onError={(e) => {
-                    const src = slide.videoUrl || slide.image;
-                    if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
-                      e.target.dataset.triedFallback = 'true';
-                      e.target.src = `http://localhost:5000${src}`;
-                    }
-                  }}
-                />
+                <HeroVideoSlide src={slide.videoUrl || slide.image} isActive={isActive} />
               ) : (
                 <img
                   src={slide.image}

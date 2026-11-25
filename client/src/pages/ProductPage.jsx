@@ -209,16 +209,26 @@ export const ProductPage = () => {
               {isVideoActive && product?.videoUrl ? (
                 <div className="w-full h-full bg-black flex items-center justify-center relative">
                   <video
+                    ref={(el) => {
+                      if (el) {
+                        el.defaultMuted = true;
+                        el.muted = true;
+                        const p = el.play();
+                        if (p !== undefined) p.catch(() => {});
+                      }
+                    }}
                     src={product.videoUrl}
                     controls
                     autoPlay
                     loop
+                    muted
                     playsInline
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       if (product.videoUrl && product.videoUrl.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
                         e.target.dataset.triedFallback = 'true';
                         e.target.src = `http://localhost:5000${product.videoUrl}`;
+                        e.target.play?.().catch(() => {});
                       }
                     }}
                   />

@@ -207,6 +207,14 @@ export const BannerManager = () => {
               <div className="relative h-48 bg-neutral-900 group">
                 {b.isVideo && (b.videoUrl || b.imageUrl) ? (
                   <video
+                    ref={(el) => {
+                      if (el) {
+                        el.defaultMuted = true;
+                        el.muted = true;
+                        const p = el.play();
+                        if (p !== undefined) p.catch(() => {});
+                      }
+                    }}
                     src={b.videoUrl || b.imageUrl}
                     autoPlay
                     loop
@@ -218,6 +226,7 @@ export const BannerManager = () => {
                       if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
                         e.target.dataset.triedFallback = 'true';
                         e.target.src = `http://localhost:5000${src}`;
+                        e.target.play?.().catch(() => {});
                       }
                     }}
                   />
@@ -442,6 +451,14 @@ export const BannerManager = () => {
                     {formData.videoUrl && (
                       <div className="relative h-28 bg-black rounded overflow-hidden">
                         <video
+                          ref={(el) => {
+                            if (el) {
+                              el.defaultMuted = true;
+                              el.muted = true;
+                              const p = el.play();
+                              if (p !== undefined) p.catch(() => {});
+                            }
+                          }}
                           src={formData.videoUrl}
                           autoPlay
                           loop

@@ -839,8 +839,19 @@ export const ProductForm = () => {
               <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-200 flex flex-col sm:flex-row gap-4 items-center">
                 <div className="w-48 h-28 bg-black rounded-lg overflow-hidden shrink-0 shadow-xs relative">
                   <video
+                    ref={(el) => {
+                      if (el) {
+                        el.defaultMuted = true;
+                        el.muted = true;
+                        const p = el.play();
+                        if (p !== undefined) p.catch(() => {});
+                      }
+                    }}
                     src={formData.videoUrl}
                     controls
+                    autoPlay
+                    loop
+                    muted
                     playsInline
                     className="w-full h-full object-cover"
                   />
