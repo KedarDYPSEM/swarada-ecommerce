@@ -70,6 +70,11 @@ export const orderService = {
     const res = await api.post('/payment/verify', verificationData);
     return res.data;
   },
+
+  async cancelPayment(orderId, reason = 'Payment cancelled by user') {
+    const res = await api.post('/payment/cancel', { orderId, reason });
+    return res.data;
+  },
 };
 
 export default orderService;

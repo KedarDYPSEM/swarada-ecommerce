@@ -45,6 +45,29 @@ const handleWebhook = catchAsync(async (req, res) => {
 });
 
 /**
+ * Cancel payment and restore stock
+ */
+const cancelPayment = catchAsync(async (req, res) => {
+  const { orderId, reason } = req.body;
+  if (!orderId) {
+    throw new AppError('Order ID is required to cancel payment', 400);
+  }
+
+  const orderService = require('../services/orderService');
+  const order = await orderService.cancelOrderAndRestoreStock(
+    orderId,
+    reason || 'Payment cancelled by user / window closed',
+    req.user?.id
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Payment cancelled and product stock restored to inventory',
+    data: { order },
+  });
+});
+
+/**
  * Admin Refund
  */
 const processRefund = catchAsync(async (req, res) => {
@@ -56,6 +79,7 @@ const processRefund = catchAsync(async (req, res) => {
 module.exports = {
   initiatePayment,
   verifyPayment,
+  cancelPayment,
   handleWebhook,
   processRefund,
 };

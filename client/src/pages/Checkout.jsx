@@ -196,17 +196,27 @@ export const Checkout = () => {
               color: '#641B32',
             },
             modal: {
-              ondismiss: () => {
-                navigate('/account/orders');
+              ondismiss: async () => {
+                try {
+                  await orderService.cancelPayment(order.id, 'Payment window closed / cancelled by customer');
+                } catch (e) {
+                  console.warn('Payment cancel sync note:', e.message);
+                }
+                setServerError('Payment was cancelled. The item has been restored to available stock.');
               },
             },
           };
           const rzpInstance = new window.Razorpay(options);
-          rzpInstance.on('payment.failed', function (resp) {
+          rzpInstance.on('payment.failed', async function (resp) {
+            try {
+              await orderService.cancelPayment(order.id, resp.error?.description || 'Razorpay payment failed');
+            } catch (e) {
+              console.warn('Payment failure cancel note:', e.message);
+            }
             setServerError(
               resp.error?.description ||
                 resp.error?.reason ||
-                'Payment was not completed. You can try again or choose Cash on Delivery (COD).'
+                'Payment was not completed. Stock has been restored. You can try again or choose Cash on Delivery (COD).'
             );
           });
           rzpInstance.open();

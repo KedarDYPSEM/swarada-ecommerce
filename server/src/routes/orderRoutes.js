@@ -14,4 +14,7 @@ router.get('/:id', authenticate, orderController.getOrderById);
 // Public order tracking
 router.get('/track/:orderNumber', orderController.trackOrder);
 
+// Cancel order and restore stock
+router.post('/:id/cancel', optionalAuth, orderController.cancelOrder);
+
 module.exports = router;

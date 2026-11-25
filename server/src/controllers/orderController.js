@@ -95,9 +95,31 @@ const trackOrder = async (req, res, next) => {
   }
 };
 
+/**
+ * Cancel order and restore stock
+ */
+const cancelOrder = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const reason = req.body.reason || 'Cancelled by customer';
+    const userId = req.user ? req.user.id : null;
+
+    const order = await orderService.cancelOrderAndRestoreStock(orderId, reason, userId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Order cancelled and stock restored to inventory',
+      data: { order },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
   getOrderById,
   trackOrder,
+  cancelOrder,
 };

@@ -277,11 +277,23 @@ const createOrder = async (orderData) => {
         throw new AppError(`The saree "${item.product.name}" is no longer available.`, 400);
       }
 
-      if (product.stockQuantity > 0 && product.stockQuantity < item.quantity) {
+      // Check product overall stock
+      if (product.stockQuantity < item.quantity) {
         throw new AppError(
-          `Insufficient stock for "${product.name}". Only ${product.stockQuantity} available.`,
+          `Insufficient stock for "${product.name}". This saree is currently out of stock.`,
           400
         );
+      }
+
+      // Check variant stock if customer selected a specific color/shade
+      if (item.variantId) {
+        const variant = await tx.productVariant.findUnique({ where: { id: item.variantId } });
+        if (!variant || variant.stockQuantity < item.quantity) {
+          throw new AppError(
+            `Insufficient stock for shade "${variant?.variantValue || 'Selected'}" of "${product.name}". Only ${variant?.stockQuantity || 0} remaining.`,
+            400
+          );
+        }
       }
 
       const unitPrice = parseFloat(product.sellingPrice);
@@ -550,9 +562,116 @@ const getOrderByNumber = async (orderNumber) => {
   return order;
 };
 
+/**
+ * Cancel an order and restore all item & variant stock back to inventory
+ */
+const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled / failed', userId = null) => {
+  const numericId = parseInt(orderId, 10);
+  if (isNaN(numericId)) {
+    throw new AppError('Invalid order ID', 400);
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: numericId },
+    include: { items: true, payments: true },
+  });
+
+  if (!order) {
+    throw new AppError('Order not found', 404);
+  }
+
+  // If already cancelled or refunded, no-op
+  if (order.status === 'CANCELLED' || order.status === 'REFUNDED') {
+    return order;
+  }
+
+  // Prevent cancelling delivered orders through payment cancellation
+  if (order.status === 'DELIVERED') {
+    throw new AppError('Delivered orders cannot be cancelled via payment cancel', 400);
+  }
+
+  // Authorization check if user is attached
+  if (userId && order.userId && order.userId !== userId) {
+    throw new AppError('Unauthorized access to order', 403);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    // 1. Restore inventory for all order items
+    for (const item of order.items) {
+      if (item.variantId) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stockQuantity: { increment: item.quantity } },
+        });
+      }
+
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stockQuantity: { increment: item.quantity } },
+      });
+
+      await tx.inventory.updateMany({
+        where: { productId: item.productId },
+        data: { quantity: { increment: item.quantity } },
+      });
+
+      await tx.inventoryMovement.create({
+        data: {
+          productId: item.productId,
+          variantId: item.variantId || null,
+          movementType: 'RETURN',
+          quantity: item.quantity,
+          balanceAfter: 0,
+          referenceType: 'ORDER_CANCEL',
+          notes: `Order #${order.orderNumber} cancelled (${reason}). Restored ${item.quantity} units to stock.`,
+          createdById: userId || null,
+        },
+      });
+    }
+
+    // 2. Restore coupon usage if applied
+    if (order.couponId) {
+      await tx.coupon.update({
+        where: { id: order.couponId },
+        data: { usageCount: { decrement: 1 } },
+      });
+      await tx.couponUsage.deleteMany({
+        where: { orderId: order.id },
+      });
+    }
+
+    // 3. Update payment records
+    await tx.payment.updateMany({
+      where: {
+        orderId: order.id,
+        status: { in: ['CREATED', 'PENDING'] },
+      },
+      data: {
+        status: 'FAILED',
+        errorDescription: reason,
+      },
+    });
+
+    // 4. Update order status to CANCELLED
+    const updatedOrder = await tx.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'CANCELLED',
+        paymentStatus: order.paymentStatus === 'COMPLETED' ? 'REFUNDED' : 'FAILED',
+        cancelledAt: new Date(),
+        cancellationReason: reason,
+      },
+      include: { items: true },
+    });
+
+    return updatedOrder;
+  });
+};
+
 module.exports = {
   createOrder,
   getOrderById,
   getOrdersByUser,
   getOrderByNumber,
+  cancelOrderAndRestoreStock,
 };

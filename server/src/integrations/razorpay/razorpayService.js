@@ -267,14 +267,26 @@ const handleWebhook = async (rawBody, signature) => {
       const razorpayOrderId = paymentEntity?.order_id;
 
       if (razorpayOrderId) {
-        await prisma.payment.updateMany({
+        const payment = await prisma.payment.findFirst({
           where: { razorpayOrderId },
-          data: {
-            status: 'FAILED',
-            errorCode: paymentEntity.error_code,
-            errorDescription: paymentEntity.error_description,
-          },
         });
+
+        if (payment && payment.orderId) {
+          const orderService = require('../../services/orderService');
+          await orderService.cancelOrderAndRestoreStock(
+            payment.orderId,
+            `Razorpay payment failed (${paymentEntity.error_description || paymentEntity.error_code || 'Payment failure'})`
+          ).catch((e) => console.warn('Webhook auto-cancel error:', e.message));
+        } else {
+          await prisma.payment.updateMany({
+            where: { razorpayOrderId },
+            data: {
+              status: 'FAILED',
+              errorCode: paymentEntity.error_code,
+              errorDescription: paymentEntity.error_description,
+            },
+          });
+        }
       }
     }
 

@@ -180,6 +180,13 @@ const cancelOrder = async (id, reason) => {
   return prisma.$transaction(async (tx) => {
     // 1. Restore inventory for all items
     for (const item of order.items) {
+      if (item.variantId) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stockQuantity: { increment: item.quantity } },
+        });
+      }
+
       await tx.product.update({
         where: { id: item.productId },
         data: { stockQuantity: { increment: item.quantity } },
