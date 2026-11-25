@@ -102,11 +102,24 @@ export const HeroBanner = ({ banners }) => {
                   muted
                   playsInline
                   className="w-full h-full object-cover object-center"
+                  onError={(e) => {
+                    const src = slide.videoUrl || slide.image;
+                    if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                      e.target.dataset.triedFallback = 'true';
+                      e.target.src = `http://localhost:5000${src}`;
+                    }
+                  }}
                 />
               ) : (
                 <img
                   src={slide.image}
                   alt={slide.title}
+                  onError={(e) => {
+                    if (slide.image && slide.image.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                      e.target.dataset.triedFallback = 'true';
+                      e.target.src = `http://localhost:5000${slide.image}`;
+                    }
+                  }}
                   className={`w-full h-full object-cover object-center transition-transform duration-10000 ease-out ${
                     isActive ? 'scale-110' : 'scale-100'
                   }`}

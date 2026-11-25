@@ -215,12 +215,25 @@ export const ProductPage = () => {
                     loop
                     playsInline
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      if (product.videoUrl && product.videoUrl.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                        e.target.dataset.triedFallback = 'true';
+                        e.target.src = `http://localhost:5000${product.videoUrl}`;
+                      }
+                    }}
                   />
                 </div>
               ) : (
                 <img
                   src={activeImageOverride || images[selectedImage]}
                   alt={product.name}
+                  onError={(e) => {
+                    const currentSrc = activeImageOverride || images[selectedImage];
+                    if (currentSrc && currentSrc.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                      e.target.dataset.triedFallback = 'true';
+                      e.target.src = `http://localhost:5000${currentSrc}`;
+                    }
+                  }}
                   className={`w-full h-full object-cover object-center transition-transform duration-700 ease-out ${
                     isZoomed ? 'scale-125' : 'scale-100'
                   }`}

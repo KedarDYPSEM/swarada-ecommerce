@@ -99,6 +99,13 @@ export const BannerManager = () => {
   const handleBannerVideoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Video file size exceeds 20MB limit. Please upload a video under 20MB.');
+      e.target.value = '';
+      return;
+    }
+
     setVideoUploading(true);
     try {
       const res = await adminService.uploadVideo(file);
@@ -206,11 +213,24 @@ export const BannerManager = () => {
                     muted
                     playsInline
                     className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      const src = b.videoUrl || b.imageUrl;
+                      if (src && src.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                        e.target.dataset.triedFallback = 'true';
+                        e.target.src = `http://localhost:5000${src}`;
+                      }
+                    }}
                   />
                 ) : (
                   <img
                     src={b.imageUrl}
                     alt={b.title}
+                    onError={(e) => {
+                      if (b.imageUrl && b.imageUrl.startsWith('/uploads/') && !e.target.dataset.triedFallback) {
+                        e.target.dataset.triedFallback = 'true';
+                        e.target.src = `http://localhost:5000${b.imageUrl}`;
+                      }
+                    }}
                     className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
                   />
                 )}

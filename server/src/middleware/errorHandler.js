@@ -44,6 +44,14 @@ const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
+  // Format Multer File Size limit (20MB)
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    err.statusCode = 400;
+    err.status = 'fail';
+    err.isOperational = true;
+    err.message = 'File size exceeds 20MB limit. Please upload an image or video under 20MB.';
+  }
+
   // Format Prisma Unique Constraint Violations (P2002)
   if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint failed'))) {
     err.statusCode = 400;

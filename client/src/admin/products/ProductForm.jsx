@@ -212,6 +212,13 @@ export const ProductForm = () => {
   const handleVideoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Video file size exceeds 20MB limit. Please upload a video under 20MB.');
+      e.target.value = '';
+      return;
+    }
+
     setVideoUploading(true);
     try {
       const res = await adminService.uploadVideo(file);
@@ -791,7 +798,7 @@ export const ProductForm = () => {
                 </h2>
               </div>
               <p className="text-neutral-500 text-[11px] mt-0.5">
-                Upload a real video of the saree drape, pallu flow, or model reel (MP4, WebM up to 50MB).
+                Upload a real video of the saree drape, pallu flow, or model reel (MP4, WebM up to 20MB).
               </p>
             </div>
             {formData.videoUrl && (
