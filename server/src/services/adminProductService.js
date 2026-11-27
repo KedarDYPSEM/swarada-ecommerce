@@ -522,36 +522,56 @@ const deleteProduct = async (id) => {
       data: { isActive: false },
     });
     return {
-      message: 'Product is linked to customer orders. It has been deactivated and removed from the storefront catalog.',
+      message: 'Product is linked to customer orders/sales history. It has been deactivated and removed from the active storefront catalog.',
       softDeleted: true,
     };
   }
 
   // Clean cascading deletion of child rows in a single atomic transaction
-  return prisma.$transaction(async (tx) => {
-    // 1. Delete cart & wishlist references
-    await tx.cartItem.deleteMany({ where: { productId } });
-    await tx.wishlistItem.deleteMany({ where: { productId } });
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 1. Delete cart & wishlist references
+      await tx.cartItem.deleteMany({ where: { productId } });
+      await tx.wishlistItem.deleteMany({ where: { productId } });
 
-    // 2. Delete coupon associations & reviews
-    await tx.couponProduct.deleteMany({ where: { productId } });
-    await tx.productReview.deleteMany({ where: { productId } });
+      // 2. Delete coupon associations & reviews
+      await tx.couponProduct.deleteMany({ where: { productId } });
+      await tx.productReview.deleteMany({ where: { productId } });
 
-    // 3. Delete inventory movements & inventory record
-    await tx.inventoryMovement.deleteMany({ where: { productId } });
-    await tx.inventory.deleteMany({ where: { productId } });
+      // 3. Delete inventory movements & inventory record
+      await tx.inventoryMovement.deleteMany({ where: { productId } });
+      await tx.inventory.deleteMany({ where: { productId } });
 
-    // 4. Delete product categories, images, attributes, and variants
-    await tx.productCategory.deleteMany({ where: { productId } });
-    await tx.productImage.deleteMany({ where: { productId } });
-    await tx.productAttribute.deleteMany({ where: { productId } });
-    await tx.productVariant.deleteMany({ where: { productId } });
+      // 4. Delete product categories, images, attributes, and variants
+      await tx.productCategory.deleteMany({ where: { productId } });
+      await tx.productImage.deleteMany({ where: { productId } });
+      await tx.productAttribute.deleteMany({ where: { productId } });
+      await tx.productVariant.deleteMany({ where: { productId } });
 
-    // 5. Delete the product itself
-    return tx.product.delete({
-      where: { id: productId },
+      // 5. Delete the product itself
+      const deleted = await tx.product.delete({
+        where: { id: productId },
+      });
+
+      return {
+        message: 'Product deleted permanently from database.',
+        deleted,
+      };
     });
-  });
+  } catch (err) {
+    // If foreign key constraint prevents hard deletion, safely deactivate and hide from catalog
+    if (err.code === 'P2003') {
+      await prisma.product.update({
+        where: { id: productId },
+        data: { isActive: false },
+      });
+      return {
+        message: 'Product has linked history. It has been safely deactivated and removed from storefront catalog.',
+        softDeleted: true,
+      };
+    }
+    throw err;
+  }
 };
 
 /**

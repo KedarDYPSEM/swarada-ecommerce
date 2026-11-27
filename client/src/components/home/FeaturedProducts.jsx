@@ -205,7 +205,7 @@ export const FeaturedProducts = ({ title = 'Featured Collections', defaultTab = 
             to="/shop"
             className="inline-flex items-center space-x-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#641B32] via-[#7A1A31] to-[#641B32] text-[#FFFDF9] font-bold text-xs tracking-[0.18em] uppercase shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-103 cursor-pointer group gold-shimmer-btn border border-[#D4AF37]/40"
           >
-            <span>Explore Entire Handloom Catalog</span>
+            <span>Explore Entire Collection</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </div>

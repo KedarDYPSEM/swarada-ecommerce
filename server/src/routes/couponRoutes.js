@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.post('/validate', optionalAuth, async (req, res, next) => {
   try {
-    const { code, subtotal } = req.body;
+    const { code, subtotal, items } = req.body;
     const userId = req.user ? req.user.id : null;
 
-    const result = await validateCoupon(code, subtotal, userId);
+    const result = await validateCoupon(code, subtotal, userId, items);
     res.status(200).json({
       status: 'success',
       message: `Coupon "${result.coupon.code}" applied!`,

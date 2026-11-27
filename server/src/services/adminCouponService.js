@@ -8,6 +8,13 @@ const listCoupons = async () => {
       _count: {
         select: { usages: true },
       },
+      couponProducts: {
+        include: {
+          product: {
+            select: { id: true, name: true, sku: true, sellingPrice: true },
+          },
+        },
+      },
     },
   });
 };
@@ -53,7 +60,7 @@ const createCoupon = async (data) => {
     return isNaN(parsed.getTime()) ? null : parsed;
   };
 
-  return prisma.coupon.create({
+  const created = await prisma.coupon.create({
     data: {
       code: cleanCode,
       description: description ? description.trim() : null,
@@ -67,6 +74,29 @@ const createCoupon = async (data) => {
       isActive: Boolean(isActive),
       startsAt: parseDateSafe(startsAt),
       expiresAt: parseDateSafe(expiresAt),
+    },
+  });
+
+  if (Array.isArray(data.productIds) && data.productIds.length > 0) {
+    await prisma.couponProduct.createMany({
+      data: data.productIds.map((pid) => ({
+        couponId: created.id,
+        productId: parseInt(pid, 10),
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  return prisma.coupon.findUnique({
+    where: { id: created.id },
+    include: {
+      couponProducts: {
+        include: {
+          product: {
+            select: { id: true, name: true, sku: true, sellingPrice: true },
+          },
+        },
+      },
     },
   });
 };
@@ -110,9 +140,37 @@ const updateCoupon = async (id, data) => {
   if (data.isActive !== undefined) updatePayload.isActive = Boolean(data.isActive);
   if (data.expiresAt !== undefined) updatePayload.expiresAt = parseDateSafe(data.expiresAt);
 
-  return prisma.coupon.update({
+  await prisma.coupon.update({
     where: { id: couponId },
     data: updatePayload,
+  });
+
+  if (Array.isArray(data.productIds)) {
+    await prisma.couponProduct.deleteMany({
+      where: { couponId },
+    });
+    if (data.productIds.length > 0) {
+      await prisma.couponProduct.createMany({
+        data: data.productIds.map((pid) => ({
+          couponId,
+          productId: parseInt(pid, 10),
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
+
+  return prisma.coupon.findUnique({
+    where: { id: couponId },
+    include: {
+      couponProducts: {
+        include: {
+          product: {
+            select: { id: true, name: true, sku: true, sellingPrice: true },
+          },
+        },
+      },
+    },
   });
 };
 

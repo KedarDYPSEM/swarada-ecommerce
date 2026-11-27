@@ -10,7 +10,7 @@ export const WhyShopWithUs = () => {
     {
       icon: PackageCheck,
       title: `${ordersCount}+ Orders Delivered`,
-      description: 'Trusted by brides and saree connoisseurs across India & globally with 100% verified authentic delivery track record.',
+      description: 'Trusted by patrons across India & globally with 100% verified authentic delivery track record.',
     },
     {
       icon: Award,
@@ -18,14 +18,9 @@ export const WhyShopWithUs = () => {
       description: 'Handpicked directly from master weavers across Yeola, Paithan, Varanasi, and Kanchipuram with zero middleman markups.',
     },
     {
-      icon: Video,
-      title: 'Personalized Video Shopping',
-      description: 'Book a 1-on-1 WhatsApp video consultation with our Kolhapur saree specialists to inspect pallu weaves and fabric drape live.',
-    },
-    {
       icon: Truck,
       title: 'Insured Pan-India Express Delivery',
-      description: `Free express shipping on orders above ₹${settings?.freeShippingThreshold?.toLocaleString('en-IN') || '2,999'} in tamper-proof premium bridal keepsake packaging.`,
+      description: `Free express shipping on orders above ₹${settings?.freeShippingThreshold?.toLocaleString('en-IN') || '2,999'} in tamper-proof premium keepsake packaging.`,
     },
   ];
 
@@ -39,7 +34,7 @@ export const WhyShopWithUs = () => {
             <span>✦</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-[#641B32] tracking-tight">
-            Why Discerning Brides Choose Swarada
+            Why Customers Choose Swarada
           </h2>
           <div className="flex items-center justify-center space-x-3 my-4">
             <span className="w-12 h-px bg-gradient-to-r from-transparent to-[#D4AF37]" />
@@ -48,7 +43,7 @@ export const WhyShopWithUs = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {REASONS.map((reason) => {
             const Icon = reason.icon;
             return (

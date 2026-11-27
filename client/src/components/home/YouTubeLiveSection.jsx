@@ -76,10 +76,6 @@ export const YouTubeLiveSection = () => {
             <span className="text-[#D4AF37] text-xs">❖</span>
             <span className="w-12 h-px bg-gradient-to-l from-transparent to-[#D4AF37]" />
           </div>
-
-          <p className="text-xs sm:text-sm text-neutral-300 font-light max-w-2xl mx-auto leading-relaxed">
-            Broadcast live from our Mahadwar Road Store in Kolhapur. Inspect authentic Yeola Paithani weaves, pure zari pallus, and rich bridal silks before ordering.
-          </p>
         </div>
 
         {/* Video Player & Live Details Grid */}
@@ -109,9 +105,6 @@ export const YouTubeLiveSection = () => {
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-8 space-y-6">
               <div>
-                <span className="text-[11px] font-royal tracking-[0.2em] text-[#D4AF37] uppercase block mb-1">
-                  Kolhapur Store Live
-                </span>
                 <h3 className="text-xl sm:text-2xl font-heading font-bold text-white leading-snug">
                   {liveData?.latestTitle || 'Daily Pure Silk Saree Exhibition'}
                 </h3>
@@ -147,10 +140,6 @@ export const YouTubeLiveSection = () => {
                 <div className="flex items-center space-x-2">
                   <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>Exclusive live-only festive discount pricing</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Video className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>100% Genuine silk drape & pallu inspection</span>
                 </div>
               </div>
             </div>

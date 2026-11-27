@@ -320,38 +320,40 @@ export const Navbar = () => {
         )}
       </div>
 
-      {/* Desktop Main Navigation Menu */}
-      <nav className="hidden lg:block border-t border-amber-900/10 bg-[#FAF7F2]/90 backdrop-blur-sm">
+      {/* Desktop Main Navigation Menu - Matching Brand Logo Red */}
+      <nav className="hidden lg:block bg-[#C4121A] border-t border-b border-[#a10e15] shadow-md">
         <div className="max-w-7xl mx-auto px-8">
-          <ul className="flex items-center justify-center space-x-8 text-xs font-semibold tracking-widest uppercase py-3.5">
+          <ul className="flex items-center justify-center space-x-8 text-xs font-semibold tracking-widest uppercase py-3">
             {activeNavLinks.map((link) => (
               <li key={link.id || link.name} className="relative group">
                 <Link
                   to={link.href}
                   className={`py-2 transition-all flex items-center space-x-1.5 relative ${
                     link.highlight
-                      ? 'text-[#D4AF37] font-bold'
-                      : 'text-[#1E1719] hover:text-[#641B32]'
+                      ? 'text-[#F3E2B8] font-bold'
+                      : 'text-white hover:text-[#F3E2B8]'
                   }`}
                 >
                   <span>{link.name}</span>
-                  {link.subcategories && <ChevronDown className="w-3 h-3 opacity-60 group-hover:rotate-180 transition-transform duration-200" />}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
+                  {link.subcategories && (
+                    <ChevronDown className="w-3 h-3 text-white/80 group-hover:text-[#F3E2B8] group-hover:rotate-180 transition-transform duration-200" />
+                  )}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#F3E2B8] transition-all duration-300 group-hover:w-full" />
                 </Link>
 
                 {/* Dropdown Menu */}
                 {link.subcategories && (
-                  <div className="absolute left-0 top-full hidden group-hover:block w-64 bg-white/98 backdrop-blur-md border border-[#D4AF37]/35 shadow-2xl py-3 rounded-xl z-50 normal-case">
+                  <div className="absolute left-0 top-full hidden group-hover:block w-64 bg-white/98 backdrop-blur-md border border-[#D4AF37]/40 shadow-2xl py-3 rounded-xl z-50 normal-case animate-in fade-in zoom-in-95">
                     <div className="px-4 py-1 mb-1 border-b border-neutral-100">
-                      <span className="text-[10px] font-royal uppercase tracking-widest text-[#D4AF37]">
-                        Handloom Collections
+                      <span className="text-[10px] font-royal uppercase tracking-widest text-[#C4121A] font-bold">
+                        Curated Collections
                       </span>
                     </div>
                     {link.subcategories.map((sub) => (
                       <Link
                         key={sub.name}
                         to={sub.href}
-                        className="block px-4 py-2 text-xs text-[#1E1719] hover:bg-[#FAF7F2] hover:text-[#641B32] transition-colors font-medium"
+                        className="block px-4 py-2 text-xs text-[#1E1719] hover:bg-[#C4121A] hover:text-white transition-colors font-medium rounded-md mx-1"
                       >
                         {sub.name}
                       </Link>

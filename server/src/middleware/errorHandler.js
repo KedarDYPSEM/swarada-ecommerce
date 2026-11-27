@@ -72,7 +72,12 @@ const errorHandler = (err, req, res, next) => {
     err.statusCode = 400;
     err.status = 'fail';
     err.isOperational = true;
-    err.message = 'A referenced record (category, user, or parent item) was not found.';
+    const field = err.meta?.field_name || '';
+    if (req.method === 'DELETE') {
+      err.message = 'This item cannot be deleted because it is referenced by existing customer orders or history. It has been preserved for record keeping.';
+    } else {
+      err.message = 'A referenced record (category, user, or parent item) was not found.';
+    }
   }
 
   // Format Prisma Client Validation Errors

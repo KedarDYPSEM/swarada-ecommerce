@@ -96,7 +96,7 @@ const calculateCartTotals = async (items, couponCode = null, userId = null) => {
 
   if (couponCode && subtotal > 0) {
     try {
-      const validation = await validateCoupon(couponCode, subtotal, userId);
+      const validation = await validateCoupon(couponCode, subtotal, userId, cart.items);
       discountAmount = validation.discountAmount;
       couponInfo = validation.coupon;
     } catch (e) {

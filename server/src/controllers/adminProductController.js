@@ -49,7 +49,8 @@ const deleteProduct = catchAsync(async (req, res) => {
   const result = await adminProductService.deleteProduct(req.params.id, req.user.id);
   res.json({
     success: true,
-    message: result.message,
+    message: result.message || 'Product deleted successfully',
+    data: result,
   });
 });
 

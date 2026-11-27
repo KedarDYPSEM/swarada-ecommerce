@@ -109,7 +109,10 @@ export const ProductList = () => {
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
     try {
-      await adminService.deleteProduct(id);
+      const res = await adminService.deleteProduct(id);
+      if (res?.message || res?.data?.message) {
+        alert(res?.message || res?.data?.message);
+      }
       fetchProducts();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete product');

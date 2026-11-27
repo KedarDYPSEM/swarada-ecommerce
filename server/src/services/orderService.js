@@ -418,7 +418,7 @@ const createOrder = async (orderData) => {
 
     if (couponCode && subtotal > 0) {
       try {
-        const validation = await validateCoupon(couponCode, subtotal, userId);
+        const validation = await validateCoupon(couponCode, subtotal, userId, orderData.items);
         discountAmount = validation.discountAmount;
         appliedCoupon = validation.coupon;
 

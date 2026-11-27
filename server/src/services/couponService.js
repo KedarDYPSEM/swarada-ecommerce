@@ -2,9 +2,9 @@ const prisma = require('../config/database');
 const { AppError } = require('../middleware/errorHandler');
 
 /**
- * Validate coupon code against subtotal, user history, and constraints
+ * Validate coupon code against subtotal, user history, and product constraints
  */
-const validateCoupon = async (code, subtotal, userId = null) => {
+const validateCoupon = async (code, subtotal, userId = null, items = []) => {
   if (!code || !code.trim()) {
     throw new AppError('Coupon code is required.', 400);
   }
@@ -74,18 +74,43 @@ const validateCoupon = async (code, subtotal, userId = null) => {
     }
   }
 
-  // Calculate discount amount
+  // Check selected products restriction
+  let eligibleSubtotal = numSubtotal;
+  const restrictedProducts = coupon.couponProducts || [];
+
+  if (restrictedProducts.length > 0) {
+    const allowedProductIds = restrictedProducts.map((cp) => cp.productId);
+
+    if (Array.isArray(items) && items.length > 0) {
+      const eligibleItems = items.filter((it) => {
+        const pId = it.productId || it.product?.id || it.id;
+        return allowedProductIds.includes(parseInt(pId, 10));
+      });
+
+      if (eligibleItems.length === 0) {
+        throw new AppError('This coupon applies only to selected products, none of which are in your order.', 400);
+      }
+
+      eligibleSubtotal = eligibleItems.reduce((sum, it) => {
+        const price = parseFloat(it.price || it.sellingPrice || it.unitPrice || (it.subtotal ? it.subtotal / (it.quantity || 1) : 0));
+        const qty = parseInt(it.quantity, 10) || 1;
+        return sum + price * qty;
+      }, 0);
+    }
+  }
+
+  // Calculate discount amount based on eligible subtotal
   let discountAmount = 0;
   if (coupon.discountType === 'PERCENTAGE') {
-    discountAmount = (numSubtotal * parseFloat(coupon.discountValue)) / 100;
+    discountAmount = (eligibleSubtotal * parseFloat(coupon.discountValue)) / 100;
     if (coupon.maxDiscount && discountAmount > parseFloat(coupon.maxDiscount)) {
       discountAmount = parseFloat(coupon.maxDiscount);
     }
   } else {
     // FIXED amount discount
     discountAmount = parseFloat(coupon.discountValue);
-    if (discountAmount > numSubtotal) {
-      discountAmount = numSubtotal;
+    if (discountAmount > eligibleSubtotal) {
+      discountAmount = eligibleSubtotal;
     }
   }
 
@@ -96,6 +121,7 @@ const validateCoupon = async (code, subtotal, userId = null) => {
       description: coupon.description,
       discountType: coupon.discountType,
       discountValue: parseFloat(coupon.discountValue),
+      isProductSpecific: restrictedProducts.length > 0,
     },
     discountAmount: Math.round(discountAmount * 100) / 100,
   };

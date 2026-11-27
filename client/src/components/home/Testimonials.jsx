@@ -39,7 +39,7 @@ export const Testimonials = () => {
             <span>✦</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-[#641B32] tracking-tight">
-            Loved by 25,000+ Brides & Connoisseurs
+            Loved by 25,000+ Happy Customers
           </h2>
           <div className="flex items-center justify-center space-x-3 my-4">
             <span className="w-12 h-px bg-gradient-to-r from-transparent to-[#D4AF37]" />

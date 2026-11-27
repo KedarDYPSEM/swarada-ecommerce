@@ -64,7 +64,7 @@ export const Home = () => {
 
       {/* 7. Best Sellers Showcase */}
       <FeaturedProducts
-        title="Best Selling Handlooms"
+        title="Best Selling"
         defaultTab="bestseller"
         products={data?.bestSellers}
       />
