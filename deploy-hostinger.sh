@@ -16,7 +16,7 @@ echo "=========================================================="
 
 # 1. Ask for Database Credentials if not passed as environment variables
 if [ -z "$DB_USER" ]; then
-  read -p "Enter your Hostinger Database Username (e.g. u739095470_admin): " DB_USER
+  read -p "Enter your Hostinger Database Username (e.g. u739095470_kedar): " DB_USER
 fi
 
 if [ -z "$DB_PASS" ]; then
@@ -24,7 +24,25 @@ if [ -z "$DB_PASS" ]; then
   echo ""
 fi
 
-# 2. Determine target directories
+# 2. Ensure Node.js & npm are available (Install standalone via NVM if missing)
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  \. "$NVM_DIR/nvm.sh"
+fi
+
+if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+  echo "📦 Node.js/npm not found. Automatically setting up Node.js 20 via NVM..."
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  nvm install 20
+  nvm use 20
+  nvm alias default 20
+fi
+
+echo "✅ Using Node.js: $(node -v) | npm: $(npm -v)"
+
+# 3. Determine target directories
 HOME_DIR=$(eval echo ~$USER)
 if [ -d "$HOME_DIR/domains/$DOMAIN" ]; then
   APP_ROOT="$HOME_DIR/domains/$DOMAIN"
@@ -43,7 +61,7 @@ echo "📂 App Root: $APP_ROOT"
 echo "📂 Project Dir: $PROJECT_DIR"
 echo "📂 Public HTML: $PUBLIC_HTML"
 
-# 3. Clone or pull repo
+# 4. Clone or pull repo
 if [ -d "$PROJECT_DIR" ]; then
   echo "📦 Updating repository in $PROJECT_DIR..."
   cd "$PROJECT_DIR"
@@ -55,7 +73,7 @@ else
   cd "$PROJECT_DIR"
 fi
 
-# 4. Setup Server (Backend)
+# 5. Setup Server (Backend)
 echo "⚡ Setting up Backend..."
 cd "$PROJECT_DIR/server"
 npm install --include=dev
@@ -104,13 +122,13 @@ prisma.user.count().then(count => {
 });
 " || true
 
-# 5. Build Client (Frontend)
+# 6. Build Client (Frontend)
 echo "⚡ Building Frontend..."
 cd "$PROJECT_DIR/client"
 npm install
 npm run build
 
-# 6. Deploy build to public_html
+# 7. Deploy build to public_html
 echo "🚀 Copying production build into public_html..."
 mkdir -p "$PUBLIC_HTML"
 cp -r dist/* "$PUBLIC_HTML/"
@@ -120,7 +138,7 @@ mkdir -p "$PROJECT_DIR/server/uploads"
 rm -rf "$PUBLIC_HTML/uploads"
 ln -sf "$PROJECT_DIR/server/uploads" "$PUBLIC_HTML/uploads"
 
-# 7. Write Apache / LiteSpeed .htaccess for routing & API proxying
+# 8. Write Apache / LiteSpeed .htaccess for routing & API proxying
 echo "📝 Configuring .htaccess in public_html..."
 cat << 'EOF' > "$PUBLIC_HTML/.htaccess"
 RewriteEngine On
@@ -143,7 +161,7 @@ RewriteRule ^ index.html [L]
 </IfModule>
 EOF
 
-# 8. Start / Restart Node.js backend under PM2 (or background process)
+# 9. Start / Restart Node.js backend under PM2 (or background process)
 cd "$PROJECT_DIR/server"
 if command -v pm2 >/dev/null 2>&1; then
   echo "🔄 Restarting backend under PM2..."
@@ -151,10 +169,14 @@ if command -v pm2 >/dev/null 2>&1; then
   pm2 start src/app.js --name "swarada-backend"
   pm2 save 2>/dev/null || true
 else
-  echo "Installing PM2 locally..."
+  echo "Installing PM2..."
   npm install -g pm2 2>/dev/null || npm install pm2
-  ./node_modules/.bin/pm2 delete swarada-backend 2>/dev/null || true
-  ./node_modules/.bin/pm2 start src/app.js --name "swarada-backend"
+  if [ -f "./node_modules/.bin/pm2" ]; then
+    ./node_modules/.bin/pm2 delete swarada-backend 2>/dev/null || true
+    ./node_modules/.bin/pm2 start src/app.js --name "swarada-backend"
+  else
+    nohup node src/app.js > ../backend.log 2>&1 &
+  fi
 fi
 
 echo "=========================================================="
