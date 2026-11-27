@@ -176,13 +176,17 @@ export const Checkout = () => {
 
         // If real Razorpay keys are configured and script is available
         if (!isSimulation && scriptLoaded && window.Razorpay) {
+          const logoUrl = settings?.logoUrl
+            ? (settings.logoUrl.startsWith('http') ? settings.logoUrl : `${window.location.origin}${settings.logoUrl}`)
+            : `${window.location.origin}/favicon.svg`;
+
           const options = {
             key: paymentSession.keyId,
             amount: paymentSession.amountPaise,
             currency: 'INR',
-            name: 'Swarada Saree Center',
+            name: settings?.storeName || 'Swarada Saree Center',
             description: `Order ${order.orderNumber} - Kolhapur Ethnic Sarees`,
-            image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=200',
+            image: logoUrl,
             order_id: paymentSession.razorpayOrderId,
             handler: async (response) => {
               try {
