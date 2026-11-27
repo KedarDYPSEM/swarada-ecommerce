@@ -21,7 +21,7 @@ const DEFAULT_MENUS = [
   { id: 'handbags', name: 'Handbags & Potlis', href: '/shop?category=handbags', active: true },
   { id: 'accessories', name: 'Accessories', href: '/shop?category=accessories', active: true },
   { id: 'festive_sale', name: 'Festive Sale', href: '/shop?sale=true', highlight: true, active: true },
-  { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
+  { id: 'about', name: 'Our Story', href: '/about', active: true },
 ];
 
 export const SettingsContext = createContext({

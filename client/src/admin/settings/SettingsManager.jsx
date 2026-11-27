@@ -52,7 +52,7 @@ const DEFAULT_MENUS = [
   { id: 'handbags', name: 'Handbags & Potlis', href: '/shop?category=handbags', active: true },
   { id: 'accessories', name: 'Accessories', href: '/shop?category=accessories', active: true },
   { id: 'festive_sale', name: 'Festive Sale', href: '/shop?sale=true', highlight: true, active: true },
-  { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
+  { id: 'about', name: 'Our Story', href: '/about', active: true },
 ];
 
 const DEFAULT_FOOTER_MENUS = [
@@ -272,7 +272,12 @@ export const SettingsManager = () => {
             try {
               const parsed = JSON.parse(map.nav_menus);
               if (Array.isArray(parsed) && parsed.length > 0) {
-                setMenus(parsed);
+                const cleaned = parsed.map((m) =>
+                  m.id === 'about' && (m.name === 'Our Kolhapur Story' || m.name === 'Our story')
+                    ? { ...m, name: 'Our Story' }
+                    : m
+                );
+                setMenus(cleaned);
               }
             } catch (e) {}
           }

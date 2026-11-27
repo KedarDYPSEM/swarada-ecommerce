@@ -21,7 +21,7 @@ const DEFAULT_MENUS = [
   { id: 'handbags', name: 'Handbags & Potlis', href: '/shop?category=handbags', active: true },
   { id: 'accessories', name: 'Accessories', href: '/shop?category=accessories', active: true },
   { id: 'festive_sale', name: 'Festive Sale', href: '/shop?sale=true', highlight: true, active: true },
-  { id: 'about', name: 'Our Kolhapur Story', href: '/about', active: true },
+  { id: 'about', name: 'Our Story', href: '/about', active: true },
 ];
 
 const DEFAULT_FOOTER_MENUS = [
@@ -62,6 +62,14 @@ const getPublicSettings = catchAsync(async (req, res) => {
     } catch (e) {
       menus = DEFAULT_MENUS;
     }
+  }
+
+  if (Array.isArray(menus)) {
+    menus = menus.map((m) =>
+      m.id === 'about' && (m.name === 'Our Kolhapur Story' || m.name === 'Our story')
+        ? { ...m, name: 'Our Story' }
+        : m
+    );
   }
 
   let footerMenus = DEFAULT_FOOTER_MENUS;
