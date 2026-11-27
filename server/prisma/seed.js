@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const argon2 = require('argon2');
+const { hashPassword } = require('../src/utils/password');
 
 const prisma = new PrismaClient();
 
@@ -41,7 +41,7 @@ async function main() {
   console.log('🧹 Cleaned existing tables.');
 
   // 2. Seed Users
-  const adminPassword = await argon2.hash('Admin@123');
+  const adminPassword = await hashPassword('Admin@123');
   const admin = await prisma.user.create({
     data: {
       email: 'admin@swarada.com',
@@ -60,7 +60,7 @@ async function main() {
     },
   });
 
-  const customerPassword = await argon2.hash('Customer@123');
+  const customerPassword = await hashPassword('Customer@123');
   const customer = await prisma.user.create({
     data: {
       email: 'ananya.joshi@example.com',

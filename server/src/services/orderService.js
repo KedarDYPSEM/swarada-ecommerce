@@ -1,4 +1,4 @@
-const argon2 = require('argon2');
+const { hashPassword } = require('../utils/password');
 const prisma = require('../config/database');
 const { AppError } = require('../middleware/errorHandler');
 const { validateCoupon } = require('./couponService');
@@ -116,7 +116,7 @@ const createOrder = async (orderData) => {
         const firstName = nameParts[0] || 'Customer';
         const lastName = nameParts.slice(1).join(' ') || '';
         const autoPassword = `Swarada@${Math.floor(100000 + Math.random() * 900000)}`;
-        const passwordHash = await argon2.hash(autoPassword);
+        const passwordHash = await hashPassword(autoPassword);
         const userEmail = cleanEmail || `${cleanPhone || Date.now()}@customer.swarada.com`;
 
         const newUser = await prisma.user.create({

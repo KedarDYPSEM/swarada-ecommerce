@@ -1,4 +1,4 @@
-const argon2 = require('argon2');
+const { hashPassword, verifyPassword } = require('../utils/password');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/database');
 const { AppError } = require('../middleware/errorHandler');
@@ -49,8 +49,8 @@ const register = async (data) => {
     }
   }
 
-  // 3. Hash password with Argon2
-  const passwordHash = await argon2.hash(password);
+  // 3. Hash password
+  const passwordHash = await hashPassword(password);
 
   // 4. Create user, customer profile, and empty cart + wishlist in single transaction
   const user = await prisma.$transaction(async (tx) => {
@@ -119,8 +119,8 @@ const login = async (email, password) => {
     throw new AppError('Your account has been deactivated. Please contact support.', 403);
   }
 
-  // 2. Verify password with Argon2
-  const isMatch = await argon2.verify(user.passwordHash, password);
+  // 2. Verify password
+  const isMatch = await verifyPassword(user.passwordHash, password);
   if (!isMatch) {
     throw new AppError('Invalid email or password.', 401);
   }
@@ -285,7 +285,7 @@ const changePassword = async (userId, currentPassword, newPassword) => {
     throw new AppError('User not found.', 404);
   }
 
-  const isMatch = await argon2.verify(user.passwordHash, currentPassword);
+  const isMatch = await verifyPassword(user.passwordHash, currentPassword);
   if (!isMatch) {
     throw new AppError('The current password you entered is incorrect.', 400);
   }
@@ -294,7 +294,7 @@ const changePassword = async (userId, currentPassword, newPassword) => {
     throw new AppError('New password cannot be the same as your current password.', 400);
   }
 
-  const passwordHash = await argon2.hash(newPassword);
+  const passwordHash = await hashPassword(newPassword);
 
   await prisma.user.update({
     where: { id: userId },
