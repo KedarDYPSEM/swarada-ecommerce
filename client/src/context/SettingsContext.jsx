@@ -24,6 +24,9 @@ const DEFAULT_MENUS = [
   { id: 'about', name: 'Our Story', href: '/about', active: true },
 ];
 
+const CACHE_KEY = 'swarada_public_settings_cache';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export const SettingsContext = createContext({
   settings: {
     storeName: 'Swarada Saree Center',
@@ -34,23 +37,53 @@ export const SettingsContext = createContext({
 });
 
 export const SettingsProvider = ({ children }) => {
-  const [settings, setSettings] = useState({
-    storeName: 'Swarada Saree Center',
-    logoUrl: null,
-    menus: DEFAULT_MENUS,
+  const [settings, setSettings] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.data) {
+          return parsed.data;
+        }
+      }
+    } catch (e) {}
+    return {
+      storeName: 'Swarada Saree Center',
+      logoUrl: null,
+      menus: DEFAULT_MENUS,
+    };
   });
 
-  const fetchSettings = async () => {
+  const fetchSettings = async (force = false) => {
+    if (!force) {
+      try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < CACHE_TTL_MS)) {
+            return; // Cache is fresh, skip network request entirely
+          }
+        }
+      } catch (e) {}
+    }
+
     try {
       const res = await adminService.getPublicSettings();
       if (res && res.data) {
         const rawLogo = res.data.logoUrl || '';
         const normalizedLogo = rawLogo ? rawLogo.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1') : null;
-        setSettings({
+        const newSettings = {
           ...res.data,
           logoUrl: normalizedLogo,
           menus: res.data.menus && res.data.menus.length > 0 ? res.data.menus : DEFAULT_MENUS,
-        });
+        };
+        setSettings(newSettings);
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: newSettings,
+            timestamp: Date.now(),
+          }));
+        } catch (e) {}
       }
     } catch (err) {
       // Graceful fallback to defaults
@@ -75,41 +108,33 @@ export const SettingsProvider = ({ children }) => {
           ? `${cleanUrl}&v=${encodeURIComponent(rawUrl)}`
           : `${cleanUrl}?v=${encodeURIComponent(rawUrl)}`;
 
-        // Remove existing icon links to force browser to refresh tab icon
-        const existingIcons = document.querySelectorAll(
-          "link[rel*='icon'], link[rel='apple-touch-icon']"
-        );
-        existingIcons.forEach((el) => el.parentNode?.removeChild(el));
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'shortcut icon';
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.type = 'image/x-icon';
+        link.href = cacheBusted;
 
-        // Create fresh icon link elements
-        const icon = document.createElement('link');
-        icon.rel = 'icon';
-        icon.type = 'image/png';
-        icon.href = cacheBusted;
-        document.head.appendChild(icon);
-
-        const shortcut = document.createElement('link');
-        shortcut.rel = 'shortcut icon';
-        shortcut.type = 'image/png';
-        shortcut.href = cacheBusted;
-        document.head.appendChild(shortcut);
-
-        const apple = document.createElement('link');
-        apple.rel = 'apple-touch-icon';
-        apple.href = cleanUrl;
-        document.head.appendChild(apple);
+        let appleTouch = document.querySelector("link[rel='apple-touch-icon']");
+        if (!appleTouch) {
+          appleTouch = document.createElement('link');
+          appleTouch.rel = 'apple-touch-icon';
+          document.getElementsByTagName('head')[0].appendChild(appleTouch);
+        }
+        appleTouch.href = cacheBusted;
       } catch (e) {
-        console.warn('Favicon synchronization error:', e);
+        // Silently preserve standard favicon
       }
     }
   }, [settings?.logoUrl]);
 
   return (
-    <SettingsContext.Provider value={{ settings, refreshSettings: fetchSettings }}>
+    <SettingsContext.Provider value={{ settings, refreshSettings: () => fetchSettings(true) }}>
       {children}
     </SettingsContext.Provider>
   );
 };
 
 export const useSettings = () => useContext(SettingsContext);
-export default SettingsContext;

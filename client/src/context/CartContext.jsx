@@ -25,7 +25,7 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     fetchCart();
-  }, [user]);
+  }, [user?.id]);
 
   const addToCart = async (productId, quantity = 1, variantId = null) => {
     setError(null);

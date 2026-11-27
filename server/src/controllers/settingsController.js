@@ -97,6 +97,7 @@ const getPublicSettings = catchAsync(async (req, res) => {
   }
   const ordersDeliveredCount = baseDelivered + orderCount;
 
+  res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
   res.json({
     success: true,
     data: {

@@ -18,7 +18,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 
-// Connect via high-speed UNIX socket if available, otherwise TCP port
+// Connect via high-speed UNIX socket if available, otherwise TCP port 5000
 if (file_exists($socketPath)) {
     curl_setopt($ch, CURLOPT_UNIX_SOCKET_PATH, $socketPath);
 } else {
@@ -57,11 +57,36 @@ foreach ($requestHeaders as $key => $val) {
         $forwardHeaders[] = "$key: $val";
     }
 }
+
+// Ensure Cookie header is always forwarded
+$hasCookie = false;
+foreach ($forwardHeaders as $h) {
+    if (stripos($h, 'Cookie:') === 0) { $hasCookie = true; break; }
+}
+if (!$hasCookie && !empty($_SERVER['HTTP_COOKIE'])) {
+    $forwardHeaders[] = 'Cookie: ' . $_SERVER['HTTP_COOKIE'];
+}
+
+// Ensure Authorization header is forwarded (Apache FastCGI often sets REDIRECT_HTTP_AUTHORIZATION)
+$hasAuth = false;
+foreach ($forwardHeaders as $h) {
+    if (stripos($h, 'Authorization:') === 0) { $hasAuth = true; break; }
+}
+if (!$hasAuth) {
+    $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    if (!empty($auth)) {
+        $forwardHeaders[] = 'Authorization: ' . $auth;
+    }
+}
+
 $forwardHeaders[] = 'X-Forwarded-For: ' . ($_SERVER['REMOTE_ADDR'] ?? '');
-$forwardHeaders[] = 'X-Forwarded-Proto: https';
+$forwardHeaders[] = 'X-Forwarded-Proto: ' . ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http');
+// Prevent cURL from waiting for 100-continue on POST/multipart
+$forwardHeaders[] = 'Expect:';
+
 curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
 
-// Forward body for mutations
+// Forward body
 if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'])) {
     if ($hasFiles) {
         $postData = $_POST;
@@ -92,7 +117,7 @@ if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'])) {
 }
 
 // Timeout (allow up to 60s for image/video uploads)
-curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
 $response = curl_exec($ch);
@@ -123,7 +148,8 @@ $headers = explode("\r\n", $headerContent);
 foreach ($headers as $header) {
     if (!empty($header)) {
         if (stripos($header, 'Transfer-Encoding') === false &&
-            stripos($header, 'Connection') === false) {
+            stripos($header, 'Connection') === false &&
+            stripos($header, 'HTTP/') !== 0) {
             header($header, false);
         }
     }

@@ -19,9 +19,9 @@ api.interceptors.response.use(
       error.response &&
       error.response.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes('/auth/login') &&
-      !originalRequest.url.includes('/auth/register') &&
-      !originalRequest.url.includes('/auth/refresh')
+      !originalRequest.url?.includes('/auth/login') &&
+      !originalRequest.url?.includes('/auth/register') &&
+      !originalRequest.url?.includes('/auth/refresh')
     ) {
       originalRequest._retry = true;
 
@@ -37,5 +37,23 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// In-flight GET request deduplication to prevent duplicate concurrent hits to Hostinger PHP workers
+const rawGet = api.get.bind(api);
+const inFlightGetRequests = new Map();
+
+api.get = (url, config = {}) => {
+  const cacheKey = `${url}::${JSON.stringify(config?.params || {})}`;
+  if (inFlightGetRequests.has(cacheKey)) {
+    return inFlightGetRequests.get(cacheKey);
+  }
+
+  const promise = rawGet(url, config).finally(() => {
+    inFlightGetRequests.delete(cacheKey);
+  });
+
+  inFlightGetRequests.set(cacheKey, promise);
+  return promise;
+};
 
 export default api;

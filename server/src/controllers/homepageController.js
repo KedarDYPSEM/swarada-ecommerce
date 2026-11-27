@@ -6,6 +6,7 @@ const homepageService = require('../services/homepageService');
 const getHomepageData = async (req, res, next) => {
   try {
     const data = await homepageService.getHomepageData();
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
     res.status(200).json({
       status: 'success',
       data,
