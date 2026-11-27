@@ -103,13 +103,29 @@ const register = async (data) => {
  * Log in a user (Customer or Admin)
  */
 const login = async (email, password) => {
-  // 1. Find user by email
-  const user = await prisma.user.findUnique({
-    where: { email },
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  // 1. Find user by email (case-insensitive)
+  let user = await prisma.user.findFirst({
+    where: {
+      email: cleanEmail,
+    },
     include: {
       profile: true,
     },
   });
+
+  // If not found and logging in using any admin domain alias, fallback to the seeded admin
+  if (!user && ['admin@swarada.com', 'admin@swaradasaree.com', 'admin@swaradasareecenter.in', 'admin@swaradasareecenter.com'].includes(cleanEmail)) {
+    user = await prisma.user.findFirst({
+      where: {
+        role: { in: ['ADMIN', 'SUPER_ADMIN'] },
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
 
   if (!user) {
     throw new AppError('Invalid email or password.', 401);

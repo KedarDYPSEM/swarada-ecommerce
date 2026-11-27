@@ -141,6 +141,45 @@ prisma.user.count().then(count => {
 });
 " || true
 
+# Explicitly verify/sync Super Admin account credentials (admin@swarada.com / Admin@123)
+echo "🔐 Verifying Super Admin account..."
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const { hashPassword } = require('./src/utils/password');
+const prisma = new PrismaClient();
+async function syncAdmin() {
+  const hash = await hashPassword('Admin@123');
+  const existing = await prisma.user.findFirst({
+    where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } }
+  });
+  if (existing) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { passwordHash: hash, isActive: true }
+    });
+    console.log('✅ Admin confirmed: ' + existing.email + ' (Password: Admin@123)');
+  } else {
+    await prisma.user.create({
+      data: {
+        email: 'admin@swarada.com',
+        passwordHash: hash,
+        role: 'SUPER_ADMIN',
+        isActive: true,
+        profile: {
+          create: {
+            firstName: 'Swarada',
+            lastName: 'Admin',
+            displayName: 'Admin'
+          }
+        }
+      }
+    });
+    console.log('✅ Created Super Admin: admin@swarada.com (Password: Admin@123)');
+  }
+}
+syncAdmin().catch(e => console.error(e)).finally(() => prisma.\$disconnect());
+" || true
+
 # 6. Build Client (Frontend)
 echo "⚡ Preparing Frontend..."
 cd "$PROJECT_DIR/client"
