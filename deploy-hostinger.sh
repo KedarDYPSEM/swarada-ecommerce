@@ -112,8 +112,15 @@ RAZORPAY_WEBHOOK_SECRET=rzp_webhook_secret_placeholder
 EOF
 
 echo "🗄️ Generating Prisma Client and updating database schema..."
-./node_modules/.bin/prisma generate
-./node_modules/.bin/prisma db push --accept-data-loss || true
+PRISMA_CMD="npx prisma"
+if [ -x "./node_modules/.bin/prisma" ]; then
+  PRISMA_CMD="./node_modules/.bin/prisma"
+elif [ -x "../node_modules/.bin/prisma" ]; then
+  PRISMA_CMD="../node_modules/.bin/prisma"
+fi
+
+$PRISMA_CMD generate
+$PRISMA_CMD db push --accept-data-loss || true
 
 # Seed default admin and starter handloom catalog if new database
 echo "🌱 Checking and seeding initial catalog..."
@@ -137,7 +144,7 @@ prisma.user.count().then(count => {
 # 6. Build Client (Frontend)
 echo "⚡ Building Frontend..."
 cd "$PROJECT_DIR/client"
-npm install
+npm install --include=dev
 npm run build
 
 # 7. Deploy build to public_html
@@ -175,20 +182,34 @@ EOF
 
 # 9. Start / Restart Node.js backend under PM2 (or background process)
 cd "$PROJECT_DIR/server"
+PM2_BIN=""
 if command -v pm2 >/dev/null 2>&1; then
-  echo "🔄 Restarting backend under PM2..."
-  pm2 delete swarada-backend 2>/dev/null || true
-  pm2 start src/app.js --name "swarada-backend"
-  pm2 save 2>/dev/null || true
-else
+  PM2_BIN="pm2"
+elif [ -x "./node_modules/.bin/pm2" ]; then
+  PM2_BIN="./node_modules/.bin/pm2"
+elif [ -x "../node_modules/.bin/pm2" ]; then
+  PM2_BIN="../node_modules/.bin/pm2"
+fi
+
+if [ -z "$PM2_BIN" ]; then
   echo "Installing PM2..."
-  npm install -g pm2 2>/dev/null || npm install pm2
-  if [ -f "./node_modules/.bin/pm2" ]; then
-    ./node_modules/.bin/pm2 delete swarada-backend 2>/dev/null || true
-    ./node_modules/.bin/pm2 start src/app.js --name "swarada-backend"
-  else
-    nohup node src/app.js > ../backend.log 2>&1 &
+  npm install pm2 --save-dev 2>/dev/null || npm install pm2
+  if [ -x "./node_modules/.bin/pm2" ]; then
+    PM2_BIN="./node_modules/.bin/pm2"
+  elif [ -x "../node_modules/.bin/pm2" ]; then
+    PM2_BIN="../node_modules/.bin/pm2"
   fi
+fi
+
+if [ -n "$PM2_BIN" ]; then
+  echo "🔄 Restarting backend under PM2 ($PM2_BIN)..."
+  $PM2_BIN delete swarada-backend 2>/dev/null || true
+  $PM2_BIN start src/app.js --name "swarada-backend"
+  $PM2_BIN save 2>/dev/null || true
+else
+  echo "🔄 Starting backend with node in background..."
+  pkill -f "src/app.js" 2>/dev/null || true
+  nohup node src/app.js > ../backend.log 2>&1 &
 fi
 
 echo "=========================================================="
