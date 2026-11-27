@@ -87,10 +87,22 @@ app.use((req, res, next) => {
 // ─── Global Error Handler ───────────────────────────────
 app.use(errorHandler);
 
+// ─── Global Exception Logging ───────────────────────────
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // ─── Start Server ───────────────────────────────────────
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://127.0.0.1:${PORT} and 0.0.0.0:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  });
+
+  server.on('error', (err) => {
+    console.error('💥 Server Listen Error:', err);
   });
 }
 
