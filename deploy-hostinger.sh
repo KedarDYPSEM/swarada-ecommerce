@@ -8,7 +8,7 @@ set -e
 
 DOMAIN="swaradasareecenter.in"
 DB_NAME="u739095470_swarada"
-BACKEND_PORT=5000
+BACKEND_PORT=54321
 
 echo "=========================================================="
 echo "🚀 Deploying Swarada Saree Center on Hostinger ($DOMAIN)"

@@ -5,7 +5,8 @@ $path = $_GET['__api_path'] ?? '';
 unset($_GET['__api_path']);
 
 $queryString = http_build_query($_GET);
-$targetUrl = 'http://127.0.0.1:5000/api/' . $path;
+$backendPort = getenv('BACKEND_PORT') ?: '54321';
+$targetUrl = "http://127.0.0.1:{$backendPort}/api/" . $path;
 if (!empty($queryString)) {
     $targetUrl .= (strpos($targetUrl, '?') === false ? '?' : '&') . $queryString;
 }
