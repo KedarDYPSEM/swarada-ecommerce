@@ -49,14 +49,32 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// Trust reverse proxy (Hostinger Apache / LiteSpeed / PHP proxy)
+app.set('trust proxy', 1);
+
 // ─── Rate Limiting ──────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 100 : 5000,
+  max: 10000, // Generous ceiling for dynamic e-commerce catalog browsing & admin management
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
-  skip: (req) => process.env.NODE_ENV !== 'production' || req.ip === '127.0.0.1' || req.ip === '::1',
+  message: { error: 'Too many requests, please try again in a few moments.' },
+  keyGenerator: (req) => {
+    return (
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      'cluster-client'
+    );
+  },
+  skip: (req) => {
+    // Never throttle admin dashboard operations or localhost
+    const path = req.originalUrl || req.url || '';
+    if (path.includes('/api/admin') || path.includes('/api/settings')) {
+      return true;
+    }
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+    return ip === '127.0.0.1' || ip === '::1';
+  },
 });
 app.use('/api/', limiter);
 

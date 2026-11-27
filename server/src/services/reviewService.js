@@ -44,11 +44,11 @@ const getProductReviews = async (productId) => {
 };
 
 /**
- * Submit a customer review
+ * Submit a customer or guest review
  */
 const createReview = async (productId, userId, data) => {
   const pId = parseInt(productId, 10);
-  const { rating, title, comment } = data;
+  const { rating, title, comment, name, email } = data;
 
   if (!rating || rating < 1 || rating > 5) {
     throw new AppError('Rating must be between 1 and 5 stars.', 400);
@@ -64,11 +64,38 @@ const createReview = async (productId, userId, data) => {
     throw new AppError('Product not found.', 404);
   }
 
+  let reviewUserId = userId;
+  if (!reviewUserId) {
+    const reviewerName = (name || 'Customer').trim();
+    const cleanEmail = email && email.trim() ? email.trim().toLowerCase() : `${Date.now()}@customer.swarada.com`;
+    let user = await prisma.user.findFirst({
+      where: { email: cleanEmail },
+    });
+    if (!user) {
+      const nameParts = reviewerName.split(' ');
+      user = await prisma.user.create({
+        data: {
+          email: cleanEmail,
+          passwordHash: '$2a$10$dummyReviewerPasswordHashSwarada2026',
+          role: 'CUSTOMER',
+          profile: {
+            create: {
+              firstName: nameParts[0] || 'Customer',
+              lastName: nameParts.slice(1).join(' ') || '',
+              displayName: reviewerName,
+            },
+          },
+        },
+      });
+    }
+    reviewUserId = user.id;
+  }
+
   // Check if user has an existing order for verified buyer tag
   const matchingOrder = await prisma.order.findFirst({
     where: {
-      userId,
-      status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'] },
+      userId: reviewUserId,
+      status: { in: ['CONFIRMED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED'] },
       items: { some: { productId: pId } },
     },
   });
@@ -76,12 +103,26 @@ const createReview = async (productId, userId, data) => {
   return prisma.productReview.create({
     data: {
       productId: pId,
-      userId,
+      userId: reviewUserId,
       orderId: matchingOrder ? matchingOrder.id : null,
       rating: parseInt(rating, 10),
       title: title ? title.trim() : null,
       comment: comment.trim(),
-      isApproved: true, // Auto-approve or queue for moderation
+      isApproved: true, // Auto-approved for instant visibility; admin can toggle/moderate in Admin -> Product Reviews
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          profile: true,
+        },
+      },
+      product: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 };

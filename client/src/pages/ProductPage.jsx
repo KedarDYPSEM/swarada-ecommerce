@@ -47,6 +47,35 @@ export const ProductPage = () => {
   const [pincodeResult, setPincodeResult] = useState(null);
   const [checkingPincode, setCheckingPincode] = useState(false);
 
+  // Reviews State
+  const [reviewsList, setReviewsList] = useState([]);
+  const [reviewsAverage, setReviewsAverage] = useState(5.0);
+  const [reviewsCount, setReviewsCount] = useState(0);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    title: '',
+    comment: '',
+    name: '',
+    email: '',
+  });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState('');
+  const [reviewErrorMsg, setReviewErrorMsg] = useState('');
+
+  const fetchReviews = async (productId) => {
+    try {
+      const res = await api.get(`/products/${productId}/reviews`);
+      if (res.data?.data) {
+        setReviewsList(res.data.data.reviews || []);
+        setReviewsAverage(res.data.data.averageRating || 5.0);
+        setReviewsCount(res.data.data.totalReviews || 0);
+      }
+    } catch (e) {
+      console.warn('Reviews fetch note:', e.message);
+    }
+  };
+
   const handleCheckPincode = async (e) => {
     e.preventDefault();
     if (!pincode || pincode.length !== 6) return;
@@ -81,6 +110,7 @@ export const ProductPage = () => {
               setActiveImageOverride(initialVar.imageUrl);
             }
           }
+          fetchReviews(data.product.id);
         }
       } catch (err) {
         // Fallback or not found
@@ -734,50 +764,288 @@ export const ProductPage = () => {
                 Client Reviews & Handloom Feedback
               </h2>
             </div>
-            <div className="flex items-center space-x-1 bg-amber-50/80 border border-amber-200/60 px-3.5 py-1.5 rounded-full">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
-              ))}
-              <span className="text-xs font-bold text-[#641B32] ml-2">5.0 Star Rating</span>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 bg-amber-50/80 border border-amber-200/60 px-3.5 py-1.5 rounded-full">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < Math.round(reviewsAverage)
+                        ? 'fill-amber-500 text-amber-500'
+                        : 'text-neutral-300'
+                    }`}
+                  />
+                ))}
+                <span className="text-xs font-bold text-[#641B32] ml-2">
+                  {reviewsAverage} Star Rating {reviewsCount > 0 && `(${reviewsCount})`}
+                </span>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowReviewModal(true)}
+                className="bg-[#641B32] hover:bg-[#7D223F] text-white text-xs px-4 py-2 rounded-full shadow-md"
+              >
+                ✦ Write a Review ✦
+              </Button>
             </div>
           </div>
 
+          {/* Reviews Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#140F11]">Sneha M. (Pune)</span>
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
-                  Verified Buyer
-                </span>
-              </div>
-              <div className="flex space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                ))}
-              </div>
-              <p className="text-xs text-[#594E4E] leading-relaxed">
-                "The zari shine and peacock pallu are even more magnificent in person! Perfectly packed in the signature Swarada keepsake box. Truly made my festival celebration memorable."
-              </p>
-            </div>
+            {reviewsList && reviewsList.length > 0 ? (
+              reviewsList.map((rev) => {
+                const authorName =
+                  rev.user?.profile?.displayName ||
+                  `${rev.user?.profile?.firstName || ''} ${rev.user?.profile?.lastName || ''}`.trim() ||
+                  'Patron of Swarada';
+                return (
+                  <div
+                    key={rev.id}
+                    className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#140F11]">{authorName}</span>
+                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
+                        {rev.orderId ? 'Verified Buyer' : 'Customer Review'}
+                      </span>
+                    </div>
+                    <div className="flex space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${
+                            i < rev.rating ? 'fill-amber-500 text-amber-500' : 'text-neutral-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {rev.title && (
+                      <div className="text-xs font-bold text-[#641B32]">{rev.title}</div>
+                    )}
+                    <p className="text-xs text-[#594E4E] leading-relaxed">
+                      "{rev.comment}"
+                    </p>
+                    <div className="text-[9px] text-neutral-400">
+                      {new Date(rev.createdAt).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <>
+                <div className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#140F11]">Sneha M. (Pune)</span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
+                      Verified Buyer
+                    </span>
+                  </div>
+                  <div className="flex space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#594E4E] leading-relaxed">
+                    "The zari shine and peacock pallu are even more magnificent in person! Perfectly packed in the signature Swarada keepsake box. Truly made my festival celebration memorable."
+                  </p>
+                </div>
 
-            <div className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#140F11]">Radhika Patil (Mumbai)</span>
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
-                  Verified Buyer
-                </span>
-              </div>
-              <div className="flex space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                ))}
-              </div>
-              <p className="text-xs text-[#594E4E] leading-relaxed">
-                "Ordered for my sister's wedding reception. Authentic Yeola Paithani certified with Silk Mark. Customer care assisted us on WhatsApp video call to choose the exact shade."
-              </p>
-            </div>
+                <div className="p-5 bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/25 rounded-2xl shadow-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#140F11]">Radhika Patil (Mumbai)</span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
+                      Verified Buyer
+                    </span>
+                  </div>
+                  <div className="flex space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#594E4E] leading-relaxed">
+                    "Ordered for my sister's wedding reception. Authentic Yeola Paithani certified with Silk Mark. Customer care assisted us on WhatsApp video call to choose the exact shade."
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
+
+        {/* Write a Review Modal */}
+        {showReviewModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#D4AF37]/40 animate-in fade-in zoom-in-95 text-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div>
+                  <h3 className="text-lg font-bold font-heading text-[#641B32]">
+                    Write a Product Review
+                  </h3>
+                  <p className="text-[11px] text-neutral-500 mt-0.5">
+                    Share your experience for {product?.name}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="p-1 rounded-full text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {reviewErrorMsg && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl">
+                  {reviewErrorMsg}
+                </div>
+              )}
+
+              {reviewSuccessMsg && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl">
+                  {reviewSuccessMsg}
+                </div>
+              )}
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!reviewForm.comment.trim()) {
+                    setReviewErrorMsg('Please write your review feedback.');
+                    return;
+                  }
+                  setSubmittingReview(true);
+                  setReviewErrorMsg('');
+                  setReviewSuccessMsg('');
+                  try {
+                    await api.post(`/products/${product.id}/reviews`, {
+                      rating: reviewForm.rating,
+                      title: reviewForm.title,
+                      comment: reviewForm.comment,
+                      name: reviewForm.name || undefined,
+                      email: reviewForm.email || undefined,
+                    });
+                    setReviewSuccessMsg('Review submitted successfully! Thank you for sharing your feedback.');
+                    fetchReviews(product.id);
+                    setTimeout(() => {
+                      setShowReviewModal(false);
+                      setReviewSuccessMsg('');
+                      setReviewForm({ rating: 5, title: '', comment: '', name: '', email: '' });
+                    }, 2000);
+                  } catch (err) {
+                    setReviewErrorMsg(err.response?.data?.message || 'Failed to submit review.');
+                  } finally {
+                    setSubmittingReview(false);
+                  }
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block font-semibold text-neutral-700 mb-1.5">
+                    Your Rating <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                        className="p-1 cursor-pointer transition-transform hover:scale-125 focus:outline-none"
+                      >
+                        <Star
+                          className={`w-6 h-6 ${
+                            star <= reviewForm.rating
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-neutral-200 hover:text-amber-300'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    <span className="text-xs font-bold text-[#641B32] ml-2">
+                      {reviewForm.rating} of 5 Stars
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-neutral-700 mb-1">
+                      Your Full Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ananya Kulkarni"
+                      value={reviewForm.name}
+                      onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-neutral-200 rounded-xl focus:outline-none focus:border-[#641B32]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-neutral-700 mb-1">
+                      Email Address (Optional)
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g. ananya@example.com"
+                      value={reviewForm.email}
+                      onChange={(e) => setReviewForm({ ...reviewForm, email: e.target.value })}
+                      className="w-full px-3 py-2 border border-neutral-200 rounded-xl focus:outline-none focus:border-[#641B32]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-neutral-700 mb-1">
+                    Review Headline / Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Gorgeous Zari Work & Authentic Silk!"
+                    value={reviewForm.title}
+                    onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-200 rounded-xl focus:outline-none focus:border-[#641B32]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-neutral-700 mb-1">
+                    Your Review Feedback <span className="text-rose-500">*</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="Describe the fabric quality, pallu weave, packaging, or customer service..."
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-200 rounded-xl focus:outline-none focus:border-[#641B32]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowReviewModal(false)}
+                    className="rounded-full px-4"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={submittingReview}
+                    className="bg-[#641B32] hover:bg-[#7D223F] text-white rounded-full px-6 shadow-md"
+                  >
+                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Related Products Recommendation */}
         {relatedProducts.length > 0 && (

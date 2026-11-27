@@ -12,12 +12,12 @@ const getProductReviews = catchAsync(async (req, res) => {
 const createReview = catchAsync(async (req, res) => {
   const review = await reviewService.createReview(
     req.params.productId,
-    req.user.id,
+    req.user ? req.user.id : null,
     req.body
   );
   res.status(201).json({
     success: true,
-    message: 'Review submitted successfully',
+    message: 'Review submitted successfully! Thank you for your feedback.',
     data: review,
   });
 });

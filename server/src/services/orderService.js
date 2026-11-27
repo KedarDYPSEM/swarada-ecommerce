@@ -201,7 +201,25 @@ const createOrder = async (orderData) => {
         authTokens = authService.generateTokens(newUser);
       }
     } catch (authErr) {
-      console.warn('Auto account creation warning (proceeding):', authErr.message);
+      console.warn('Auto account creation note:', authErr.message);
+      try {
+        const phoneDigits = (shippingPhone || '').replace(/\D/g, '').slice(-10);
+        const fallback = await prisma.user.findFirst({
+          where: {
+            OR: [
+              cleanEmail ? { email: cleanEmail } : undefined,
+              phoneDigits ? { phone: { contains: phoneDigits } } : undefined,
+            ].filter(Boolean),
+          },
+        });
+        if (fallback) {
+          orderUserId = fallback.id;
+          autoCreatedUser = fallback;
+          authTokens = authService.generateTokens(fallback);
+        }
+      } catch (fallbackErr) {
+        console.warn('Fallback user link error:', fallbackErr.message);
+      }
     }
   }
 

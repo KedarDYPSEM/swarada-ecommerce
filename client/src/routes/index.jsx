@@ -17,6 +17,7 @@ import OrderSuccess from '../pages/OrderSuccess';
 import TrackOrder from '../pages/TrackOrder';
 import About from '../pages/About';
 import Contact from '../pages/Contact';
+import Policies from '../pages/Policies';
 import NotFound from '../pages/NotFound';
 
 // Customer Auth & Portal
@@ -60,8 +61,10 @@ export const AppRoutes = () => {
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/faq" element={<About />} />
-        <Route path="/policies" element={<About />} />
+        <Route path="/faq" element={<Policies defaultTab="returns" />} />
+        <Route path="/policies" element={<Policies defaultTab="returns" />} />
+        <Route path="/returns" element={<Policies defaultTab="returns" />} />
+        <Route path="/shipping-policy" element={<Policies defaultTab="shipping" />} />
 
         {/* Customer Auth Pages */}
         <Route path="/account/login" element={<CustomerLogin />} />

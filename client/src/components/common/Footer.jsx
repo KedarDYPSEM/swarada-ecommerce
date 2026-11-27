@@ -139,9 +139,9 @@ export const Footer = () => {
                 ? settings.footerMenus.filter((m) => m.active !== false)
                 : [
                     { id: 'track-order', name: 'Track Your Order', href: '/track-order' },
-                    { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies' },
-                    { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies' },
-                    { id: 'faq', name: 'Frequently Asked Questions', href: '/faq' },
+                    { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies?tab=shipping' },
+                    { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies?tab=returns' },
+                    { id: 'faq', name: 'Frequently Asked Questions', href: '/policies?tab=returns' },
                     { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact' },
                   ]
               ).map((item) => (

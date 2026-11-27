@@ -9,24 +9,92 @@ const listCustomers = async (query = {}) => {
   const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 15));
   const skip = (page - 1) * limit;
 
+  // Auto-link any orphaned guest orders to user accounts so no buyer is ever missed
+  try {
+    const unlinkedOrders = await prisma.order.findMany({
+      where: { userId: null },
+      take: 50,
+    });
+    for (const gOrder of unlinkedOrders) {
+      if (!gOrder.shippingPhone && !gOrder.shippingEmail) continue;
+      const cleanEmail = gOrder.shippingEmail?.trim().toLowerCase();
+      const phoneDigits = (gOrder.shippingPhone || '').replace(/\D/g, '').slice(-10);
+
+      const matchedUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            cleanEmail ? { email: cleanEmail } : undefined,
+            phoneDigits ? { phone: { contains: phoneDigits } } : undefined,
+          ].filter(Boolean),
+        },
+      });
+      if (matchedUser) {
+        await prisma.order.update({
+          where: { id: gOrder.id },
+          data: { userId: matchedUser.id },
+        });
+      } else {
+        const nameParts = (gOrder.shippingName || 'Customer').trim().split(' ');
+        const firstName = nameParts[0] || 'Customer';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        const userEmail = cleanEmail || `${phoneDigits || Date.now()}@customer.swarada.com`;
+        const newUser = await prisma.user.create({
+          data: {
+            email: userEmail,
+            phone: phoneDigits ? `+91${phoneDigits}` : null,
+            passwordHash: '$2a$10$dummyAutoCustomerAccountHashSwarada2026',
+            role: 'CUSTOMER',
+            profile: {
+              create: {
+                firstName,
+                lastName,
+                displayName: gOrder.shippingName || firstName,
+              },
+            },
+          },
+        });
+        await prisma.order.update({
+          where: { id: gOrder.id },
+          data: { userId: newUser.id },
+        });
+      }
+    }
+  } catch (linkErr) {
+    console.warn('Guest orders customer reconciliation note:', linkErr.message);
+  }
+
   const where = {
-    role: 'CUSTOMER',
+    OR: [
+      { role: 'CUSTOMER' },
+      { orders: { some: {} } },
+    ],
   };
 
   if (query.search) {
     const term = query.search.trim();
-    where.OR = [
-      { email: { contains: term } },
-      { phone: { contains: term } },
+    where.AND = [
       {
-        profile: {
-          OR: [
-            { firstName: { contains: term } },
-            { lastName: { contains: term } },
-          ],
-        },
+        OR: [
+          { role: 'CUSTOMER' },
+          { orders: { some: {} } },
+        ],
+      },
+      {
+        OR: [
+          { email: { contains: term } },
+          { phone: { contains: term } },
+          {
+            profile: {
+              OR: [
+                { firstName: { contains: term } },
+                { lastName: { contains: term } },
+              ],
+            },
+          },
+        ],
       },
     ];
+    delete where.OR;
   }
 
   const [customers, totalCount] = await Promise.all([

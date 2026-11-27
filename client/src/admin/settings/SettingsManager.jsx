@@ -50,9 +50,9 @@ const DEFAULT_MENUS = [
 
 const DEFAULT_FOOTER_MENUS = [
   { id: 'track-order', name: 'Track Your Order', href: '/track-order', active: true },
-  { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies', active: true },
-  { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies', active: true },
-  { id: 'faq', name: 'Frequently Asked Questions', href: '/faq', active: true },
+  { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies?tab=shipping', active: true },
+  { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies?tab=returns', active: true },
+  { id: 'faq', name: 'Frequently Asked Questions', href: '/policies?tab=returns', active: true },
   { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact', active: true },
 ];
 

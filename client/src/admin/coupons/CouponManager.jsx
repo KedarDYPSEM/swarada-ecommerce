@@ -318,7 +318,7 @@ export const CouponManager = () => {
                     className="w-full px-3 py-2 border border-neutral-200 rounded focus:outline-none focus:border-[#641B32] bg-white font-medium"
                   >
                     <option value="PERCENTAGE">Percentage (%) Off</option>
-                    <option value="FIXED_AMOUNT">Flat Amount (₹) Off</option>
+                    <option value="FIXED">Flat Amount (₹) Off</option>
                   </select>
                 </div>
               </div>
