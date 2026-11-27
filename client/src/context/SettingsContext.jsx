@@ -61,6 +61,15 @@ export const SettingsProvider = ({ children }) => {
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+    if (settings?.logoUrl) {
+      const favicons = document.querySelectorAll("link[rel~='icon'], link[rel='apple-touch-icon']");
+      favicons.forEach((el) => {
+        el.href = settings.logoUrl;
+      });
+    }
+  }, [settings?.logoUrl]);
+
   return (
     <SettingsContext.Provider value={{ settings, refreshSettings: fetchSettings }}>
       {children}
