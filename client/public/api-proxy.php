@@ -130,29 +130,4 @@ foreach ($headers as $header) {
 }
 
 echo $bodyContent;
-
-if ($response === false) {
-    http_response_code(502);
-    header('Content-Type: application/json');
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Backend gateway temporarily unavailable. Node.js backend starting or restarting.',
-        'details' => $lastError
-    ]);
-    exit;
-}
-
-$headerStr = substr($response, 0, $headerSize);
-$bodyStr = substr($response, $headerSize);
-
-http_response_code($httpCode);
-
-// Forward response headers
-$headers = explode("\r\n", $headerStr);
-foreach ($headers as $h) {
-    if (empty($h) || stripos($h, 'Transfer-Encoding') === 0 || stripos($h, 'Connection') === 0) continue;
-    if (stripos($h, 'HTTP/') === 0) continue;
-    header($h, false);
-}
-
-echo $bodyStr;
+exit;

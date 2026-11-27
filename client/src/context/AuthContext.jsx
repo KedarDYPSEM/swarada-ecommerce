@@ -30,7 +30,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setError(null);
     try {
-      const response = await authService.login(email, password);
+      let response = await authService.login(email, password);
+      if (typeof response === 'string') {
+        try {
+          const firstJsonMatch = response.match(/^\{.*?\}(?=\{|$)/);
+          response = JSON.parse(firstJsonMatch ? firstJsonMatch[0] : response);
+        } catch (e) {}
+      }
       const userData = response?.data?.user || response?.user || response;
       if (!userData || !userData.email) {
         throw new Error(response?.message || 'Invalid administrator login response.');
