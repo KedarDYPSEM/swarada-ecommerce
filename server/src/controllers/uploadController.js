@@ -3,10 +3,15 @@ const fs = require('fs');
 const multer = require('multer');
 const { AppError } = require('../middleware/errorHandler');
 
-// Ensure upload directory exists
+// Ensure upload directory exists and is fully writable
 const UPLOAD_DIR = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+  fs.chmodSync(UPLOAD_DIR, 0o777);
+} catch (e) {
+  // Best effort
 }
 
 // Multer storage configuration
@@ -22,14 +27,19 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter for images and videos
+// Permissive file filter for all standard mobile and desktop image/video formats
 const fileFilter = (req, file, cb) => {
   const allowedMimes = [
     'image/jpeg',
+    'image/jpg',
+    'image/pjpeg',
     'image/png',
+    'image/x-png',
     'image/webp',
     'image/gif',
     'image/avif',
+    'image/heic',
+    'image/heif',
     'video/mp4',
     'video/webm',
     'video/quicktime',
@@ -37,10 +47,32 @@ const fileFilter = (req, file, cb) => {
     'video/x-m4v',
     'video/mpeg',
   ];
-  if (allowedMimes.includes(file.mimetype)) {
+
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const allowedExts = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.webp',
+    '.gif',
+    '.avif',
+    '.heic',
+    '.heif',
+    '.mp4',
+    '.webm',
+    '.mov',
+    '.ogg',
+  ];
+
+  if (
+    allowedMimes.includes(file.mimetype) ||
+    allowedExts.includes(ext) ||
+    file.mimetype?.startsWith('image/') ||
+    file.mimetype?.startsWith('video/')
+  ) {
     cb(null, true);
   } else {
-    cb(new AppError('Only valid image files (JPEG, PNG, WEBP, GIF) or video files (MP4, WEBM, MOV) are permitted.', 400), false);
+    cb(new AppError('Only valid image files (JPEG, PNG, WEBP, GIF, HEIC) or video files (MP4, WEBM, MOV) are permitted.', 400), false);
   }
 };
 

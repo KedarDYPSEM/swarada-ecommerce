@@ -1,5 +1,10 @@
 <?php
 // Transparent API Reverse Proxy for Node.js on Hostinger with Multipart / File Upload support
+@ini_set('upload_max_filesize', '64M');
+@ini_set('post_max_size', '64M');
+@ini_set('memory_limit', '256M');
+@ini_set('max_execution_time', '300');
+
 $method = $_SERVER['REQUEST_METHOD'];
 $path = $_GET['__api_path'] ?? '';
 unset($_GET['__api_path']);
@@ -32,6 +37,25 @@ if (function_exists('getallheaders')) {
     }
 }
 
+// Ensure Authorization header is captured even if Apache FastCGI stripped it
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+if (!empty($authHeader) && !isset($requestHeaders['Authorization'])) {
+    $requestHeaders['Authorization'] = $authHeader;
+}
+
+// Ensure Cookie header is properly assembled
+$cookieHeader = $_SERVER['HTTP_COOKIE'] ?? '';
+if (empty($cookieHeader) && !empty($_COOKIE)) {
+    $cookieParts = [];
+    foreach ($_COOKIE as $k => $v) {
+        $cookieParts[] = "$k=" . urlencode($v);
+    }
+    $cookieHeader = implode('; ', $cookieParts);
+}
+if (!empty($cookieHeader)) {
+    $requestHeaders['Cookie'] = $cookieHeader;
+}
+
 $hasFiles = !empty($_FILES);
 
 foreach ($requestHeaders as $key => $val) {
@@ -58,13 +82,15 @@ if ($hasFiles) {
     foreach ($_FILES as $fieldName => $fileInfo) {
         if (is_array($fileInfo['tmp_name'])) {
             foreach ($fileInfo['tmp_name'] as $idx => $tmpName) {
-                if (file_exists($tmpName)) {
-                    $postFields["{$fieldName}[$idx]"] = new CURLFile($tmpName, $fileInfo['type'][$idx], $fileInfo['name'][$idx]);
+                if (file_exists($tmpName) && $fileInfo['error'][$idx] === UPLOAD_ERR_OK) {
+                    $mime = !empty($fileInfo['type'][$idx]) ? $fileInfo['type'][$idx] : 'image/jpeg';
+                    $postFields["{$fieldName}[$idx]"] = new CURLFile($tmpName, $mime, $fileInfo['name'][$idx]);
                 }
             }
         } else {
-            if (file_exists($fileInfo['tmp_name'])) {
-                $postFields[$fieldName] = new CURLFile($fileInfo['tmp_name'], $fileInfo['type'], $fileInfo['name']);
+            if (file_exists($fileInfo['tmp_name']) && $fileInfo['error'] === UPLOAD_ERR_OK) {
+                $mime = !empty($fileInfo['type']) ? $fileInfo['type'] : 'image/jpeg';
+                $postFields[$fieldName] = new CURLFile($fileInfo['tmp_name'], $mime, $fileInfo['name']);
             }
         }
     }
@@ -86,8 +112,12 @@ foreach ($ports as $port) {
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+
+    if (!empty($cookieHeader)) {
+        curl_setopt($ch, CURLOPT_COOKIE, $cookieHeader);
+    }
 
     if ($hasFiles) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
@@ -117,8 +147,13 @@ if ($response === false) {
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+
+        if (!empty($cookieHeader)) {
+            curl_setopt($ch, CURLOPT_COOKIE, $cookieHeader);
+        }
+
         if ($hasFiles || !empty($body)) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         }

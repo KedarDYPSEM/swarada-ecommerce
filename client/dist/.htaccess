@@ -1,5 +1,10 @@
 RewriteEngine On
 
+# Ensure HTTP Authorization header is passed to PHP FastCGI
+<IfModule mod_rewrite.c>
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
 # 1. Forward all /api requests to local PHP proxy (connects to Node.js backend)
 RewriteRule ^api/(.*)$ api-proxy.php?__api_path=$1 [QSA,L]
 
