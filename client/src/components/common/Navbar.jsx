@@ -384,28 +384,28 @@ export const Navbar = () => {
 
             <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
               {/* Drawer Header */}
-              <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-[#641B32] text-white shrink-0">
-                <div>
+              <div className="p-4 border-b border-[#D4AF37]/30 flex items-center justify-between bg-white text-[#1E1719] shrink-0">
+                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="inline-block">
                   {settings?.logoUrl ? (
                     <img
                       src={settings.logoUrl}
                       alt={settings.storeName || 'Swarada Saree Center'}
-                      className="h-10 w-auto max-w-[180px] object-contain brightness-0 invert"
+                      className="h-10 w-auto max-w-[170px] object-contain rounded"
                     />
                   ) : (
-                    <>
-                      <span className="font-heading text-xl font-bold uppercase tracking-wider">
+                    <div>
+                      <span className="font-heading text-xl font-bold uppercase tracking-wider text-[#C4121A]">
                         Swarada
                       </span>
-                      <span className="block text-[9px] tracking-widest text-[#C5A05A] uppercase">
+                      <span className="block text-[9px] tracking-widest text-[#D4AF37] uppercase">
                         Saree Center • Kolhapur
                       </span>
-                    </>
+                    </div>
                   )}
-                </div>
+                </Link>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+                  className="p-1.5 text-neutral-600 hover:text-[#C4121A] rounded-full hover:bg-neutral-100 transition-colors"
                   aria-label="Close menu"
                 >
                   <X className="w-6 h-6" />
