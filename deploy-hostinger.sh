@@ -16,12 +16,21 @@ echo "=========================================================="
 
 # 1. Ask for Database Credentials if not passed as environment variables
 if [ -z "$DB_USER" ]; then
-  read -p "Enter your Hostinger Database Username (e.g. u739095470_kedar): " DB_USER
+  if [ -t 0 ]; then
+    read -p "Enter your Hostinger Database Username (e.g. u739095470_kedar): " DB_USER
+  else
+    read -p "Enter your Hostinger Database Username (e.g. u739095470_kedar): " DB_USER < /dev/tty
+  fi
 fi
 
 if [ -z "$DB_PASS" ]; then
-  read -s -p "Enter your Hostinger Database Password: " DB_PASS
-  echo ""
+  if [ -t 0 ]; then
+    read -s -p "Enter your Hostinger Database Password: " DB_PASS
+    echo ""
+  else
+    read -s -p "Enter your Hostinger Database Password: " DB_PASS < /dev/tty
+    echo ""
+  fi
 fi
 
 # 2. Ensure Node.js & npm are available (Install standalone via NVM if missing)
