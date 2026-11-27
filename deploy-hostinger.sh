@@ -142,15 +142,31 @@ prisma.user.count().then(count => {
 " || true
 
 # 6. Build Client (Frontend)
-echo "⚡ Building Frontend..."
+echo "⚡ Preparing Frontend..."
 cd "$PROJECT_DIR/client"
-npm install --include=dev
-npm run build
+
+# In shared hosting / CloudLinux, rust/rayon thread limits require single-threaded mode
+export RAYON_NUM_THREADS=1
+export UV_THREADPOOL_SIZE=1
+
+if [ ! -f "dist/index.html" ]; then
+  echo "Building Frontend..."
+  npm install --include=dev
+  RAYON_NUM_THREADS=1 UV_THREADPOOL_SIZE=1 npm run build || true
+fi
 
 # 7. Deploy build to public_html
 echo "🚀 Copying production build into public_html..."
 mkdir -p "$PUBLIC_HTML"
-cp -r dist/* "$PUBLIC_HTML/"
+if [ -d "dist" ] && [ -f "dist/index.html" ]; then
+  cp -r dist/* "$PUBLIC_HTML/"
+  echo "✅ Frontend distribution deployed to $PUBLIC_HTML"
+else
+  echo "⚠️ Warning: dist/index.html not found, attempting fallback build..."
+  npm install --include=dev
+  RAYON_NUM_THREADS=1 UV_THREADPOOL_SIZE=1 npm run build || true
+  cp -r dist/* "$PUBLIC_HTML/" 2>/dev/null || true
+fi
 
 # Create uploads directory symlink in public_html for direct high-speed image serving
 mkdir -p "$PROJECT_DIR/server/uploads"

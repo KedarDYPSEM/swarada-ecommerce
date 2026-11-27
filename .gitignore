@@ -8,6 +8,7 @@ node_modules/
 
 # Build outputs
 dist/
+!client/dist/
 build/
 
 # Prisma
