@@ -5,8 +5,8 @@ $path = $_GET['__api_path'] ?? '';
 unset($_GET['__api_path']);
 
 $queryString = http_build_query($_GET);
-$backendPort = getenv('BACKEND_PORT') ?: '54321';
-$targetUrl = "http://127.0.0.1:{$backendPort}/api/" . $path;
+$socketPath = '/home/u739095470/domains/swaradasareecenter.in/node.sock';
+$targetUrl = 'http://localhost/api/' . $path;
 if (!empty($queryString)) {
     $targetUrl .= (strpos($targetUrl, '?') === false ? '?' : '&') . $queryString;
 }
@@ -15,6 +15,14 @@ $ch = curl_init($targetUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, true);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+
+// Connect via high-speed UNIX socket if available, otherwise TCP port
+if (file_exists($socketPath)) {
+    curl_setopt($ch, CURLOPT_UNIX_SOCKET_PATH, $socketPath);
+} else {
+    $backendPort = getenv('BACKEND_PORT') ?: '54321';
+    curl_setopt($ch, CURLOPT_URL, "http://127.0.0.1:{$backendPort}/api/" . $path . (!empty($queryString) ? "?$queryString" : ''));
+}
 
 // Forward request headers
 $forwardHeaders = [];

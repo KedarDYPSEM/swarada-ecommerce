@@ -97,13 +97,31 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // ─── Start Server ───────────────────────────────────────
 if (require.main === module) {
-  const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on http://127.0.0.1:${PORT} and 0.0.0.0:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  });
-
-  server.on('error', (err) => {
-    console.error('💥 Server Listen Error:', err);
-  });
+  const fs = require('fs');
+  const socketPath = process.env.SOCKET_PATH || '/home/u739095470/domains/swaradasareecenter.in/node.sock';
+  
+  // Decide whether to listen on UNIX socket or TCP
+  const useSocket = process.env.NODE_ENV === 'production' && !process.env.FORCE_TCP;
+  
+  if (useSocket) {
+    if (fs.existsSync(socketPath)) {
+      try { fs.unlinkSync(socketPath); } catch (e) {}
+    }
+    const server = app.listen(socketPath, () => {
+      try { fs.chmodSync(socketPath, 0o777); } catch (e) {}
+      console.log(`🚀 Server listening on UNIX socket: ${socketPath} in production mode`);
+    });
+    server.on('error', (err) => {
+      console.error('💥 Socket Listen Error:', err);
+    });
+  } else {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on http://127.0.0.1:${PORT} and 0.0.0.0:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    });
+    server.on('error', (err) => {
+      console.error('💥 TCP Listen Error:', err);
+    });
+  }
 }
 
 module.exports = app;
