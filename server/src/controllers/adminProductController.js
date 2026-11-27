@@ -1,5 +1,6 @@
+const prisma = require('../config/database');
 const adminProductService = require('../services/adminProductService');
-const { catchAsync } = require('../middleware/errorHandler');
+const { catchAsync, AppError } = require('../middleware/errorHandler');
 
 const listProducts = catchAsync(async (req, res) => {
   const result = await adminProductService.listProducts(req.query);
@@ -69,6 +70,27 @@ const adjustStock = catchAsync(async (req, res) => {
   });
 });
 
+const toggleProductStatus = catchAsync(async (req, res) => {
+  const productId = parseInt(req.params.id, 10);
+  const existing = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true, isActive: true, name: true },
+  });
+  if (!existing) {
+    throw new AppError('Product not found.', 404);
+  }
+  const updated = await prisma.product.update({
+    where: { id: productId },
+    data: { isActive: !existing.isActive },
+    select: { id: true, isActive: true, name: true },
+  });
+  res.json({
+    success: true,
+    message: `Product "${updated.name}" is now ${updated.isActive ? 'Visible (Active)' : 'Hidden (Draft)'}`,
+    data: updated,
+  });
+});
+
 module.exports = {
   listProducts,
   getProductById,
@@ -77,4 +99,5 @@ module.exports = {
   duplicateProduct,
   deleteProduct,
   adjustStock,
+  toggleProductStatus,
 };

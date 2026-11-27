@@ -24,6 +24,10 @@ const adminService = {
     const res = await api.put(`/admin/products/${id}`, productData);
     return res.data;
   },
+  toggleProductStatus: async (id) => {
+    const res = await api.patch(`/admin/products/${id}/toggle-status`);
+    return res.data;
+  },
   duplicateProduct: async (id) => {
     const res = await api.post(`/admin/products/${id}/duplicate`);
     return res.data;

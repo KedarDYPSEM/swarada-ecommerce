@@ -24,6 +24,7 @@ router.get('/products', adminProduct.listProducts);
 router.post('/products', adminProduct.createProduct);
 router.get('/products/:id', adminProduct.getProductById);
 router.put('/products/:id', adminProduct.updateProduct);
+router.patch('/products/:id/toggle-status', adminProduct.toggleProductStatus);
 router.delete('/products/:id', adminProduct.deleteProduct);
 router.post('/products/:id/duplicate', adminProduct.duplicateProduct);
 router.post('/products/:id/adjust-stock', adminProduct.adjustStock);

@@ -36,6 +36,7 @@ export const ProductList = () => {
   const [adjustQty, setAdjustQty] = useState('');
   const [adjustReason, setAdjustReason] = useState('Manual stock adjustment / physical count');
   const [actionLoading, setActionLoading] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -135,6 +136,37 @@ export const ProductList = () => {
       alert(err.response?.data?.message || 'Failed to adjust stock');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (product) => {
+    if (togglingId === product.id) return;
+    const nextStatus = !product.isActive;
+    setTogglingId(product.id);
+
+    // Optimistic local state update for zero-latency UI toggle
+    setProducts((prev) =>
+      prev.map((p) => (p.id === product.id ? { ...p, isActive: nextStatus } : p))
+    );
+
+    try {
+      await adminService.toggleProductStatus(product.id);
+    } catch (err) {
+      try {
+        await adminService.updateProduct(product.id, { isActive: nextStatus });
+      } catch (fallbackErr) {
+        // Revert on failure
+        setProducts((prev) =>
+          prev.map((p) => (p.id === product.id ? { ...p, isActive: product.isActive } : p))
+        );
+        alert(
+          fallbackErr.response?.data?.message ||
+          err.response?.data?.message ||
+          'Failed to update product visibility'
+        );
+      }
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -254,7 +286,7 @@ export const ProductList = () => {
                 <th className="px-4 py-3.5">Price & MRP</th>
                 <th className="px-4 py-3.5 bg-amber-50/50">Purchase Price</th>
                 <th className="px-4 py-3.5">Stock</th>
-                <th className="px-4 py-3.5">Status</th>
+                <th className="px-4 py-3.5">Visibility / Status</th>
                 <th className="px-4 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
@@ -338,14 +370,42 @@ export const ProductList = () => {
                         </button>
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-block w-2 h-2 rounded-full mr-1.5 ${
-                            product.isActive ? 'bg-emerald-500' : 'bg-neutral-400'
-                          }`}
-                        />
-                        <span className="text-[11px] font-medium text-neutral-600">
-                          {product.isActive ? 'Active' : 'Draft'}
-                        </span>
+                        <div className="flex items-center space-x-2.5">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={product.isActive}
+                            disabled={togglingId === product.id}
+                            onClick={() => handleToggleStatus(product)}
+                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#641B32] focus:ring-offset-1 disabled:opacity-50 ${
+                              product.isActive ? 'bg-emerald-600' : 'bg-neutral-300'
+                            }`}
+                            title={
+                              product.isActive
+                                ? 'Click to Hide from storefront (Draft)'
+                                : 'Click to Make Visible on storefront (Active)'
+                            }
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                product.isActive ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                          <div className="flex flex-col">
+                            <span
+                              className={`text-[11px] font-bold leading-tight ${
+                                product.isActive ? 'text-emerald-700' : 'text-neutral-500'
+                              }`}
+                            >
+                              {product.isActive ? 'Visible' : 'Hidden'}
+                            </span>
+                            <span className="text-[9px] text-neutral-400">
+                              {product.isActive ? 'Active' : 'Draft'}
+                            </span>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end space-x-2">
