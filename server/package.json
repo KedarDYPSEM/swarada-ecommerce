@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
+    "restart": "npx pm2 restart swarada-backend || npx pm2 start src/app.js --name swarada-backend",
+    "status": "npx pm2 status",
+    "logs": "npx pm2 logs swarada-backend",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests",
     "prisma:generate": "prisma generate",
@@ -33,6 +36,7 @@
     "morgan": "^1.12.1",
     "multer": "^2.5.0",
     "nodemailer": "^10.6.1",
+    "pm2": "^5.4.3",
     "prisma": "6.4.1",
     "razorpay": "^2.9.8",
     "uuid": "^14.0.3",
