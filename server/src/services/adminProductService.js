@@ -497,12 +497,60 @@ const updateProduct = async (id, data, adminId) => {
 };
 
 /**
- * Delete product
+ * Delete product (Clean cascading delete with order protection)
  */
 const deleteProduct = async (id) => {
   const productId = parseInt(id, 10);
-  return prisma.product.delete({
+
+  const product = await prisma.product.findUnique({
     where: { id: productId },
+    include: {
+      _count: {
+        select: { orderItems: true },
+      },
+    },
+  });
+
+  if (!product) {
+    throw new AppError('Product not found.', 404);
+  }
+
+  // If product is linked to completed/historical orders, deactivate to preserve order records
+  if (product._count.orderItems > 0) {
+    await prisma.product.update({
+      where: { id: productId },
+      data: { isActive: false },
+    });
+    return {
+      message: 'Product is linked to customer orders. It has been deactivated and removed from the storefront catalog.',
+      softDeleted: true,
+    };
+  }
+
+  // Clean cascading deletion of child rows in a single atomic transaction
+  return prisma.$transaction(async (tx) => {
+    // 1. Delete cart & wishlist references
+    await tx.cartItem.deleteMany({ where: { productId } });
+    await tx.wishlistItem.deleteMany({ where: { productId } });
+
+    // 2. Delete coupon associations & reviews
+    await tx.couponProduct.deleteMany({ where: { productId } });
+    await tx.productReview.deleteMany({ where: { productId } });
+
+    // 3. Delete inventory movements & inventory record
+    await tx.inventoryMovement.deleteMany({ where: { productId } });
+    await tx.inventory.deleteMany({ where: { productId } });
+
+    // 4. Delete product categories, images, attributes, and variants
+    await tx.productCategory.deleteMany({ where: { productId } });
+    await tx.productImage.deleteMany({ where: { productId } });
+    await tx.productAttribute.deleteMany({ where: { productId } });
+    await tx.productVariant.deleteMany({ where: { productId } });
+
+    // 5. Delete the product itself
+    return tx.product.delete({
+      where: { id: productId },
+    });
   });
 };
 
