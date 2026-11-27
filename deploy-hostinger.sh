@@ -141,7 +141,7 @@ prisma.user.count().then(count => {
 });
 " || true
 
-# Explicitly verify/sync Super Admin account credentials (admin@swarada.com / Admin@123)
+# Explicitly verify/sync Super Admin account credentials (kdurugade1005@gmail.com)
 echo "🔐 Verifying Super Admin account..."
 node -e "
 const { PrismaClient } = require('@prisma/client');
@@ -155,26 +155,26 @@ async function syncAdmin() {
   if (existing) {
     await prisma.user.update({
       where: { id: existing.id },
-      data: { passwordHash: hash, isActive: true }
+      data: { email: 'kdurugade1005@gmail.com', passwordHash: hash, isActive: true }
     });
-    console.log('✅ Admin confirmed: ' + existing.email + ' (Password: Admin@123)');
+    console.log('✅ Admin confirmed: kdurugade1005@gmail.com (Password: Admin@123)');
   } else {
     await prisma.user.create({
       data: {
-        email: 'admin@swarada.com',
+        email: 'kdurugade1005@gmail.com',
         passwordHash: hash,
         role: 'SUPER_ADMIN',
         isActive: true,
         profile: {
           create: {
-            firstName: 'Swarada',
-            lastName: 'Admin',
-            displayName: 'Admin'
+            firstName: 'Kedar',
+            lastName: 'Durugade',
+            displayName: 'Kedar Durugade'
           }
         }
       }
     });
-    console.log('✅ Created Super Admin: admin@swarada.com (Password: Admin@123)');
+    console.log('✅ Created Super Admin: kdurugade1005@gmail.com (Password: Admin@123)');
   }
 }
 syncAdmin().catch(e => console.error(e)).finally(() => prisma.\$disconnect());
@@ -225,12 +225,16 @@ RewriteEngine On
 # 1. Forward /api requests to local PHP gateway (transparent proxy to Node.js backend)
 RewriteRule ^api/(.*)$ api-proxy.php?__api_path=$1 [QSA,L]
 
-# 2. Allow direct access to existing files/directories (images, js, css, uploads)
+# 2. Forward /uploads requests if file not found directly in public_html to Node.js backend
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^uploads/(.*)$ api-proxy.php?__api_path=uploads/$1 [QSA,L]
+
+# 3. Allow direct access to existing files/directories (images, js, css, uploads)
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# 3. Fallback all other routes to React index.html
+# 4. Fallback all other routes to React index.html
 RewriteRule ^ index.html [L]
 
 # Gzip / Compression

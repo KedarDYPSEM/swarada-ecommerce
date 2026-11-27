@@ -6,7 +6,9 @@ unset($_GET['__api_path']);
 
 $queryString = http_build_query($_GET);
 $socketPath = '/home/u739095470/domains/swaradasareecenter.in/node.sock';
-$targetUrl = 'http://localhost/api/' . $path;
+$isUpload = (strpos($path, 'uploads/') === 0 || strpos($path, 'uploads') === 0);
+$urlPrefix = $isUpload ? '/' : '/api/';
+$targetUrl = 'http://localhost' . $urlPrefix . $path;
 if (!empty($queryString)) {
     $targetUrl .= (strpos($targetUrl, '?') === false ? '?' : '&') . $queryString;
 }
@@ -21,7 +23,7 @@ if (file_exists($socketPath)) {
     curl_setopt($ch, CURLOPT_UNIX_SOCKET_PATH, $socketPath);
 } else {
     $backendPort = getenv('BACKEND_PORT') ?: '54321';
-    curl_setopt($ch, CURLOPT_URL, "http://127.0.0.1:{$backendPort}/api/" . $path . (!empty($queryString) ? "?$queryString" : ''));
+    curl_setopt($ch, CURLOPT_URL, "http://127.0.0.1:{$backendPort}{$urlPrefix}" . $path . (!empty($queryString) ? "?$queryString" : ''));
 }
 
 // Forward request headers

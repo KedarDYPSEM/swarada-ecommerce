@@ -21,6 +21,7 @@ export const CategoryManager = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -108,12 +109,15 @@ export const CategoryManager = () => {
 
       if (editingCategory) {
         await adminService.updateCategory(editingCategory.id, payload);
+        setSuccessMessage(`Category "${payload.name}" updated successfully! Changes are live on the storefront.`);
       } else {
         await adminService.createCategory(payload);
+        setSuccessMessage(`Category "${payload.name}" created successfully!`);
       }
 
       setModalOpen(false);
       fetchCategories();
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save category');
     } finally {
@@ -157,6 +161,13 @@ export const CategoryManager = () => {
           <span>New Category</span>
         </Button>
       </div>
+
+      {successMessage && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-sm flex items-center space-x-2">
+          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{successMessage}</span>
+        </div>
+      )}
 
       {/* Categories Table */}
       <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
@@ -345,7 +356,7 @@ export const CategoryManager = () => {
                 </label>
                 <ImageUploader
                   value={formData.imageUrl}
-                  onChange={(newUrl) => setFormData({ ...formData, imageUrl: newUrl })}
+                  onChange={(newUrl) => setFormData((prev) => ({ ...prev, imageUrl: newUrl }))}
                   label="Upload Category Cover"
                   placeholder="e.g. Upload photo from computer or paste image URL..."
                 />

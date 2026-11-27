@@ -4,25 +4,26 @@ import { ChevronLeft, ChevronRight, Video, Sparkles } from 'lucide-react';
 
 const FALLBACK_IMAGES = {
   sarees: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=400&auto=format&fit=crop',
-  'paithani-sarees': 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=400&auto=format&fit=crop',
-  'banarasi-silk': 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=400&auto=format&fit=crop',
+  'paithani-sarees': 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=400&auto=format&fit=crop',
+  'banarasi-silk': 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=400&auto=format&fit=crop',
   'nauvari-sarees': 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=400&auto=format&fit=crop',
   dresses: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=400&auto=format&fit=crop',
-  kurtis: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=400&auto=format&fit=crop',
+  kurtis: 'https://images.unsplash.com/photo-1596783049187-57351606bb40?q=80&w=400&auto=format&fit=crop',
   handbags: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?q=80&w=400&auto=format&fit=crop',
-  accessories: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=400&auto=format&fit=crop',
+  accessories: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=400&auto=format&fit=crop',
   blouse: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=400&auto=format&fit=crop',
   jewellery: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=400&auto=format&fit=crop',
 };
 
 const resolveCategoryImage = (cat) => {
-  if (cat?.imageUrl && cat.imageUrl.trim() !== '') {
-    // Sanitize any full-url upload paths to relative
-    return cat.imageUrl.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
+  if (cat?.imageUrl && typeof cat.imageUrl === 'string' && cat.imageUrl.trim() !== '') {
+    const raw = cat.imageUrl.trim();
+    // Normalize absolute URLs pointing to local uploads to root-relative
+    return raw.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
   }
   const slug = (cat?.slug || '').toLowerCase();
   for (const [key, url] of Object.entries(FALLBACK_IMAGES)) {
-    if (slug.includes(key)) return url;
+    if (slug === key || slug.includes(key)) return url;
   }
   return FALLBACK_IMAGES.sarees;
 };
@@ -170,7 +171,12 @@ export const CircularCategoryScroll = ({ categories = [] }) => {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-115"
                       loading="lazy"
                       onError={(e) => {
-                        e.target.src = FALLBACK_IMAGES.sarees;
+                        if (!e.target.dataset.triedFallback) {
+                          e.target.dataset.triedFallback = 'true';
+                          const slug = (cat?.id || cat?.slug || '').toLowerCase();
+                          const fallback = FALLBACK_IMAGES[slug] || FALLBACK_IMAGES.sarees;
+                          e.target.src = fallback;
+                        }
                       }}
                     />
 

@@ -118,8 +118,8 @@ const getPublicSettings = catchAsync(async (req, res) => {
       youtubeChannelUrl: map.youtube_channel_url || 'https://www.youtube.com/@swaradasareecentre776/',
       youtubeChannelId: map.youtube_channel_id || 'UCOTYLwpl0sy46Tjkvm9OrYQ',
       youtubeLivestreamUrl: map.youtube_livestream_url || '',
-      socialInstagram: map.social_instagram || 'https://instagram.com/swaradasareecentre',
-      socialFacebook: map.social_facebook || 'https://facebook.com/swaradasareecentre',
+      socialInstagram: map.social_instagram || 'https://www.instagram.com/swarada_saree_center/',
+      socialFacebook: map.social_facebook || 'https://www.facebook.com/swaradsareecenter',
       socialYoutube: map.social_youtube || 'https://www.youtube.com/@swaradasareecentre776/',
       // Our Story & Heritage Customizer
       storyTitle: map.story_title || 'The Swarada Story',

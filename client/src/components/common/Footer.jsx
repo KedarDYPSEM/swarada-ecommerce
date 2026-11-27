@@ -24,8 +24,8 @@ export const Footer = () => {
   const storePhone = settings?.phone || '+91 98220 12345';
   const storeEmail = settings?.email || 'orders@swaradasareecenter.com';
   const storeHours = settings?.storeHours || 'Mon - Sun: 10:00 AM - 9:00 PM';
-  const instagramUrl = settings?.socialInstagram || 'https://instagram.com';
-  const facebookUrl = settings?.socialFacebook || 'https://facebook.com';
+  const instagramUrl = settings?.socialInstagram || 'https://www.instagram.com/swarada_saree_center/';
+  const facebookUrl = settings?.socialFacebook || 'https://www.facebook.com/swaradsareecenter';
   const youtubeUrl = settings?.socialYoutube || settings?.youtubeChannelUrl || 'https://www.youtube.com/@swaradasareecentre776/';
 
   return (

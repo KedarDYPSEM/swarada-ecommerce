@@ -1,6 +1,7 @@
 const { hashPassword, verifyPassword } = require('../utils/password');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/database');
+const emailService = require('./emailService');
 const { AppError } = require('../middleware/errorHandler');
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'swarada_saree_access_secret_super_secure_key_2026';
@@ -116,7 +117,7 @@ const login = async (email, password) => {
   });
 
   // If not found and logging in using any admin domain alias, fallback to the seeded admin
-  if (!user && ['admin@swarada.com', 'admin@swaradasaree.com', 'admin@swaradasareecenter.in', 'admin@swaradasareecenter.com'].includes(cleanEmail)) {
+  if (!user && ['admin@swarada.com', 'admin@swaradasaree.com', 'admin@swaradasareecenter.in', 'admin@swaradasareecenter.com', 'kdurugade1005@gmail.com'].includes(cleanEmail)) {
     user = await prisma.user.findFirst({
       where: {
         role: { in: ['ADMIN', 'SUPER_ADMIN'] },
@@ -320,6 +321,137 @@ const changePassword = async (userId, currentPassword, newPassword) => {
   return { message: 'Password changed successfully.' };
 };
 
+/**
+ * Request password reset email / temporary password
+ */
+const forgotPassword = async (email, clientUrl) => {
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  let user = await prisma.user.findFirst({
+    where: { email: cleanEmail },
+    include: { profile: true },
+  });
+
+  // Also check admin aliases
+  if (!user && ['admin@swarada.com', 'admin@swaradasaree.com', 'kdurugade1005@gmail.com'].includes(cleanEmail)) {
+    user = await prisma.user.findFirst({
+      where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } },
+      include: { profile: true },
+    });
+  }
+
+  if (!user) {
+    throw new AppError('No account found matching this email address.', 404);
+  }
+
+  // Generate secure temporary password
+  const tempPassword = `Swarada@${Math.floor(1000 + Math.random() * 9000)}`;
+  const passwordHash = await hashPassword(tempPassword);
+
+  // Update user's password in database so the temporary password works immediately
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash },
+  });
+
+  // Generate signed JWT reset token for link
+  const resetToken = jwt.sign(
+    { id: user.id, email: user.email },
+    JWT_ACCESS_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  const baseUrl = clientUrl || process.env.CLIENT_URL || 'https://swaradasareecenter.in';
+  const resetUrl = `${baseUrl}/account/reset-password?token=${resetToken}`;
+
+  const emailRes = await emailService.sendPasswordResetEmail({
+    to: user.email,
+    resetUrl,
+    temporaryPassword: tempPassword,
+    recipientName: user.profile?.displayName || (user.role.includes('ADMIN') ? 'Swarada Admin' : 'Valued Patron'),
+  });
+
+  return {
+    success: true,
+    message: `Password reset instructions and new access credentials have been sent to ${user.email}.`,
+    emailSent: emailRes.success,
+    temporaryPassword: tempPassword,
+    userEmail: user.email,
+  };
+};
+
+/**
+ * Reset password using valid reset token
+ */
+const resetPassword = async (token, newPassword) => {
+  try {
+    const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!user) {
+      throw new AppError('User not found or session has expired.', 404);
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash },
+    });
+
+    return { message: 'Password reset successfully. You may now log in with your new password.' };
+  } catch (err) {
+    throw new AppError('Reset link is invalid or has expired. Please request a new one.', 400);
+  }
+};
+
+/**
+ * Update Admin Credentials (Email / Password)
+ */
+const updateAdminCredentials = async (adminId, { email, newPassword, currentPassword }) => {
+  const admin = await prisma.user.findUnique({
+    where: { id: adminId },
+  });
+
+  if (!admin || !['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) {
+    throw new AppError('Administrator account not found.', 404);
+  }
+
+  // Verify current password if provided
+  if (currentPassword) {
+    const isMatch = await verifyPassword(admin.passwordHash, currentPassword);
+    if (!isMatch) {
+      throw new AppError('Current password is incorrect.', 400);
+    }
+  }
+
+  const updateData = {};
+  if (email && email.trim() !== '') {
+    const cleanEmail = email.trim().toLowerCase();
+    // Check if taken by another user
+    const existing = await prisma.user.findFirst({
+      where: { email: cleanEmail, NOT: { id: adminId } },
+    });
+    if (existing) {
+      throw new AppError(`The email "${cleanEmail}" is already used by another account.`, 409);
+    }
+    updateData.email = cleanEmail;
+  }
+
+  if (newPassword && newPassword.trim() !== '') {
+    updateData.passwordHash = await hashPassword(newPassword.trim());
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: adminId },
+    data: updateData,
+    select: { id: true, email: true, role: true },
+  });
+
+  return updated;
+};
+
 module.exports = {
   generateTokens,
   register,
@@ -328,4 +460,7 @@ module.exports = {
   getCurrentUser,
   updateProfile,
   changePassword,
+  forgotPassword,
+  resetPassword,
+  updateAdminCredentials,
 };

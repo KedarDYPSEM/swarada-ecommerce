@@ -4,6 +4,8 @@ import {
   CreditCard,
   Truck,
   CheckCircle,
+  CheckCircle2,
+  AlertCircle,
   Save,
   Menu as MenuIcon,
   Eye,
@@ -20,10 +22,14 @@ import {
   Trash2,
   List,
   BookOpen,
+  Shield,
+  KeyRound,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import ImageUploader from '../components/ImageUploader';
 import adminService from '../../services/adminService';
+import api from '../../services/api';
 import { useSettings } from '../../context/SettingsContext';
 
 const DEFAULT_MENUS = [
@@ -142,6 +148,50 @@ export const SettingsManager = () => {
     stat4Number: '100%',
     stat4Label: 'Authentic Handlooms',
   });
+
+  // Admin Account & Password State
+  const [adminEmail, setAdminEmail] = useState('kdurugade1005@gmail.com');
+  const [adminNewPassword, setAdminNewPassword] = useState('');
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+  const [adminAuthLoading, setAdminAuthLoading] = useState(false);
+  const [adminAuthMsg, setAdminAuthMsg] = useState(null);
+
+  const handleUpdateAdminCredentials = async () => {
+    setAdminAuthMsg(null);
+    if (!adminEmail || !adminEmail.includes('@')) {
+      setAdminAuthMsg({ type: 'error', text: 'Please provide a valid administrator email.' });
+      return;
+    }
+    if (adminNewPassword && adminNewPassword !== adminConfirmPassword) {
+      setAdminAuthMsg({ type: 'error', text: 'New password and confirm password do not match.' });
+      return;
+    }
+    if (adminNewPassword && adminNewPassword.length < 6) {
+      setAdminAuthMsg({ type: 'error', text: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    setAdminAuthLoading(true);
+    try {
+      await api.put('/auth/admin-credentials', {
+        email: adminEmail.trim(),
+        newPassword: adminNewPassword || undefined,
+      });
+      setAdminAuthMsg({
+        type: 'success',
+        text: `Admin credentials updated successfully! You can now log in with ${adminEmail}.`,
+      });
+      setAdminNewPassword('');
+      setAdminConfirmPassword('');
+    } catch (err) {
+      setAdminAuthMsg({
+        type: 'error',
+        text: err.response?.data?.message || 'Failed to update admin credentials.',
+      });
+    } finally {
+      setAdminAuthLoading(false);
+    }
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -466,6 +516,18 @@ export const SettingsManager = () => {
           }`}
         >
           Our Story & Heritage Page
+        </button>
+
+        <button
+          onClick={() => setActiveTab('adminAuth')}
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer flex items-center space-x-1.5 ${
+            activeTab === 'adminAuth'
+              ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
+              : 'text-neutral-600 hover:bg-neutral-50'
+          }`}
+        >
+          <Shield className="w-3.5 h-3.5 text-[#C5A05A]" />
+          <span>Admin Account & Password</span>
         </button>
       </div>
 
@@ -1321,6 +1383,109 @@ export const SettingsManager = () => {
                     className="w-full px-2 py-1 border border-neutral-200 rounded text-[11px]"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 9: Admin Account & Password Security */}
+        {activeTab === 'adminAuth' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <div>
+                <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
+                  <KeyRound className="w-4 h-4 text-[#C5A05A]" />
+                  <span>Administrator Account Credentials</span>
+                </h3>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  Update your Super Admin login email/username and password. All future logins will require these credentials.
+                </p>
+              </div>
+            </div>
+
+            {adminAuthMsg && (
+              <div
+                className={`p-3 rounded text-xs flex items-center space-x-2 ${
+                  adminAuthMsg.type === 'success'
+                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                    : 'bg-rose-50 border border-rose-200 text-rose-800'
+                }`}
+              >
+                {adminAuthMsg.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                )}
+                <span>{adminAuthMsg.text}</span>
+              </div>
+            )}
+
+            <div className="bg-[#FAF7F2] p-5 rounded-lg border border-[#D4AF37]/30 space-y-4">
+              <div className="max-w-md">
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Admin Login Email / Username
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  placeholder="kdurugade1005@gmail.com"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded text-xs bg-white focus:outline-none focus:border-[#641B32]"
+                />
+                <p className="text-[10px] text-neutral-500 mt-1">
+                  You will use this email address to log into the Swarada Admin Panel.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-neutral-200/60 max-w-xl">
+                <div>
+                  <label className="block font-semibold text-neutral-700 mb-1">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={adminNewPassword}
+                    onChange={(e) => setAdminNewPassword(e.target.value)}
+                    placeholder="Enter new strong password"
+                    className="w-full px-3 py-2 border border-neutral-200 rounded text-xs bg-white focus:outline-none focus:border-[#641B32]"
+                  />
+                  <p className="text-[10px] text-neutral-400 mt-1">Leave blank to keep current password unchanged.</p>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-neutral-700 mb-1">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={adminConfirmPassword}
+                    onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                    placeholder="Re-enter new password"
+                    className="w-full px-3 py-2 border border-neutral-200 rounded text-xs bg-white focus:outline-none focus:border-[#641B32]"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3">
+                <button
+                  type="button"
+                  onClick={handleUpdateAdminCredentials}
+                  disabled={adminAuthLoading}
+                  className="px-5 py-2.5 bg-[#641B32] hover:bg-[#7B1E35] text-white font-semibold rounded text-xs transition-colors flex items-center space-x-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                >
+                  {adminAuthLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Updating Credentials...</span>
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="w-3.5 h-3.5 text-[#F3E2B8]" />
+                      <span>Update Admin Credentials</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
