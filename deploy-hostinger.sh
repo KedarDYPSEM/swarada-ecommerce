@@ -175,12 +175,13 @@ ln -sf "$PROJECT_DIR/server/uploads" "$PUBLIC_HTML/uploads"
 
 # 8. Write Apache / LiteSpeed .htaccess for routing & API proxying
 echo "📝 Configuring .htaccess in public_html..."
+cp "$PROJECT_DIR/client/dist/api-proxy.php" "$PUBLIC_HTML/api-proxy.php" 2>/dev/null || true
+
 cat << 'EOF' > "$PUBLIC_HTML/.htaccess"
 RewriteEngine On
 
-# 1. Proxy /api requests to local Node.js backend
-RewriteCond %{REQUEST_URI} ^/api/ [NC]
-RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+# 1. Forward /api requests to local PHP gateway (transparent proxy to Node.js on port 5000)
+RewriteRule ^api/(.*)$ api-proxy.php?__api_path=$1 [QSA,L]
 
 # 2. Allow direct access to existing files/directories (images, js, css)
 RewriteCond %{REQUEST_FILENAME} -f [OR]
