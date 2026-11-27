@@ -103,8 +103,9 @@ const cancelOrder = async (req, res, next) => {
     const orderId = req.params.id;
     const reason = req.body.reason || 'Cancelled by customer';
     const userId = req.user ? req.user.id : null;
+    const userRole = req.user ? req.user.role : null;
 
-    const order = await orderService.cancelOrderAndRestoreStock(orderId, reason, userId);
+    const order = await orderService.cancelOrderAndRestoreStock(orderId, reason, userId, userRole);
 
     res.status(200).json({
       status: 'success',

@@ -613,7 +613,7 @@ const getOrderByNumber = async (orderNumber) => {
 /**
  * Cancel an order and restore all item & variant stock back to inventory
  */
-const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled / failed', userId = null) => {
+const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled / failed', userId = null, userRole = null) => {
   const numericId = parseInt(orderId, 10);
   if (isNaN(numericId)) {
     throw new AppError('Invalid order ID', 400);
@@ -638,8 +638,9 @@ const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled /
     throw new AppError('Delivered orders cannot be cancelled via payment cancel', 400);
   }
 
-  // Authorization check if user is attached
-  if (userId && order.userId && order.userId !== userId) {
+  // Authorization check: allow admins, or if order is still PENDING_PAYMENT during checkout, or if user matches
+  const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+  if (!isAdmin && order.status !== 'PENDING_PAYMENT' && userId && order.userId && order.userId !== userId) {
     throw new AppError('Unauthorized access to order', 403);
   }
 
@@ -653,14 +654,31 @@ const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled /
         });
       }
 
+      // Fetch fresh product stock before restoring
+      const prod = await tx.product.findUnique({
+        where: { id: item.productId },
+        select: { stockQuantity: true },
+      });
+      const newStock = (prod ? prod.stockQuantity : 0) + item.quantity;
+
       await tx.product.update({
         where: { id: item.productId },
-        data: { stockQuantity: { increment: item.quantity } },
+        data: { stockQuantity: newStock },
       });
 
-      await tx.inventory.updateMany({
+      // Synchronize inventory table
+      await tx.inventory.upsert({
         where: { productId: item.productId },
-        data: { quantity: { increment: item.quantity } },
+        update: {
+          quantity: newStock,
+          lastRestockAt: new Date(),
+        },
+        create: {
+          productId: item.productId,
+          quantity: newStock,
+          reservedQuantity: 0,
+          lastRestockAt: new Date(),
+        },
       });
 
       await tx.inventoryMovement.create({
@@ -669,15 +687,57 @@ const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled /
           variantId: item.variantId || null,
           movementType: 'RETURN',
           quantity: item.quantity,
-          balanceAfter: 0,
+          balanceAfter: newStock,
           referenceType: 'ORDER_CANCEL',
           notes: `Order #${order.orderNumber} cancelled (${reason}). Restored ${item.quantity} units to stock.`,
-          createdById: userId || null,
+          createdById: (typeof userId === 'number') ? userId : (order.userId || null),
         },
       });
     }
 
-    // 2. Restore coupon usage if applied
+    // 2. Restore cart items so customer can immediately retry payment or choose COD
+    if (order.userId) {
+      try {
+        let customerCart = await tx.cart.findUnique({ where: { userId: order.userId } });
+        if (!customerCart) {
+          customerCart = await tx.cart.create({
+            data: {
+              userId: order.userId,
+              sessionId: `cart_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            },
+          });
+        }
+        for (const item of order.items) {
+          const existingCartItem = await tx.cartItem.findFirst({
+            where: {
+              cartId: customerCart.id,
+              productId: item.productId,
+              variantId: item.variantId || null,
+            },
+          });
+          if (existingCartItem) {
+            await tx.cartItem.update({
+              where: { id: existingCartItem.id },
+              data: { quantity: item.quantity },
+            });
+          } else {
+            await tx.cartItem.create({
+              data: {
+                cartId: customerCart.id,
+                productId: item.productId,
+                variantId: item.variantId || null,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              },
+            });
+          }
+        }
+      } catch (cartRestoreErr) {
+        console.warn('Cart restoration note (non-critical):', cartRestoreErr.message);
+      }
+    }
+
+    // 3. Restore coupon usage if applied
     if (order.couponId) {
       await tx.coupon.update({
         where: { id: order.couponId },
@@ -688,11 +748,11 @@ const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled /
       });
     }
 
-    // 3. Update payment records
+    // 4. Update payment records (PaymentStatus enum is: CREATED, AUTHORIZED, CAPTURED, FAILED, REFUNDED)
     await tx.payment.updateMany({
       where: {
         orderId: order.id,
-        status: { in: ['CREATED', 'PENDING'] },
+        status: { in: ['CREATED', 'AUTHORIZED'] },
       },
       data: {
         status: 'FAILED',
@@ -700,7 +760,7 @@ const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled /
       },
     });
 
-    // 4. Update order status to CANCELLED
+    // 5. Update order status to CANCELLED
     const updatedOrder = await tx.order.update({
       where: { id: order.id },
       data: {
@@ -712,6 +772,7 @@ const cancelOrderAndRestoreStock = async (orderId, reason = 'Payment cancelled /
       include: { items: true },
     });
 
+    console.log(`[Order Cancel] Order #${order.orderNumber} (ID: ${order.id}) cancelled. Restored stock for ${order.items.length} item(s).`);
     return updatedOrder;
   });
 };

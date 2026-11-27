@@ -57,7 +57,8 @@ const cancelPayment = catchAsync(async (req, res) => {
   const order = await orderService.cancelOrderAndRestoreStock(
     orderId,
     reason || 'Payment cancelled by user / window closed',
-    req.user?.id
+    req.user?.id,
+    req.user?.role
   );
 
   res.status(200).json({

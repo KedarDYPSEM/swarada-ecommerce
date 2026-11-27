@@ -214,10 +214,11 @@ export const Checkout = () => {
               ondismiss: async () => {
                 try {
                   await orderService.cancelPayment(order.id, 'Payment window closed / cancelled by customer');
+                  setServerError('Payment was cancelled. The item has been restored to available stock.');
                 } catch (e) {
                   console.warn('Payment cancel sync note:', e.message);
+                  setServerError(e.response?.data?.message || 'Payment window closed.');
                 }
-                setServerError('Payment was cancelled. The item has been restored to available stock.');
               },
             },
           };
@@ -225,14 +226,19 @@ export const Checkout = () => {
           rzpInstance.on('payment.failed', async function (resp) {
             try {
               await orderService.cancelPayment(order.id, resp.error?.description || 'Razorpay payment failed');
+              setServerError(
+                resp.error?.description ||
+                  resp.error?.reason ||
+                  'Payment was not completed. Stock has been restored. You can try again or choose Cash on Delivery (COD).'
+              );
             } catch (e) {
               console.warn('Payment failure cancel note:', e.message);
+              setServerError(
+                resp.error?.description ||
+                  resp.error?.reason ||
+                  'Payment failed. You can try again or choose Cash on Delivery (COD).'
+              );
             }
-            setServerError(
-              resp.error?.description ||
-                resp.error?.reason ||
-                'Payment was not completed. Stock has been restored. You can try again or choose Cash on Delivery (COD).'
-            );
           });
           rzpInstance.open();
           return;
