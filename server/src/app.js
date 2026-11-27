@@ -138,7 +138,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // ─── Start Server ───────────────────────────────────────
-if (require.main === module) {
+if (process.env.NODE_ENV !== 'test') {
   const fs = require('fs');
   const socketPath = process.env.SOCKET_PATH || '/home/u739095470/domains/swaradasareecenter.in/node.sock';
   
