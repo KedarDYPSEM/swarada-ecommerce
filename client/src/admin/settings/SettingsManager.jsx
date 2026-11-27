@@ -164,6 +164,14 @@ export const SettingsManager = () => {
             mode: map.razorpay_mode || 'test',
           });
 
+          setShippingSettings({
+            courierPartner: map.courier_partner || 'Blue Dart & Delhivery Express',
+            freeShippingThreshold: map.free_shipping_threshold !== undefined ? map.free_shipping_threshold : '2999',
+            standardShippingFee: map.standard_shipping_charge !== undefined ? map.standard_shipping_charge : '150',
+            estimatedDeliveryDays: map.estimated_delivery_days || '3 to 5 business days',
+            codAvailable: map.cod_enabled !== 'false',
+          });
+
           if (map.nav_menus) {
             try {
               const parsed = JSON.parse(map.nav_menus);
@@ -247,6 +255,9 @@ export const SettingsManager = () => {
         gst_number: storeSettings.gstin,
         free_shipping_threshold: storeSettings.freeShippingThreshold,
         standard_shipping_charge: storeSettings.standardShippingFee,
+        cod_enabled: shippingSettings.codAvailable ? 'true' : 'false',
+        courier_partner: shippingSettings.courierPartner || 'Delhivery Express',
+        estimated_delivery_days: shippingSettings.estimatedDeliveryDays || '3 to 5 business days',
         announcement_bar_enabled: announcementSettings.enabled ? 'true' : 'false',
         announcement_text: announcementSettings.text,
         orders_delivered_base: announcementSettings.ordersBase,
@@ -1009,17 +1020,35 @@ export const SettingsManager = () => {
               />
             </div>
 
-            <div className="pt-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={shippingSettings.codAvailable}
-                  onChange={(e) => setShippingSettings({ ...shippingSettings, codAvailable: e.target.checked })}
-                  className="rounded text-[#641B32] focus:ring-[#641B32]"
-                />
-                <span className="font-semibold text-neutral-700">
-                  Allow Cash on Delivery (COD) for eligible pincodes
-                </span>
+            <div className="pt-2 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
+                  <span className="font-semibold text-neutral-800 text-xs block">
+                    Cash on Delivery (COD) Payment Option
+                  </span>
+                  <span className="text-[11px] text-neutral-500 block mt-0.5">
+                    When enabled, customers can choose COD at checkout. When disabled, only Razorpay online payment is offered.
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2.5">
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                      shippingSettings.codAvailable
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border border-rose-300'
+                    }`}
+                  >
+                    {shippingSettings.codAvailable ? 'COD ACTIVE' : 'COD DISABLED'}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={shippingSettings.codAvailable}
+                    onChange={(e) =>
+                      setShippingSettings({ ...shippingSettings, codAvailable: e.target.checked })
+                    }
+                    className="w-5 h-5 rounded text-[#641B32] focus:ring-[#641B32] cursor-pointer"
+                  />
+                </div>
               </label>
             </div>
           </div>

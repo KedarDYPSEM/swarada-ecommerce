@@ -102,8 +102,16 @@ const getPublicSettings = catchAsync(async (req, res) => {
       storeBio:
         map.store_bio ||
         'Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the timeless majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.',
-      freeShippingThreshold: parseFloat(map.free_shipping_threshold) || 2999,
-      standardShippingFee: parseFloat(map.standard_shipping_charge) || 150,
+      freeShippingThreshold:
+        map.free_shipping_threshold !== undefined && !isNaN(parseFloat(map.free_shipping_threshold))
+          ? parseFloat(map.free_shipping_threshold)
+          : 2999,
+      standardShippingFee:
+        map.standard_shipping_charge !== undefined && !isNaN(parseFloat(map.standard_shipping_charge))
+          ? parseFloat(map.standard_shipping_charge)
+          : 150,
+      codEnabled: map.cod_enabled !== 'false',
+      courierPartner: map.courier_partner || 'Delhivery Express',
       announcementBarEnabled: map.announcement_bar_enabled !== 'false',
       announcementText: map.announcement_text || DEFAULT_ANNOUNCEMENT,
       ordersDeliveredCount,

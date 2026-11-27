@@ -2,8 +2,46 @@ const prisma = require('../config/database');
 const { AppError } = require('../middleware/errorHandler');
 const { validateCoupon } = require('./couponService');
 
-const FREE_SHIPPING_THRESHOLD = 2999.0;
-const STANDARD_SHIPPING_FEE = 150.0;
+/**
+ * Fetch dynamic shipping and logistics configuration from DB
+ */
+const getShippingConfig = async () => {
+  try {
+    const settings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: ['free_shipping_threshold', 'standard_shipping_charge', 'cod_enabled'],
+        },
+      },
+    });
+    const map = {};
+    settings.forEach((s) => {
+      map[s.key] = s.value;
+    });
+
+    const threshold =
+      map.free_shipping_threshold !== undefined && map.free_shipping_threshold !== ''
+        ? parseFloat(map.free_shipping_threshold)
+        : 2999.0;
+
+    const standardFee =
+      map.standard_shipping_charge !== undefined && map.standard_shipping_charge !== ''
+        ? parseFloat(map.standard_shipping_charge)
+        : 150.0;
+
+    return {
+      freeShippingThreshold: isNaN(threshold) ? 2999.0 : threshold,
+      standardShippingFee: isNaN(standardFee) ? 150.0 : standardFee,
+      codEnabled: map.cod_enabled !== 'false',
+    };
+  } catch (err) {
+    return {
+      freeShippingThreshold: 2999.0,
+      standardShippingFee: 150.0,
+      codEnabled: true,
+    };
+  }
+};
 
 /**
  * Recalculate totals for cart items securely using actual database prices
@@ -68,8 +106,10 @@ const calculateCartTotals = async (items, couponCode = null, userId = null) => {
     }
   }
 
-  // Calculate Shipping (Free above ₹2,999)
-  const shippingAmount = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : STANDARD_SHIPPING_FEE;
+  // Calculate Shipping from live DB configuration
+  const shippingConfig = await getShippingConfig();
+  const shippingAmount =
+    subtotal >= shippingConfig.freeShippingThreshold || subtotal === 0 ? 0 : shippingConfig.standardShippingFee;
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingAmount);
 
   return {
@@ -77,11 +117,12 @@ const calculateCartTotals = async (items, couponCode = null, userId = null) => {
     summary: {
       subtotal: Math.round(subtotal * 100) / 100,
       discountAmount: Math.round(discountAmount * 100) / 100,
-      shippingAmount,
+      shippingAmount: Math.round(shippingAmount * 100) / 100,
+      standardShippingFee: shippingConfig.standardShippingFee,
+      freeShippingThreshold: shippingConfig.freeShippingThreshold,
+      amountNeededForFreeShipping: Math.max(0, shippingConfig.freeShippingThreshold - subtotal),
       gstAmount: Math.round(totalGst * 100) / 100,
       totalAmount: Math.round(grandTotal * 100) / 100,
-      freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
-      amountNeededForFreeShipping: Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal),
       itemCount: enrichedItems.reduce((acc, curr) => acc + curr.quantity, 0),
       coupon: couponInfo,
     },

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ShieldCheck, Lock, CreditCard, Banknote, ArrowRight, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { formatPrice } from '../lib/utils';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -34,9 +35,12 @@ const checkoutSchema = z.object({
 export const Checkout = () => {
   const { items, summary, couponCode, clearLocalCart } = useCart();
   const { user, isAuthenticated, setAuthenticatedUser } = useAuth();
+  const { settings } = useSettings();
   const [serverError, setServerError] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
   const navigate = useNavigate();
+
+  const isCodAllowed = settings?.codEnabled !== false;
 
   const {
     register,
@@ -62,6 +66,13 @@ export const Checkout = () => {
   });
 
   const selectedPaymentMethod = watch('paymentMethod');
+
+  // If COD is disabled in platform settings, ensure checkout defaults to RAZORPAY
+  useEffect(() => {
+    if (!isCodAllowed && selectedPaymentMethod === 'COD') {
+      setValue('paymentMethod', 'RAZORPAY');
+    }
+  }, [isCodAllowed, selectedPaymentMethod, setValue]);
 
   // Load saved customer addresses and profile if logged in
   useEffect(() => {
@@ -477,31 +488,33 @@ export const Checkout = () => {
                     </div>
                   </label>
 
-                  <label
-                    className={`flex items-start space-x-3.5 p-4 border rounded-2xl cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'COD'
-                        ? 'border-[#641B32] bg-gradient-to-r from-amber-50/60 to-white shadow-xs ring-1 ring-[#D4AF37]/40'
-                        : 'border-neutral-200 hover:bg-neutral-50/60'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      value="COD"
-                      {...register('paymentMethod')}
-                      className="mt-1 accent-[#641B32]"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <Banknote className="w-4 h-4 text-[#641B32]" />
-                        <span className="text-xs font-bold text-[#140F11]">
-                          Cash on Delivery (COD)
-                        </span>
+                  {isCodAllowed && (
+                    <label
+                      className={`flex items-start space-x-3.5 p-4 border rounded-2xl cursor-pointer transition-all ${
+                        selectedPaymentMethod === 'COD'
+                          ? 'border-[#641B32] bg-gradient-to-r from-amber-50/60 to-white shadow-xs ring-1 ring-[#D4AF37]/40'
+                          : 'border-neutral-200 hover:bg-neutral-50/60'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        value="COD"
+                        {...register('paymentMethod')}
+                        className="mt-1 accent-[#641B32]"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <Banknote className="w-4 h-4 text-[#641B32]" />
+                          <span className="text-xs font-bold text-[#140F11]">
+                            Cash on Delivery (COD)
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-neutral-500 mt-1">
+                          Pay cash directly to our delivery courier upon parcel arrival.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-neutral-500 mt-1">
-                        Pay cash directly to our delivery courier upon parcel arrival.
-                      </p>
-                    </div>
-                  </label>
+                    </label>
+                  )}
                 </div>
               </div>
             </div>

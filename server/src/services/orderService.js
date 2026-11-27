@@ -7,8 +7,46 @@ const vyaparService = require('../integrations/vyapar/vyaparService');
 const emailService = require('./emailService');
 const whatsappService = require('../integrations/whatsapp/whatsappService');
 
-const FREE_SHIPPING_THRESHOLD = 2999.0;
-const STANDARD_SHIPPING_FEE = 150.0;
+/**
+ * Fetch dynamic shipping and COD configuration from DB
+ */
+const getShippingConfig = async () => {
+  try {
+    const settings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: ['free_shipping_threshold', 'standard_shipping_charge', 'cod_enabled'],
+        },
+      },
+    });
+    const map = {};
+    settings.forEach((s) => {
+      map[s.key] = s.value;
+    });
+
+    const threshold =
+      map.free_shipping_threshold !== undefined && map.free_shipping_threshold !== ''
+        ? parseFloat(map.free_shipping_threshold)
+        : 2999.0;
+
+    const standardFee =
+      map.standard_shipping_charge !== undefined && map.standard_shipping_charge !== ''
+        ? parseFloat(map.standard_shipping_charge)
+        : 150.0;
+
+    return {
+      freeShippingThreshold: isNaN(threshold) ? 2999.0 : threshold,
+      standardShippingFee: isNaN(standardFee) ? 150.0 : standardFee,
+      codEnabled: map.cod_enabled !== 'false',
+    };
+  } catch (err) {
+    return {
+      freeShippingThreshold: 2999.0,
+      standardShippingFee: 150.0,
+      codEnabled: true,
+    };
+  }
+};
 
 /**
  * Generate a unique sequential order number: SW-YYYY-XXXX
@@ -376,8 +414,18 @@ const createOrder = async (orderData) => {
       }
     }
 
-    // 4. Calculate Shipping and Grand Total
-    const shippingAmount = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+    // 4. Calculate Shipping and Grand Total from live DB settings
+    const shippingConfig = await getShippingConfig();
+
+    if (paymentMethod === 'COD' && !shippingConfig.codEnabled) {
+      throw new AppError(
+        'Cash on Delivery (COD) is currently disabled. Please select Online Payment via Razorpay.',
+        400
+      );
+    }
+
+    const shippingAmount =
+      subtotal >= shippingConfig.freeShippingThreshold ? 0 : shippingConfig.standardShippingFee;
     const totalAmount = Math.max(0, subtotal - discountAmount + shippingAmount);
 
     const orderNumber = await generateOrderNumber();
