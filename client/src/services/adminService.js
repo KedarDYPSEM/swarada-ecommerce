@@ -161,7 +161,7 @@ const adminService = {
     formData.append('image', file);
     formData.append('file', file);
     const res = await api.post('/upload', formData, {
-      headers: { 'Content-Type': undefined },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data;
   },
@@ -170,7 +170,7 @@ const adminService = {
     formData.append('video', file);
     formData.append('file', file);
     const res = await api.post('/upload', formData, {
-      headers: { 'Content-Type': undefined },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data;
   },
@@ -178,7 +178,7 @@ const adminService = {
     const formData = new FormData();
     Array.from(files).forEach((file) => formData.append('images', file));
     const res = await api.post('/upload/multiple', formData, {
-      headers: { 'Content-Type': undefined },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data;
   },

@@ -1,22 +1,29 @@
 <?php
 // Transparent API Reverse Proxy for Node.js on Hostinger with Multipart / File Upload support
-@ini_set('upload_max_filesize', '64M');
-@ini_set('post_max_size', '64M');
-@ini_set('memory_limit', '256M');
-@ini_set('max_execution_time', '300');
-
 $method = $_SERVER['REQUEST_METHOD'];
 $path = $_GET['__api_path'] ?? '';
 unset($_GET['__api_path']);
 
 $queryString = http_build_query($_GET);
+$socketPath = '/home/u739095470/domains/swaradasareecenter.in/node.sock';
 $isUpload = (strpos($path, 'uploads/') === 0 || strpos($path, 'uploads') === 0);
 $urlPrefix = $isUpload ? '/' : '/api/';
+$targetUrl = 'http://localhost' . $urlPrefix . $path;
+if (!empty($queryString)) {
+    $targetUrl .= (strpos($targetUrl, '?') === false ? '?' : '&') . $queryString;
+}
 
-$ports = [54321, 5000];
-$backendPort = getenv('BACKEND_PORT') ?: 54321;
-if (!in_array($backendPort, $ports)) {
-    array_unshift($ports, $backendPort);
+$ch = curl_init($targetUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HEADER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+
+// Connect via high-speed UNIX socket if available, otherwise TCP port
+if (file_exists($socketPath)) {
+    curl_setopt($ch, CURLOPT_UNIX_SOCKET_PATH, $socketPath);
+} else {
+    $backendPort = getenv('BACKEND_PORT') ?: '5000';
+    curl_setopt($ch, CURLOPT_URL, "http://127.0.0.1:{$backendPort}{$urlPrefix}" . $path . (!empty($queryString) ? "?$queryString" : ''));
 }
 
 // Forward request headers
@@ -37,137 +44,92 @@ if (function_exists('getallheaders')) {
     }
 }
 
-// Ensure Authorization header is captured even if Apache FastCGI stripped it
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-if (!empty($authHeader) && !isset($requestHeaders['Authorization'])) {
-    $requestHeaders['Authorization'] = $authHeader;
-}
-
-// Ensure Cookie header is properly assembled
-$cookieHeader = $_SERVER['HTTP_COOKIE'] ?? '';
-if (empty($cookieHeader) && !empty($_COOKIE)) {
-    $cookieParts = [];
-    foreach ($_COOKIE as $k => $v) {
-        $cookieParts[] = "$k=" . urlencode($v);
-    }
-    $cookieHeader = implode('; ', $cookieParts);
-}
-if (!empty($cookieHeader)) {
-    $requestHeaders['Cookie'] = $cookieHeader;
-}
-
 $hasFiles = !empty($_FILES);
 
 foreach ($requestHeaders as $key => $val) {
     $lower = strtolower($key);
-    if ($lower === 'host') {
-        $forwardHeaders[] = "Host: swaradasareecenter.in";
-        $forwardHeaders[] = "X-Forwarded-Host: swaradasareecenter.in";
-    } elseif ($lower === 'connection') {
-        continue;
-    } elseif ($hasFiles && $lower === 'content-type') {
-        // Leave curl to construct multipart boundary
-        continue;
-    } else {
+    if ($lower !== 'host' && $lower !== 'content-length') {
+        // When forwarding files with CURLFile, do NOT forward client Content-Type header
+        // because cURL will generate a fresh, valid multipart boundary automatically!
+        if ($hasFiles && $lower === 'content-type') {
+            continue;
+        }
         $forwardHeaders[] = "$key: $val";
     }
 }
-$forwardHeaders[] = "X-Forwarded-For: " . ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
-$forwardHeaders[] = "X-Forwarded-Proto: " . ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http');
+$forwardHeaders[] = 'X-Forwarded-For: ' . ($_SERVER['REMOTE_ADDR'] ?? '');
+$forwardHeaders[] = 'X-Forwarded-Proto: https';
+curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
 
-// Body data
-$body = '';
-if ($hasFiles) {
-    $postFields = $_POST;
-    foreach ($_FILES as $fieldName => $fileInfo) {
-        if (is_array($fileInfo['tmp_name'])) {
-            foreach ($fileInfo['tmp_name'] as $idx => $tmpName) {
-                if (file_exists($tmpName) && $fileInfo['error'][$idx] === UPLOAD_ERR_OK) {
-                    $mime = !empty($fileInfo['type'][$idx]) ? $fileInfo['type'][$idx] : 'image/jpeg';
-                    $postFields["{$fieldName}[$idx]"] = new CURLFile($tmpName, $mime, $fileInfo['name'][$idx]);
-                }
-            }
-        } else {
-            if (file_exists($fileInfo['tmp_name']) && $fileInfo['error'] === UPLOAD_ERR_OK) {
-                $mime = !empty($fileInfo['type']) ? $fileInfo['type'] : 'image/jpeg';
-                $postFields[$fieldName] = new CURLFile($fileInfo['tmp_name'], $mime, $fileInfo['name']);
-            }
-        }
-    }
-    $body = $postFields;
-} elseif (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
-    $body = file_get_contents('php://input');
-}
-
-// Try connecting to backend TCP ports
-$response = false;
-$httpCode = 502;
-$headerSize = 0;
-$lastError = '';
-
-foreach ($ports as $port) {
-    $targetUrl = "http://127.0.0.1:{$port}{$urlPrefix}" . $path . (!empty($queryString) ? "?$queryString" : '');
-    $ch = curl_init($targetUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HEADER, true);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-
-    if (!empty($cookieHeader)) {
-        curl_setopt($ch, CURLOPT_COOKIE, $cookieHeader);
-    }
-
+// Forward body for mutations
+if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'])) {
     if ($hasFiles) {
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-    } elseif (!empty($body)) {
+        $postData = $_POST;
+        foreach ($_FILES as $field => $file) {
+            if (is_array($file['tmp_name'])) {
+                foreach ($file['tmp_name'] as $idx => $tmpName) {
+                    if (!empty($tmpName) && is_uploaded_file($tmpName)) {
+                        $postData["{$field}[{$idx}]"] = new CURLFile(
+                            $tmpName,
+                            $file['type'][$idx] ?? 'application/octet-stream',
+                            $file['name'][$idx] ?? "file_{$idx}"
+                        );
+                    }
+                }
+            } else if (!empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
+                $postData[$field] = new CURLFile(
+                    $file['tmp_name'],
+                    $file['type'] ?? 'application/octet-stream',
+                    $file['name'] ?? 'file'
+                );
+            }
+        }
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    } else {
+        $body = file_get_contents('php://input');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     }
-
-    $res = curl_exec($ch);
-    if ($res !== false) {
-        $response = $res;
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        curl_close($ch);
-        break;
-    }
-    $lastError = curl_error($ch);
-    curl_close($ch);
 }
 
-// If TCP failed, try socket fallback
+// Timeout (allow up to 60s for image/video uploads)
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+$response = curl_exec($ch);
+
 if ($response === false) {
-    $socketPath = '/home/u739095470/domains/swaradasareecenter.in/node.sock';
-    if (file_exists($socketPath)) {
-        $ch = curl_init('http://localhost' . $urlPrefix . $path . (!empty($queryString) ? "?$queryString" : ''));
-        curl_setopt($ch, CURLOPT_UNIX_SOCKET_PATH, $socketPath);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+    http_response_code(502);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Backend gateway temporarily unavailable. Node.js backend starting or restarting.',
+        'details' => curl_error($ch)
+    ]);
+    curl_close($ch);
+    exit;
+}
 
-        if (!empty($cookieHeader)) {
-            curl_setopt($ch, CURLOPT_COOKIE, $cookieHeader);
-        }
+$headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
 
-        if ($hasFiles || !empty($body)) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+$headerContent = substr($response, 0, $headerSize);
+$bodyContent = substr($response, $headerSize);
+
+http_response_code($httpCode);
+
+// Send back headers (Set-Cookie, Content-Type, etc.)
+$headers = explode("\r\n", $headerContent);
+foreach ($headers as $header) {
+    if (!empty($header)) {
+        if (stripos($header, 'Transfer-Encoding') === false &&
+            stripos($header, 'Connection') === false) {
+            header($header, false);
         }
-        $res = curl_exec($ch);
-        if ($res !== false) {
-            $response = $res;
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        } else {
-            $lastError = curl_error($ch);
-        }
-        curl_close($ch);
     }
 }
+
+echo $bodyContent;
 
 if ($response === false) {
     http_response_code(502);

@@ -142,30 +142,27 @@ if (process.env.NODE_ENV !== 'test') {
   const fs = require('fs');
   const socketPath = process.env.SOCKET_PATH || '/home/u739095470/domains/swaradasareecenter.in/node.sock';
   
-  // Always listen on TCP port on localhost for internal proxy
-  const server = app.listen(PORT, '127.0.0.1', () => {
-    console.log(`🚀 Server running on http://127.0.0.1:${PORT} in ${process.env.NODE_ENV || 'production'} mode`);
-  });
-  server.on('error', (err) => {
-    console.error('💥 TCP Listen Error:', err);
-  });
-
-  // Also bind to UNIX socket if path is available
-  try {
+  // Decide whether to listen on UNIX socket or TCP
+  const useSocket = process.env.NODE_ENV === 'production' && !process.env.FORCE_TCP;
+  
+  if (useSocket) {
     if (fs.existsSync(socketPath)) {
       try { fs.unlinkSync(socketPath); } catch (e) {}
     }
-    const http = require('http');
-    const socketServer = http.createServer(app);
-    socketServer.listen(socketPath, () => {
+    const server = app.listen(socketPath, () => {
       try { fs.chmodSync(socketPath, 0o777); } catch (e) {}
-      console.log(`🚀 Also listening on UNIX socket: ${socketPath}`);
+      console.log(`🚀 Server listening on UNIX socket: ${socketPath} in production mode`);
     });
-    socketServer.on('error', (e) => {
-      console.warn('Socket listen notice:', e.message);
+    server.on('error', (err) => {
+      console.error('💥 Socket Listen Error:', err);
     });
-  } catch (err) {
-    console.warn('Socket binding notice:', err.message);
+  } else {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on http://127.0.0.1:${PORT} and 0.0.0.0:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    });
+    server.on('error', (err) => {
+      console.error('💥 TCP Listen Error:', err);
+    });
   }
 }
 
