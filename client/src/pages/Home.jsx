@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import HeroBanner from '../components/home/HeroBanner';
 import CircularCategoryScroll from '../components/home/CircularCategoryScroll';
-import CategoryShowcase from '../components/home/CategoryShowcase';
 import FeaturedProducts from '../components/home/FeaturedProducts';
 import YouTubeLiveSection from '../components/home/YouTubeLiveSection';
 import PromoBanner from '../components/home/PromoBanner';
@@ -45,10 +44,7 @@ export const Home = () => {
       {/* 2. Infinite Circular Categories Scroll Row */}
       <CircularCategoryScroll categories={data?.categories} />
 
-      {/* 3. Shop by Category Showcase */}
-      <CategoryShowcase categories={data?.categories} />
-
-      {/* 4. New Arrivals & Trending Sarees */}
+      {/* 3. New Arrivals & Trending Sarees */}
       <FeaturedProducts
         title="New Arrivals & Trending Sarees"
         defaultTab="new"
