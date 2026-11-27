@@ -31,8 +31,12 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const response = await authService.login(email, password);
-      setUser(response.data.user);
-      return response.data.user;
+      const userData = response?.data?.user || response?.user || response;
+      if (!userData || !userData.email) {
+        throw new Error(response?.message || 'Invalid administrator login response.');
+      }
+      setUser(userData);
+      return userData;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Login failed';
       setError(msg);

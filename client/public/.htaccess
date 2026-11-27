@@ -1,17 +1,17 @@
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
+RewriteEngine On
 
-  # Allow direct access to physical files and directories
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
+# 1. Forward all /api requests to local PHP proxy (connects to Node.js backend)
+RewriteRule ^api/(.*)$ api-proxy.php?__api_path=$1 [QSA,L]
 
-  # Route all other URLs to index.html for React SPA
-  RewriteRule ^ index.html [L]
-</IfModule>
+# 2. Allow direct access to real files and directories (images, js, css, sitemap, robots, llms)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-# Security and caching headers
-<IfModule mod_headers.c>
-  Header set X-Content-Type-Options "nosniff"
+# 3. Fallback all client-side routes to React index.html
+RewriteRule ^ index.html [L]
+
+# Gzip / Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
 </IfModule>
