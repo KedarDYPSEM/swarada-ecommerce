@@ -60,6 +60,19 @@ const uploadSingle = (req, res, next) => {
     return next(new AppError('Please select an image or video file to upload.', 400));
   }
 
+  // Also mirror to public_html/uploads if public_html exists (for direct high-speed LiteSpeed serving)
+  const publicUploadDir = path.join(__dirname, '../../../../public_html/uploads');
+  if (fs.existsSync(path.dirname(publicUploadDir))) {
+    try {
+      if (!fs.existsSync(publicUploadDir)) {
+        fs.mkdirSync(publicUploadDir, { recursive: true });
+      }
+      fs.copyFileSync(req.file.path, path.join(publicUploadDir, req.file.filename));
+    } catch (e) {
+      console.warn('Could not mirror file to public_html/uploads:', e.message);
+    }
+  }
+
   // Use root-relative URL so it works seamlessly under HTTP, HTTPS, localhost, or reverse proxies
   const fileUrl = `/uploads/${req.file.filename}`;
   const isVideo = req.file.mimetype.startsWith('video/');
@@ -83,6 +96,21 @@ const uploadSingle = (req, res, next) => {
 const uploadMultiple = (req, res, next) => {
   if (!req.files || req.files.length === 0) {
     return next(new AppError('Please select at least one image file to upload.', 400));
+  }
+
+  // Also mirror to public_html/uploads if public_html exists
+  const publicUploadDir = path.join(__dirname, '../../../../public_html/uploads');
+  if (fs.existsSync(path.dirname(publicUploadDir))) {
+    try {
+      if (!fs.existsSync(publicUploadDir)) {
+        fs.mkdirSync(publicUploadDir, { recursive: true });
+      }
+      req.files.forEach((f) => {
+        fs.copyFileSync(f.path, path.join(publicUploadDir, f.filename));
+      });
+    } catch (e) {
+      console.warn('Could not mirror files to public_html/uploads:', e.message);
+    }
   }
 
   const files = req.files.map((f) => ({

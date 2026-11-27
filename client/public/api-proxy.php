@@ -1,5 +1,5 @@
 <?php
-// High-performance API Reverse Proxy for Node.js on Hostinger
+// Transparent API Reverse Proxy for Node.js on Hostinger with Multipart / File Upload support
 $method = $_SERVER['REQUEST_METHOD'];
 $path = $_GET['__api_path'] ?? '';
 unset($_GET['__api_path']);
@@ -42,9 +42,16 @@ if (function_exists('getallheaders')) {
     }
 }
 
+$hasFiles = !empty($_FILES);
+
 foreach ($requestHeaders as $key => $val) {
     $lower = strtolower($key);
     if ($lower !== 'host' && $lower !== 'content-length') {
+        // When forwarding files with CURLFile, do NOT forward client Content-Type header
+        // because cURL will generate a fresh, valid multipart boundary automatically!
+        if ($hasFiles && $lower === 'content-type') {
+            continue;
+        }
         $forwardHeaders[] = "$key: $val";
     }
 }
@@ -54,13 +61,37 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, $forwardHeaders);
 
 // Forward body for mutations
 if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'])) {
-    $body = file_get_contents('php://input');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    if ($hasFiles) {
+        $postData = $_POST;
+        foreach ($_FILES as $field => $file) {
+            if (is_array($file['tmp_name'])) {
+                foreach ($file['tmp_name'] as $idx => $tmpName) {
+                    if (!empty($tmpName) && is_uploaded_file($tmpName)) {
+                        $postData["{$field}[{$idx}]"] = new CURLFile(
+                            $tmpName,
+                            $file['type'][$idx] ?? 'application/octet-stream',
+                            $file['name'][$idx] ?? "file_{$idx}"
+                        );
+                    }
+                }
+            } else if (!empty($file['tmp_name']) && is_uploaded_file($file['tmp_name'])) {
+                $postData[$field] = new CURLFile(
+                    $file['tmp_name'],
+                    $file['type'] ?? 'application/octet-stream',
+                    $file['name'] ?? 'file'
+                );
+            }
+        }
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    } else {
+        $body = file_get_contents('php://input');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    }
 }
 
-// Timeout
-curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+// Timeout (allow up to 60s for image/video uploads)
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
 $response = curl_exec($ch);
 
