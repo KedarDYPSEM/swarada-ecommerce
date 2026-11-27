@@ -5,4 +5,4 @@ Disallow: /account/
 Disallow: /checkout
 Disallow: /cart
 
-Sitemap: https://swaradasarees.com/sitemap.xml
+Sitemap: https://swaradasareecenter.in/sitemap.xml
