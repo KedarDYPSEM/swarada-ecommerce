@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Swarada Saree Center - Automated Hostinger hPanel Deployment Script
+# Optimized specifically for Hostinger Cloud/Web Hosting environments
+# ==============================================================================
+
+set -e
+
+DOMAIN="swaradasareecenter.in"
+DB_NAME="u739095470_swarada"
+BACKEND_PORT=5000
+
+echo "=========================================================="
+echo "🚀 Deploying Swarada Saree Center on Hostinger ($DOMAIN)"
+echo "=========================================================="
+
+# 1. Ask for Database Credentials if not passed as environment variables
+if [ -z "$DB_USER" ]; then
+  read -p "Enter your Hostinger Database Username (e.g. u739095470_admin): " DB_USER
+fi
+
+if [ -z "$DB_PASS" ]; then
+  read -s -p "Enter your Hostinger Database Password: " DB_PASS
+  echo ""
+fi
+
+# 2. Determine target directories
+HOME_DIR=$(eval echo ~$USER)
+if [ -d "$HOME_DIR/domains/$DOMAIN" ]; then
+  APP_ROOT="$HOME_DIR/domains/$DOMAIN"
+  PUBLIC_HTML="$APP_ROOT/public_html"
+elif [ -d "$HOME_DIR/public_html" ]; then
+  APP_ROOT="$HOME_DIR"
+  PUBLIC_HTML="$HOME_DIR/public_html"
+else
+  APP_ROOT="$HOME_DIR/$DOMAIN"
+  PUBLIC_HTML="$APP_ROOT/public_html"
+  mkdir -p "$PUBLIC_HTML"
+fi
+
+PROJECT_DIR="$APP_ROOT/swarada-ecommerce"
+echo "📂 App Root: $APP_ROOT"
+echo "📂 Project Dir: $PROJECT_DIR"
+echo "📂 Public HTML: $PUBLIC_HTML"
+
+# 3. Clone or pull repo
+if [ -d "$PROJECT_DIR" ]; then
+  echo "📦 Updating repository in $PROJECT_DIR..."
+  cd "$PROJECT_DIR"
+  git pull origin main
+else
+  echo "📦 Cloning repository..."
+  cd "$APP_ROOT"
+  git clone https://github.com/KedarDYPSEM/swarada-ecommerce.git "$PROJECT_DIR"
+  cd "$PROJECT_DIR"
+fi
+
+# 4. Setup Server (Backend)
+echo "⚡ Setting up Backend..."
+cd "$PROJECT_DIR/server"
+npm install --include=dev
+
+# Write production .env for Hostinger
+cat <<EOF > .env
+NODE_ENV=production
+PORT=$BACKEND_PORT
+CLIENT_URL=https://$DOMAIN
+
+# Hostinger MySQL Database
+DATABASE_URL="mysql://${DB_USER}:${DB_PASS}@127.0.0.1:3306/${DB_NAME}"
+
+# JWT Security
+JWT_ACCESS_SECRET=swarada_live_access_secret_production_2026_key
+JWT_REFRESH_SECRET=swarada_live_refresh_secret_production_2026_key
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Razorpay Credentials
+RAZORPAY_KEY_ID=rzp_test_U2Tz8SVDIHBrHN
+RAZORPAY_KEY_SECRET=PqFazCjKbpo0CnMYD9WDFH3i
+RAZORPAY_WEBHOOK_SECRET=rzp_webhook_secret_placeholder
+EOF
+
+echo "🗄️ Generating Prisma Client and updating database schema..."
+./node_modules/.bin/prisma generate
+./node_modules/.bin/prisma db push --accept-data-loss || true
+
+# Seed default admin and starter handloom catalog if new database
+echo "🌱 Checking and seeding initial catalog..."
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+prisma.user.count().then(count => {
+  if (count === 0) {
+    console.log('Seeding initial admin and catalog...');
+    require('./prisma/seed.js');
+  } else {
+    console.log('Database already initialized with records.');
+    process.exit(0);
+  }
+}).catch(err => {
+  console.log('Seed check:', err.message);
+  process.exit(0);
+});
+" || true
+
+# 5. Build Client (Frontend)
+echo "⚡ Building Frontend..."
+cd "$PROJECT_DIR/client"
+npm install
+npm run build
+
+# 6. Deploy build to public_html
+echo "🚀 Copying production build into public_html..."
+mkdir -p "$PUBLIC_HTML"
+cp -r dist/* "$PUBLIC_HTML/"
+
+# Create uploads directory symlink in public_html for direct high-speed image serving
+mkdir -p "$PROJECT_DIR/server/uploads"
+rm -rf "$PUBLIC_HTML/uploads"
+ln -sf "$PROJECT_DIR/server/uploads" "$PUBLIC_HTML/uploads"
+
+# 7. Write Apache / LiteSpeed .htaccess for routing & API proxying
+echo "📝 Configuring .htaccess in public_html..."
+cat << 'EOF' > "$PUBLIC_HTML/.htaccess"
+RewriteEngine On
+
+# 1. Proxy /api requests to local Node.js backend
+RewriteCond %{REQUEST_URI} ^/api/ [NC]
+RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+
+# 2. Allow direct access to existing files/directories (images, js, css)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 3. Fallback all other routes to React index.html
+RewriteRule ^ index.html [L]
+
+# Gzip / Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>
+EOF
+
+# 8. Start / Restart Node.js backend under PM2 (or background process)
+cd "$PROJECT_DIR/server"
+if command -v pm2 >/dev/null 2>&1; then
+  echo "🔄 Restarting backend under PM2..."
+  pm2 delete swarada-backend 2>/dev/null || true
+  pm2 start src/app.js --name "swarada-backend"
+  pm2 save 2>/dev/null || true
+else
+  echo "Installing PM2 locally..."
+  npm install -g pm2 2>/dev/null || npm install pm2
+  ./node_modules/.bin/pm2 delete swarada-backend 2>/dev/null || true
+  ./node_modules/.bin/pm2 start src/app.js --name "swarada-backend"
+fi
+
+echo "=========================================================="
+echo "🎉 Deployment on Hostinger Successful!"
+echo "Store URL: https://$DOMAIN"
+echo "Admin Panel: https://$DOMAIN/admin"
+echo "=========================================================="
