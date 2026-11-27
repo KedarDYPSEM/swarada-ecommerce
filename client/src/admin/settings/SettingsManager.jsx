@@ -19,6 +19,7 @@ import {
   Plus,
   Trash2,
   List,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import ImageUploader from '../components/ImageUploader';
@@ -51,8 +52,7 @@ const DEFAULT_MENUS = [
 const DEFAULT_FOOTER_MENUS = [
   { id: 'track-order', name: 'Track Your Order', href: '/track-order', active: true },
   { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies?tab=shipping', active: true },
-  { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies?tab=returns', active: true },
-  { id: 'faq', name: 'Frequently Asked Questions', href: '/policies?tab=returns', active: true },
+  { id: 'returns-policy', name: 'No Return & No Exchange Policy', href: '/policies?tab=returns', active: true },
   { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact', active: true },
 ];
 
@@ -121,6 +121,28 @@ export const SettingsManager = () => {
     codAvailable: true,
   });
 
+  // Our Story & Heritage Page Customizer
+  const [storySettings, setStorySettings] = useState({
+    title: 'The Swarada Story',
+    subtitle: 'Our Heritage & Roots',
+    intro:
+      'Nestled in the historic city of Kolhapur, Maharashtra, Swarada Saree Center was established with a singular devotion: to preserve, nurture, and present the richest handloom traditions of India.',
+    body:
+      'Known affectionately as the city of Mahalaxmi, Kolhapur holds centuries of reverence for auspicious silks. At Swarada, we work closely with generation-old master weaver families across Yeola, Paithan, Varanasi, and Kanchipuram to bring hand-crafted sarees of unmatched authenticity to modern women across the globe.',
+    extended:
+      'Every drape in our collection carries the signature precision of authentic weavers. From bridal Paithanis featuring delicate peacocks to pure Banarasi zari weaves, we take immense pride in adorning brides and handloom connoisseurs for their most cherished milestones.',
+    bannerImage: '',
+    artisanImage: '',
+    stat1Number: '25+ Years',
+    stat1Label: 'Heritage in Kolhapur',
+    stat2Number: '50,000+',
+    stat2Label: 'Brides & Families Adorned',
+    stat3Number: 'Mahadwar Rd',
+    stat3Label: 'Flagship Store Location',
+    stat4Number: '100%',
+    stat4Label: 'Authentic Handlooms',
+  });
+
   useEffect(() => {
     const loadSettings = async () => {
       setFetching(true);
@@ -170,6 +192,30 @@ export const SettingsManager = () => {
             standardShippingFee: map.standard_shipping_charge !== undefined ? map.standard_shipping_charge : '150',
             estimatedDeliveryDays: map.estimated_delivery_days || '3 to 5 business days',
             codAvailable: map.cod_enabled !== 'false',
+          });
+
+          setStorySettings({
+            title: map.story_title || 'The Swarada Story',
+            subtitle: map.story_subtitle || 'Our Heritage & Roots',
+            intro:
+              map.story_intro ||
+              'Nestled in the historic city of Kolhapur, Maharashtra, Swarada Saree Center was established with a singular devotion: to preserve, nurture, and present the richest handloom traditions of India.',
+            body:
+              map.story_body ||
+              'Known affectionately as the city of Mahalaxmi, Kolhapur holds centuries of reverence for auspicious silks. At Swarada, we work closely with generation-old master weaver families across Yeola, Paithan, Varanasi, and Kanchipuram to bring hand-crafted sarees of unmatched authenticity to modern women across the globe.',
+            extended:
+              map.story_extended ||
+              'Every drape in our collection carries the signature precision of authentic weavers. From bridal Paithanis featuring delicate peacocks to pure Banarasi zari weaves, we take immense pride in adorning brides and handloom connoisseurs for their most cherished milestones.',
+            bannerImage: (map.story_banner_image || '').replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1'),
+            artisanImage: (map.story_artisan_image || '').replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1'),
+            stat1Number: map.story_stat1_number || '25+ Years',
+            stat1Label: map.story_stat1_label || 'Heritage in Kolhapur',
+            stat2Number: map.story_stat2_number || '50,000+',
+            stat2Label: map.story_stat2_label || 'Brides & Families Adorned',
+            stat3Number: map.story_stat3_number || 'Mahadwar Rd',
+            stat3Label: map.story_stat3_label || 'Flagship Store Location',
+            stat4Number: map.story_stat4_number || '100%',
+            stat4Label: map.story_stat4_label || 'Authentic Handlooms',
           });
 
           if (map.nav_menus) {
@@ -270,6 +316,21 @@ export const SettingsManager = () => {
         razorpay_key_secret: razorpaySettings.keySecret?.trim() || '',
         razorpay_webhook_secret: razorpaySettings.webhookSecret?.trim() || '',
         razorpay_mode: razorpaySettings.mode || 'test',
+        story_title: storySettings.title,
+        story_subtitle: storySettings.subtitle,
+        story_intro: storySettings.intro,
+        story_body: storySettings.body,
+        story_extended: storySettings.extended,
+        story_banner_image: storySettings.bannerImage,
+        story_artisan_image: storySettings.artisanImage,
+        story_stat1_number: storySettings.stat1Number,
+        story_stat1_label: storySettings.stat1Label,
+        story_stat2_number: storySettings.stat2Number,
+        story_stat2_label: storySettings.stat2Label,
+        story_stat3_number: storySettings.stat3Number,
+        story_stat3_label: storySettings.stat3Label,
+        story_stat4_number: storySettings.stat4Number,
+        story_stat4_label: storySettings.stat4Label,
       });
 
       setSaveSuccess(true);
@@ -394,6 +455,17 @@ export const SettingsManager = () => {
           }`}
         >
           Shipping & Logistics
+        </button>
+
+        <button
+          onClick={() => setActiveTab('story')}
+          className={`px-4 py-2.5 rounded-t-lg transition-colors cursor-pointer ${
+            activeTab === 'story'
+              ? 'bg-white text-[#641B32] border-t-2 border-l border-r border-[#641B32] font-semibold -mb-px'
+              : 'text-neutral-600 hover:bg-neutral-50'
+          }`}
+        >
+          Our Story & Heritage Page
         </button>
       </div>
 
@@ -1050,6 +1122,206 @@ export const SettingsManager = () => {
                   />
                 </div>
               </label>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 8: Our Story & Heritage Customizer */}
+        {activeTab === 'story' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <div>
+                <h3 className="font-heading font-bold text-sm text-[#292323] flex items-center space-x-2">
+                  <BookOpen className="w-4 h-4 text-[#C5A05A]" />
+                  <span>Our Story & Kolhapur Heritage Page Customizer</span>
+                </h3>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  Customize the text, photos, milestones, and brand narrative shown on the public /about page.
+                </p>
+              </div>
+            </div>
+
+            {/* Story Title & Subtitle */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Page Headline / Title
+                </label>
+                <input
+                  type="text"
+                  value={storySettings.title}
+                  onChange={(e) => setStorySettings({ ...storySettings, title: e.target.value })}
+                  placeholder="e.g. The Swarada Story"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded font-semibold text-neutral-800"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Badge / Subtitle Tagline
+                </label>
+                <input
+                  type="text"
+                  value={storySettings.subtitle}
+                  onChange={(e) => setStorySettings({ ...storySettings, subtitle: e.target.value })}
+                  placeholder="e.g. Our Heritage & Roots"
+                  className="w-full px-3 py-2 border border-neutral-200 rounded"
+                />
+              </div>
+            </div>
+
+            {/* Photos Section */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 p-4 bg-[#FFFDF9] border border-[#D4AF37]/30 rounded-xl">
+              <div>
+                <label className="block font-semibold text-[#641B32] mb-1">
+                  Flagship Store / Boutique Photo
+                </label>
+                <p className="text-[10px] text-neutral-500 mb-2">
+                  Hero photo showcasing your Kolhapur boutique or grand storefront.
+                </p>
+                <ImageUploader
+                  value={storySettings.bannerImage}
+                  onChange={(url) => setStorySettings({ ...storySettings, bannerImage: url })}
+                  aspectRatio="video"
+                  placeholder="Upload Storefront Image"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-[#641B32] mb-1">
+                  Handloom Artisan / Weaving Photo
+                </label>
+                <p className="text-[10px] text-neutral-500 mb-2">
+                  Photo celebrating authentic handloom weaving or boutique silk displays.
+                </p>
+                <ImageUploader
+                  value={storySettings.artisanImage}
+                  onChange={(url) => setStorySettings({ ...storySettings, artisanImage: url })}
+                  aspectRatio="video"
+                  placeholder="Upload Artisan / Weaving Image"
+                />
+              </div>
+            </div>
+
+            {/* Story Narrative Paragraphs */}
+            <div className="space-y-4">
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Opening Story Paragraph (Paragraph 1)
+                </label>
+                <textarea
+                  rows={3}
+                  value={storySettings.intro}
+                  onChange={(e) => setStorySettings({ ...storySettings, intro: e.target.value })}
+                  placeholder="Describe how Swarada Saree Center was founded in Kolhapur..."
+                  className="w-full px-3 py-2 border border-neutral-200 rounded leading-relaxed text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Master Weavers & Craftsmanship (Paragraph 2)
+                </label>
+                <textarea
+                  rows={3}
+                  value={storySettings.body}
+                  onChange={(e) => setStorySettings({ ...storySettings, body: e.target.value })}
+                  placeholder="Describe your master weavers, Paithani, Banarasi, and silk heritage..."
+                  className="w-full px-3 py-2 border border-neutral-200 rounded leading-relaxed text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-neutral-700 mb-1">
+                  Extended Narrative & Brand Philosophy (Paragraph 3 - Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={storySettings.extended}
+                  onChange={(e) => setStorySettings({ ...storySettings, extended: e.target.value })}
+                  placeholder="Additional details about your bridal curation, wedding collections, or service..."
+                  className="w-full px-3 py-2 border border-neutral-200 rounded leading-relaxed text-xs"
+                />
+              </div>
+            </div>
+
+            {/* 4 Highlight Milestone Cards */}
+            <div className="space-y-3 pt-2 border-t border-neutral-100">
+              <h4 className="font-bold text-neutral-800 text-xs">
+                Key Milestones & Highlight Metrics
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1.5">
+                  <span className="text-[10px] font-bold text-[#641B32] uppercase">Metric 1</span>
+                  <input
+                    type="text"
+                    value={storySettings.stat1Number}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat1Number: e.target.value })}
+                    placeholder="e.g. 25+ Years"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-xs font-bold"
+                  />
+                  <input
+                    type="text"
+                    value={storySettings.stat1Label}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat1Label: e.target.value })}
+                    placeholder="e.g. Heritage in Kolhapur"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-[11px]"
+                  />
+                </div>
+
+                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1.5">
+                  <span className="text-[10px] font-bold text-[#641B32] uppercase">Metric 2</span>
+                  <input
+                    type="text"
+                    value={storySettings.stat2Number}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat2Number: e.target.value })}
+                    placeholder="e.g. 50,000+"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-xs font-bold"
+                  />
+                  <input
+                    type="text"
+                    value={storySettings.stat2Label}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat2Label: e.target.value })}
+                    placeholder="e.g. Brides & Families Adorned"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-[11px]"
+                  />
+                </div>
+
+                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1.5">
+                  <span className="text-[10px] font-bold text-[#641B32] uppercase">Metric 3</span>
+                  <input
+                    type="text"
+                    value={storySettings.stat3Number}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat3Number: e.target.value })}
+                    placeholder="e.g. Mahadwar Rd"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-xs font-bold"
+                  />
+                  <input
+                    type="text"
+                    value={storySettings.stat3Label}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat3Label: e.target.value })}
+                    placeholder="e.g. Flagship Store Location"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-[11px]"
+                  />
+                </div>
+
+                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1.5">
+                  <span className="text-[10px] font-bold text-[#641B32] uppercase">Metric 4</span>
+                  <input
+                    type="text"
+                    value={storySettings.stat4Number}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat4Number: e.target.value })}
+                    placeholder="e.g. 100%"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-xs font-bold"
+                  />
+                  <input
+                    type="text"
+                    value={storySettings.stat4Label}
+                    onChange={(e) => setStorySettings({ ...storySettings, stat4Label: e.target.value })}
+                    placeholder="e.g. Authentic Handlooms"
+                    className="w-full px-2 py-1 border border-neutral-200 rounded text-[11px]"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

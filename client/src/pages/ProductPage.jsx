@@ -297,7 +297,7 @@ export const ProductPage = () => {
 
               {/* Floating badges */}
               <div className="absolute top-3.5 left-3.5 flex flex-col space-y-2 pointer-events-none z-10">
-                <Badge variant="gold" className="shadow-md">✦ Silk Mark Certified</Badge>
+                <Badge variant="gold" className="shadow-md">✦ Pure Handloom</Badge>
                 {discount > 0 && <Badge variant="discount" className="shadow-md">{discount}% OFF</Badge>}
               </div>
 
@@ -695,9 +695,9 @@ export const ProductPage = () => {
                 <span className="text-[10px] text-neutral-400">All-India Delivery</span>
               </div>
               <div className="p-3 rounded-2xl bg-gradient-to-b from-[#FFFDF9] to-[#FAF5EB] border border-[#D4AF37]/20 shadow-2xs hover:-translate-y-0.5 transition-all">
-                <RotateCcw className="w-5 h-5 text-[#C5A05A] mx-auto mb-1.5" />
-                <span className="font-semibold block text-[#140F11]">7-Day Return</span>
-                <span className="text-[10px] text-neutral-400">Keepsake Guarantee</span>
+                <ShieldCheck className="w-5 h-5 text-[#C5A05A] mx-auto mb-1.5" />
+                <span className="font-semibold block text-[#140F11]">Quality Assured</span>
+                <span className="text-[10px] text-neutral-400">Hand-Inspected</span>
               </div>
             </div>
 
@@ -868,7 +868,7 @@ export const ProductPage = () => {
                     ))}
                   </div>
                   <p className="text-xs text-[#594E4E] leading-relaxed">
-                    "Ordered for my sister's wedding reception. Authentic Yeola Paithani certified with Silk Mark. Customer care assisted us on WhatsApp video call to choose the exact shade."
+                    "Ordered for my sister's wedding reception. Authentic Yeola Paithani with exquisite border. Customer care assisted us on WhatsApp video call to choose the exact shade."
                   </p>
                 </div>
               </>

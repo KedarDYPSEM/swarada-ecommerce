@@ -27,8 +27,7 @@ const DEFAULT_MENUS = [
 const DEFAULT_FOOTER_MENUS = [
   { id: 'track-order', name: 'Track Your Order', href: '/track-order', active: true },
   { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies?tab=shipping', active: true },
-  { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies?tab=returns', active: true },
-  { id: 'faq', name: 'Frequently Asked Questions', href: '/policies?tab=returns', active: true },
+  { id: 'returns-policy', name: 'No Return & No Exchange Policy', href: '/policies?tab=returns', active: true },
   { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact', active: true },
 ];
 
@@ -122,6 +121,28 @@ const getPublicSettings = catchAsync(async (req, res) => {
       socialInstagram: map.social_instagram || 'https://instagram.com/swaradasareecentre',
       socialFacebook: map.social_facebook || 'https://facebook.com/swaradasareecentre',
       socialYoutube: map.social_youtube || 'https://www.youtube.com/@swaradasareecentre776/',
+      // Our Story & Heritage Customizer
+      storyTitle: map.story_title || 'The Swarada Story',
+      storySubtitle: map.story_subtitle || 'Our Heritage & Roots',
+      storyIntro:
+        map.story_intro ||
+        'Nestled in the historic city of Kolhapur, Maharashtra, Swarada Saree Center was established with a singular devotion: to preserve, nurture, and present the richest handloom traditions of India.',
+      storyBody:
+        map.story_body ||
+        'Known affectionately as the city of Mahalaxmi, Kolhapur holds centuries of reverence for auspicious silks. At Swarada, we work closely with generation-old master weaver families across Yeola, Paithan, Varanasi, and Kanchipuram to bring hand-crafted sarees of unmatched authenticity to modern women across the globe.',
+      storyExtended:
+        map.story_extended ||
+        'Every drape in our collection carries the signature precision of authentic weavers. From bridal Paithanis featuring delicate peacocks to pure Banarasi zari weaves, we take immense pride in adorning brides and handloom connoisseurs for their most cherished milestones.',
+      storyBannerImage: sanitizeUploadUrl(map.story_banner_image) || null,
+      storyArtisanImage: sanitizeUploadUrl(map.story_artisan_image) || null,
+      storyStat1Number: map.story_stat1_number || '25+ Years',
+      storyStat1Label: map.story_stat1_label || 'Heritage in Kolhapur',
+      storyStat2Number: map.story_stat2_number || '50,000+',
+      storyStat2Label: map.story_stat2_label || 'Brides & Families Adorned',
+      storyStat3Number: map.story_stat3_number || 'Mahadwar Rd',
+      storyStat3Label: map.story_stat3_label || 'Flagship Store Location',
+      storyStat4Number: map.story_stat4_number || '100%',
+      storyStat4Label: map.story_stat4_label || 'Authentic Handlooms',
       menus,
       footerMenus,
     },
@@ -249,6 +270,12 @@ const updateSettings = catchAsync(async (req, res) => {
 
   if (updates.store_logo_url) {
     updates.store_logo_url = sanitizeUploadUrl(updates.store_logo_url);
+  }
+  if (updates.story_banner_image) {
+    updates.story_banner_image = sanitizeUploadUrl(updates.story_banner_image);
+  }
+  if (updates.story_artisan_image) {
+    updates.story_artisan_image = sanitizeUploadUrl(updates.story_artisan_image);
   }
 
   const operations = Object.entries(updates).map(([key, value]) => {

@@ -79,7 +79,7 @@ export const Footer = () => {
                 <img
                   src={settings.logoUrl}
                   alt={settings.storeName || 'Swarada Saree Center'}
-                  className="h-12 w-auto max-w-[220px] object-contain brightness-0 invert"
+                  className="h-12 w-auto max-w-[220px] object-contain rounded-md shadow-xs"
                 />
               ) : (
                 <div className="flex flex-col">
@@ -140,8 +140,7 @@ export const Footer = () => {
                 : [
                     { id: 'track-order', name: 'Track Your Order', href: '/track-order' },
                     { id: 'shipping-policy', name: 'Shipping & Delivery Policy', href: '/policies?tab=shipping' },
-                    { id: 'returns-policy', name: 'Returns & Exchange Policy', href: '/policies?tab=returns' },
-                    { id: 'faq', name: 'Frequently Asked Questions', href: '/policies?tab=returns' },
+                    { id: 'returns-policy', name: 'No Return & No Exchange Policy', href: '/policies?tab=returns' },
                     { id: 'video-booking', name: 'Video Call Shopping Booking', href: '/contact' },
                   ]
               ).map((item) => (
