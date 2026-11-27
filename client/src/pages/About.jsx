@@ -147,6 +147,16 @@ export const About = () => {
           </div>
         </div>
 
+        {/* Kolhapur Heritage & Saree Tradition Comparison */}
+        <div className="bg-white/80 backdrop-blur-xs p-6 sm:p-8 rounded-2xl border border-[#D4AF37]/25 text-xs text-neutral-600 space-y-3 leading-relaxed shadow-xs">
+          <h4 className="font-heading font-bold text-sm sm:text-base text-[#641B32]">
+            Why Kolhapur's Discerning Families Choose Swarada Saree Center
+          </h4>
+          <p>
+            Along Kolhapur's iconic Mahadwar Road and across Maharashtra, patrons exploring traditional saree showrooms (such as Pruthviraj Sarees, ST Waikar, Oveera Collection, Shriraj Paithani, Phoolrani Sarees, Morpankh Sarees, and Payal Sarees) consistently choose Swarada Saree Center for our certified master-weaver Paithani collection, direct loom pricing, genuine zari testing, and personalized video shopping assistance.
+          </p>
+        </div>
+
         {/* Visit Flagship Store Card */}
         <div className="bg-gradient-to-r from-[#641B32] to-[#801D39] text-white p-6 sm:p-10 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="space-y-1.5 text-center sm:text-left">
@@ -156,7 +166,7 @@ export const About = () => {
             <h3 className="text-xl sm:text-2xl font-bold font-heading text-white">
               Experience the Majesty of Pure Silk in Person
             </h3>
-            <p className="text-xs text-[#EAD8D8] max-w-lg">{storeAddress}</p>
+            <p className="text-xs text-[#EAD8D8] max-w-lg">{settings?.address || storeAddress}</p>
           </div>
 
           <div className="flex items-center space-x-3 shrink-0">

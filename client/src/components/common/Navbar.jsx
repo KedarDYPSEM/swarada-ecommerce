@@ -109,7 +109,7 @@ export const Navbar = () => {
           <div className="flex items-center space-x-6">
             <span className="flex items-center space-x-1.5">
               <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Flagship Store: Mahadwar Road, Kolhapur</span>
+              <span>Flagship Store: {settings?.address || 'Kolhapur Flagship Store'}</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
@@ -555,8 +555,8 @@ export const Navbar = () => {
 
               {/* Drawer Footer */}
               <div className="p-5 bg-[#FFF9F0] border-t border-[#C5A05A]/30 text-xs space-y-2 text-[#594E4E] shrink-0">
-                <p className="font-semibold text-[#641B32]">Kolhapur Flagship Store</p>
-                <p>Shop 12, Mahadwar Road, Kolhapur</p>
+                <p className="font-semibold text-[#641B32]">{settings?.storeName || 'Swarada Saree Center'}</p>
+                <p className="leading-relaxed">{settings?.address || 'Kolhapur Flagship Store'}</p>
                 <p className="flex items-center space-x-1.5">
                   <Phone className="w-3.5 h-3.5 text-[#C5A05A]" />
                   <span>Orders & Video: {settings?.phone || settings?.whatsapp || '+91 93255 85754'}</span>

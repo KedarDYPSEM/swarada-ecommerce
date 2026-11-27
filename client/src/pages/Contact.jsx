@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, MessageCircle, Video } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { useSettings } from '../context/SettingsContext';
 
 export const Contact = () => {
+  const { settings } = useSettings();
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
@@ -40,7 +42,7 @@ export const Contact = () => {
                 <MapPin className="w-5 h-5 text-[#641B32] shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-[#140F11]">Swarada Saree Center</p>
-                  <p className="text-neutral-500 mt-0.5">Shop No. 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur, Maharashtra 416002</p>
+                  <p className="text-neutral-500 mt-0.5">{settings?.address || 'Shop No. 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur, Maharashtra 416002'}</p>
                 </div>
               </div>
 
