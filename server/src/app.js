@@ -26,6 +26,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // ─── CORS ───────────────────────────────────────────────
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  'https://swaradasareecenter.in',
+  'http://swaradasareecenter.in',
+  'https://www.swaradasareecenter.in',
+  'http://www.swaradasareecenter.in',
   'https://demo.dypesconf.io',
   'http://demo.dypesconf.io',
   'http://localhost:5173',
