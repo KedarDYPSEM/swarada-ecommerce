@@ -7,7 +7,6 @@ import YouTubeLiveSection from '../components/home/YouTubeLiveSection';
 import PromoBanner from '../components/home/PromoBanner';
 import WhyShopWithUs from '../components/home/WhyShopWithUs';
 import Testimonials from '../components/home/Testimonials';
-import InstagramGallery from '../components/home/InstagramGallery';
 import Newsletter from '../components/home/Newsletter';
 import PromoPopup from '../components/home/PromoPopup';
 import RecentPurchaseToast from '../components/common/RecentPurchaseToast';
@@ -75,10 +74,7 @@ export const Home = () => {
       {/* 9. Customer Testimonials */}
       <Testimonials />
 
-      {/* 10. Instagram Gallery */}
-      <InstagramGallery />
-
-      {/* 11. Newsletter Subscription */}
+      {/* 10. Newsletter Subscription */}
       <Newsletter />
 
       {/* Promotional / Announcement Modal Popup */}

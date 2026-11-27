@@ -61,12 +61,46 @@ export const SettingsProvider = ({ children }) => {
     fetchSettings();
   }, []);
 
+  // Dynamically synchronize favicon with logo uploaded from Admin Panel
   useEffect(() => {
     if (settings?.logoUrl) {
-      const favicons = document.querySelectorAll("link[rel~='icon'], link[rel='apple-touch-icon']");
-      favicons.forEach((el) => {
-        el.href = settings.logoUrl;
-      });
+      try {
+        const rawUrl = settings.logoUrl;
+        const cleanUrl = rawUrl.startsWith('http')
+          ? rawUrl
+          : rawUrl.startsWith('/')
+          ? rawUrl
+          : `/${rawUrl}`;
+        const cacheBusted = cleanUrl.includes('?')
+          ? `${cleanUrl}&v=${encodeURIComponent(rawUrl)}`
+          : `${cleanUrl}?v=${encodeURIComponent(rawUrl)}`;
+
+        // Remove existing icon links to force browser to refresh tab icon
+        const existingIcons = document.querySelectorAll(
+          "link[rel*='icon'], link[rel='apple-touch-icon']"
+        );
+        existingIcons.forEach((el) => el.parentNode?.removeChild(el));
+
+        // Create fresh icon link elements
+        const icon = document.createElement('link');
+        icon.rel = 'icon';
+        icon.type = 'image/png';
+        icon.href = cacheBusted;
+        document.head.appendChild(icon);
+
+        const shortcut = document.createElement('link');
+        shortcut.rel = 'shortcut icon';
+        shortcut.type = 'image/png';
+        shortcut.href = cacheBusted;
+        document.head.appendChild(shortcut);
+
+        const apple = document.createElement('link');
+        apple.rel = 'apple-touch-icon';
+        apple.href = cleanUrl;
+        document.head.appendChild(apple);
+      } catch (e) {
+        console.warn('Favicon synchronization error:', e);
+      }
     }
   }, [settings?.logoUrl]);
 

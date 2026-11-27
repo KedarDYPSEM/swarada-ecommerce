@@ -93,6 +93,30 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ─── Dynamic Favicon Direct Fallback ────────────────────
+const fs = require('fs');
+const prisma = require('./config/database');
+
+app.get(['/favicon.ico', '/favicon.png', '/apple-touch-icon.png'], async (req, res, next) => {
+  try {
+    const logoSetting = await prisma.setting.findUnique({
+      where: { key: 'store_logo_url' },
+    });
+    if (logoSetting && logoSetting.value) {
+      const cleanPath = logoSetting.value.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
+      if (cleanPath.startsWith('/uploads/')) {
+        const filePath = path.join(__dirname, '..', cleanPath);
+        if (fs.existsSync(filePath)) {
+          return res.sendFile(filePath);
+        }
+      }
+    }
+  } catch (err) {
+    // Fall back to next middleware / static
+  }
+  next();
+});
+
 // ─── API Routes ─────────────────────────────────────────
 const apiRoutes = require('./routes');
 app.use('/api', apiRoutes);

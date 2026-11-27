@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const prisma = require('../config/database');
 const { catchAsync } = require('../middleware/errorHandler');
 
@@ -278,6 +280,42 @@ const updateSettings = catchAsync(async (req, res) => {
 
   if (updates.store_logo_url) {
     updates.store_logo_url = sanitizeUploadUrl(updates.store_logo_url);
+    try {
+      const cleanPath = updates.store_logo_url.replace(/^https?:\/\/[^/]+(\/uploads\/)/i, '$1');
+      const filename = path.basename(cleanPath.split('?')[0]);
+      const sourceUploadPath = path.join(__dirname, '../../uploads', filename);
+
+      if (fs.existsSync(sourceUploadPath)) {
+        // Automatically mirror uploaded brand logo to all favicon & apple-touch icon targets
+        const targets = [
+          path.join(__dirname, '../../../public_html/favicon.png'),
+          path.join(__dirname, '../../../public_html/favicon.ico'),
+          path.join(__dirname, '../../../public_html/apple-touch-icon.png'),
+          path.join(__dirname, '../../../public_html/swarada-logo.png'),
+          path.join(__dirname, '../../client/public/favicon.png'),
+          path.join(__dirname, '../../client/public/favicon.ico'),
+          path.join(__dirname, '../../client/public/apple-touch-icon.png'),
+          path.join(__dirname, '../../client/public/swarada-logo.png'),
+          path.join(__dirname, '../../client/dist/favicon.png'),
+          path.join(__dirname, '../../client/dist/favicon.ico'),
+          path.join(__dirname, '../../client/dist/apple-touch-icon.png'),
+          path.join(__dirname, '../../client/dist/swarada-logo.png'),
+        ];
+
+        targets.forEach((targetPath) => {
+          try {
+            const dir = path.dirname(targetPath);
+            if (fs.existsSync(dir)) {
+              fs.copyFileSync(sourceUploadPath, targetPath);
+            }
+          } catch (e) {
+            // Gracefully ignore missing directory
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Could not mirror uploaded logo to favicon files:', err.message);
+    }
   }
   if (updates.story_banner_image) {
     updates.story_banner_image = sanitizeUploadUrl(updates.story_banner_image);
