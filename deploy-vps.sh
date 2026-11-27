@@ -6,7 +6,7 @@
 
 set -e
 
-DOMAIN="demo.dypesconf.io"
+DOMAIN="swaradasareecenter.in"
 APP_DIR="/var/www/swarada-ecommerce"
 BACKEND_PORT=5050
 DB_NAME="swarada_ecommerce"
@@ -110,7 +110,7 @@ sudo tee "$NGINX_CONF" > /dev/null <<EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name ${DOMAIN};
+    server_name ${DOMAIN} www.${DOMAIN};
 
     # Static Frontend
     root ${APP_DIR}/client/dist;
@@ -178,7 +178,7 @@ sudo systemctl reload nginx
 # 8. SSL Certificate via Certbot (Only targets demo.dypesconf.io)
 if command -v certbot >/dev/null 2>&1; then
   echo "🔒 Requesting SSL certificate for $DOMAIN via Certbot..."
-  sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m contact@swaradasarees.com --redirect || {
+  sudo certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m contact@swaradasarees.com --redirect || {
     echo "⚠️ Certbot auto-SSL skipped or needs manual domain verification. Run 'sudo certbot --nginx -d $DOMAIN' manually."
   }
 fi
