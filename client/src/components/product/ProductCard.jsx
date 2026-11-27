@@ -44,7 +44,7 @@ export const ProductCard = ({ product }) => {
   };
 
   const whatsappMessage = `Hello Swarada Saree Center! I am interested in: ${product.name} (SKU: ${product.sku}). Please let me know if it is available.`;
-  const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = `https://wa.me/919325585754?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <>

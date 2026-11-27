@@ -18,7 +18,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }) => {
   const discount = calculateDiscount(product.mrp, product.sellingPrice);
 
   const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku}). Is this piece currently available?`;
-  const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = `https://wa.me/919325585754?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

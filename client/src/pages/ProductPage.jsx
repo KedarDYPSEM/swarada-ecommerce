@@ -168,7 +168,7 @@ export const ProductPage = () => {
     isProductOutOfStock || (selectedVariant && (selectedVariant.stockQuantity || 0) <= 0);
 
   const whatsappMessage = `Hello Swarada Saree Center! I am inquiring about: ${product.name} (SKU: ${product.sku})${selectedVariant ? ` in color ${selectedVariant.variantValue}` : ''}. Please let me know if it is available for video call consultation.`;
-  const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = `https://wa.me/919325585754?text=${encodeURIComponent(whatsappMessage)}`;
 
   const handleAddToCart = async () => {
     setActionError('');

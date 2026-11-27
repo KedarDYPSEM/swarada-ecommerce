@@ -21,7 +21,7 @@ export const Footer = () => {
     settings?.storeBio ||
     'Rooted in the historic city of Kolhapur, Swarada Saree Center celebrates the timeless majesty of Indian handlooms. We curate certified Yeola Paithanis, royal Banarasi brocades, and festive designer apparel.';
   const storeAddress = settings?.address || 'Shop 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur - 416002';
-  const storePhone = settings?.phone || '+91 98220 12345';
+  const storePhone = settings?.phone || settings?.whatsapp || '+91 93255 85754';
   const storeEmail = settings?.email || 'orders@swaradasareecenter.com';
   const storeHours = settings?.storeHours || 'Mon - Sun: 10:00 AM - 9:00 PM';
   const instagramUrl = settings?.socialInstagram || 'https://www.instagram.com/swarada_saree_center/';

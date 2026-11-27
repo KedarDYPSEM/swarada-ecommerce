@@ -76,7 +76,7 @@ export const SettingsManager = () => {
     tagline: 'Pure Handloom Paithani, Banarasi & Ethnic Fashion',
     logoUrl: '',
     location: 'Shop 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur - 416002',
-    phone: '+91 98220 12345',
+    phone: '+91 93255 85754',
     email: 'orders@swaradasareecenter.com',
     storeHours: 'Mon - Sun: 10:00 AM - 9:00 PM',
     storeBio:

@@ -26,7 +26,7 @@ export const Policies = ({ defaultTab = 'returns' }) => {
     window.scrollTo({ top: 250, behavior: 'smooth' });
   };
 
-  const supportPhone = settings?.phone || '+91 98220 12345';
+  const supportPhone = settings?.phone || settings?.whatsapp || '+91 93255 85754';
   const supportEmail = settings?.email || 'contact@swaradasareecenter.com';
 
   return (

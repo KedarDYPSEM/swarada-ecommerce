@@ -37,7 +37,7 @@ export const OrderSuccess = () => {
   }, [orderNumber]);
 
   const whatsappMessage = `Hello Swarada Saree Center! I just placed order #${orderNumber || 'SW-2026-1001'}. Please confirm dispatch details and updates.`;
-  const whatsappUrl = `https://wa.me/919822012345?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = `https://wa.me/919325585754?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="py-12 sm:py-20 bg-[#FAF7F2] min-h-screen">

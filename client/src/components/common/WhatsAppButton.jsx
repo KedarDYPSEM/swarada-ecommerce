@@ -1,8 +1,12 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 export const WhatsAppButton = ({ sku = null, productName = null }) => {
-  const phoneNumber = '919822012345';
+  const { settings } = useSettings();
+  const rawNumber = settings?.whatsapp || settings?.phone || '9325585754';
+  const cleanDigits = rawNumber.replace(/\D/g, '');
+  const phoneNumber = cleanDigits.startsWith('91') && cleanDigits.length === 12 ? cleanDigits : `91${cleanDigits.slice(-10)}`;
   let message = 'Hello Swarada Saree Center! I am browsing your online store and would like to inquire about your saree collections.';
 
   if (sku && productName) {

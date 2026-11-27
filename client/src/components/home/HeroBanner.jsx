@@ -227,7 +227,7 @@ export const HeroBanner = ({ banners }) => {
                     </Link>
 
                     <a
-                      href="https://wa.me/919822012345?text=Hello%20Swarada%20Saree%20Center,%20I%20would%20like%20to%20book%20a%20video%20shopping%20call."
+                      href="https://wa.me/919325585754?text=Hello%20Swarada%20Saree%20Center,%20I%20would%20like%20to%20book%20a%20video%20shopping%20call."
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 hover:scale-102 cursor-pointer shadow-md"

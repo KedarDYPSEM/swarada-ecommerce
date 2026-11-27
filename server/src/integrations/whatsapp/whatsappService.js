@@ -3,7 +3,7 @@
  * Provides structured notification templates and one-click customer care links.
  */
 
-const WHATSAPP_STORE_NUMBER = '919822012345'; // Swarada Kolhapur
+const WHATSAPP_STORE_NUMBER = '919325585754'; // Swarada Kolhapur
 
 /**
  * Generate click-to-chat inquiry link for a specific saree

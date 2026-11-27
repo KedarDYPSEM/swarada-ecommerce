@@ -598,7 +598,7 @@ async function main() {
     { key: 'currency_symbol', value: '₹', group: 'general' },
     { key: 'store_address', value: 'Shop No. 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur, Maharashtra 416002', group: 'general' },
     { key: 'store_phone', value: '+91 98220 12345', group: 'general' },
-    { key: 'store_whatsapp', value: '+91 98220 12345', group: 'general' },
+    { key: 'store_whatsapp', value: '+91 93255 85754', group: 'general' },
     { key: 'store_email', value: 'contact@swaradasareecenter.com', group: 'general' },
     { key: 'free_shipping_threshold', value: '2999', group: 'shipping' },
     { key: 'standard_shipping_charge', value: '150', group: 'shipping' },

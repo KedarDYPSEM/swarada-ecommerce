@@ -94,7 +94,7 @@ const sendOrderConfirmation = async (order) => {
         </table>
 
         <div style="margin-top: 24px; text-align: center; font-size: 12px; color: #777;">
-          <p>Questions about your order? WhatsApp us at <strong>+91 98220 12345</strong> or email support@swaradasarees.com</p>
+          <p>Questions about your order? WhatsApp us at <strong>+91 93255 85754</strong> or email support@swaradasarees.com</p>
           <p>Swarada Saree Center, Mahadwar Road, Kolhapur, Maharashtra 416002</p>
         </div>
       </div>

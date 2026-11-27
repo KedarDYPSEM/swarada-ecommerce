@@ -115,7 +115,7 @@ export const YouTubeLiveSection = () => {
 
               <div className="space-y-3 pt-2">
                 <a
-                  href={`https://wa.me/919822012345?text=${whatsappMessage}`}
+                  href={`https://wa.me/919325585754?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full flex items-center justify-center space-x-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-emerald-900/40 text-xs sm:text-sm"

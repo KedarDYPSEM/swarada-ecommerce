@@ -29,7 +29,7 @@ export const About = () => {
   const stat4Number = settings?.storyStat4Number || '100%';
   const stat4Label = settings?.storyStat4Label || 'Authentic Handlooms';
 
-  const storePhone = settings?.phone || '+91 98220 12345';
+  const storePhone = settings?.phone || settings?.whatsapp || '+91 93255 85754';
   const storeAddress = settings?.address || 'Shop 12, Mahadwar Road, Near Mahalaxmi Mandir, Kolhapur - 416002';
 
   return (

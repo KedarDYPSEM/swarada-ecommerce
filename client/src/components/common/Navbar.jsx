@@ -113,7 +113,7 @@ export const Navbar = () => {
             </span>
             <span className="flex items-center space-x-1.5">
               <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Orders & Video Shopping: +91 98220 12345</span>
+              <span>Orders & Video Shopping: {settings?.phone || settings?.whatsapp || '+91 93255 85754'}</span>
             </span>
           </div>
           <div className="flex items-center space-x-4">
@@ -559,7 +559,7 @@ export const Navbar = () => {
                 <p>Shop 12, Mahadwar Road, Kolhapur</p>
                 <p className="flex items-center space-x-1.5">
                   <Phone className="w-3.5 h-3.5 text-[#C5A05A]" />
-                  <span>Orders & Video: +91 98220 12345</span>
+                  <span>Orders & Video: {settings?.phone || settings?.whatsapp || '+91 93255 85754'}</span>
                 </p>
               </div>
             </div>

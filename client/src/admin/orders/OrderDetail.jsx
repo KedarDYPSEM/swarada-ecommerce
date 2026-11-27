@@ -605,7 +605,7 @@ export const OrderDetail = () => {
                   <div className="font-bold text-black">Swarada Saree Center (Flagship Store)</div>
                   <div>Shop 12, Mahadwar Road, Near Mahalaxmi Mandir</div>
                   <div>Kolhapur, Maharashtra - 416012</div>
-                  <div>Helpline: +91 98220 12345 | www.swaradasarees.com</div>
+                  <div>Helpline: +91 93255 85754 | www.swaradasarees.com</div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-neutral-400">Security Seal & Verification</div>

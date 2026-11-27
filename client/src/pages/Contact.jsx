@@ -48,7 +48,7 @@ export const Contact = () => {
                 <Phone className="w-5 h-5 text-[#641B32] shrink-0" />
                 <div>
                   <p className="font-bold text-[#140F11]">Phone Inquiries</p>
-                  <p className="text-neutral-500 mt-0.5">+91 98220 12345 / 0231 2654321</p>
+                  <p className="text-neutral-500 mt-0.5">+91 93255 85754 / 0231 2654321</p>
                 </div>
               </div>
 
@@ -56,7 +56,7 @@ export const Contact = () => {
                 <MessageCircle className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div>
                   <p className="font-bold text-emerald-900">WhatsApp Video Shopping</p>
-                  <p className="text-emerald-700 mt-0.5">+91 98220 12345 (Instant Reply)</p>
+                  <p className="text-emerald-700 mt-0.5">+91 93255 85754 (Instant Reply)</p>
                 </div>
               </div>
 
