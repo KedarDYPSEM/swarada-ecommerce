@@ -25,13 +25,13 @@ async function getRazorpayConfig() {
     });
 
     if (map.razorpay_key_id && map.razorpay_key_id.trim()) {
-      keyId = map.razorpay_key_id.trim();
+      keyId = map.razorpay_key_id.trim().replace(/^["']|["']$/g, '');
     }
     if (map.razorpay_key_secret && map.razorpay_key_secret.trim()) {
-      keySecret = map.razorpay_key_secret.trim();
+      keySecret = map.razorpay_key_secret.trim().replace(/^["']|["']$/g, '');
     }
     if (map.razorpay_webhook_secret && map.razorpay_webhook_secret.trim()) {
-      webhookSecret = map.razorpay_webhook_secret.trim();
+      webhookSecret = map.razorpay_webhook_secret.trim().replace(/^["']|["']$/g, '');
     }
     if (map.razorpay_mode) {
       mode = map.razorpay_mode;
