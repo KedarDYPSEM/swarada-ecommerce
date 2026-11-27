@@ -87,6 +87,9 @@ echo "⚡ Setting up Backend..."
 cd "$PROJECT_DIR/server"
 npm install --include=dev
 
+# Encode special characters in password for connection URI (e.g. @ -> %40)
+ENCODED_DB_PASS="${DB_PASS//@/%40}"
+
 # Write production .env for Hostinger
 cat <<EOF > .env
 NODE_ENV=production
@@ -94,7 +97,7 @@ PORT=$BACKEND_PORT
 CLIENT_URL=https://$DOMAIN
 
 # Hostinger MySQL Database
-DATABASE_URL="mysql://${DB_USER}:${DB_PASS}@127.0.0.1:3306/${DB_NAME}"
+DATABASE_URL="mysql://${DB_USER}:${ENCODED_DB_PASS}@127.0.0.1:3306/${DB_NAME}"
 
 # JWT Security
 JWT_ACCESS_SECRET=swarada_live_access_secret_production_2026_key
