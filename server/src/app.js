@@ -197,8 +197,8 @@ function startServer() {
     return serverInstance;
   }
   const listenPort = process.env.PORT || 5000;
-  serverInstance = app.listen(listenPort, () => {
-    console.log(`🚀 Swarada Saree Center Node.js Web App listening on port ${listenPort}`);
+  serverInstance = app.listen(listenPort, '0.0.0.0', () => {
+    console.log(`🚀 Swarada Saree Center Node.js Web App listening on 0.0.0.0:${listenPort}`);
   });
   serverInstance.on('error', (err) => {
     console.error('💥 Server Listen Error:', err);
