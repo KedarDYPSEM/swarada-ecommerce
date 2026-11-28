@@ -2,18 +2,20 @@
   "name": "swarada-ecommerce",
   "version": "1.0.0",
   "private": true,
-  "description": "Swarada Saree Center - Premium Saree eCommerce Platform",
+  "description": "Swarada Saree Center - Premium Saree eCommerce Platform (Node.js Web App)",
+  "main": "server.js",
   "workspaces": [
     "client",
     "server"
   ],
   "scripts": {
+    "start": "node server.js",
+    "build": "npm run build --workspace=client",
+    "postinstall": "cd server && npx prisma generate",
     "dev:client": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"magenta.bold,cyan.bold\" \"npm run dev:server\" \"npm run dev:client\"",
-    "test:chrome": "node tests/live-chrome.test.js",
-    "build": "npm run build --workspace=client",
-    "start": "npm run start --workspace=server"
+    "test:chrome": "node tests/live-chrome.test.js"
   },
   "devDependencies": {
     "concurrently": "^10.0.7",

@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,21 +8,37 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { errorHandler, AppError } = require('./middleware/errorHandler');
 
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config(); // Fallback to root .env if present
 
 const app = express();
-const PORT = process.env.PORT || 54321;
+const PORT = process.env.PORT || 5000;
 
-// Trust reverse proxy (Nginx) for correct protocol and IP resolution
+// Trust reverse proxy (Hostinger Passenger / Nginx / LiteSpeed)
 app.set('trust proxy', 1);
 
 // ─── Security ───────────────────────────────────────────
+// Disable strict CSP in helmet so React SPA (inline styles/scripts, external fonts, images) renders smoothly
 app.use(helmet({
+  contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
 // ─── Static Uploads ─────────────────────────────────────
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+const serverUploads = path.join(__dirname, '../uploads');
+const rootUploads = path.join(__dirname, '../../uploads');
+const publicUploads = path.join(__dirname, '../../../../public_html/uploads');
+
+if (!fs.existsSync(serverUploads)) {
+  try { fs.mkdirSync(serverUploads, { recursive: true }); } catch (e) {}
+}
+app.use('/uploads', express.static(serverUploads, { maxAge: '30d' }));
+if (fs.existsSync(rootUploads)) {
+  app.use('/uploads', express.static(rootUploads, { maxAge: '30d' }));
+}
+if (fs.existsSync(publicUploads)) {
+  app.use('/uploads', express.static(publicUploads, { maxAge: '30d' }));
+}
 
 // ─── CORS ───────────────────────────────────────────────
 const allowedOrigins = [
@@ -30,15 +47,13 @@ const allowedOrigins = [
   'http://swaradasareecenter.in',
   'https://www.swaradasareecenter.in',
   'http://www.swaradasareecenter.in',
-  'https://demo.dypesconf.io',
-  'http://demo.dypesconf.io',
   'http://localhost:5173',
+  'http://localhost:5000',
   'http://localhost:3000',
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, server-to-server) or allowed list
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
@@ -46,16 +61,13 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
-
-// Trust reverse proxy (Hostinger Apache / LiteSpeed / PHP proxy)
-app.set('trust proxy', 1);
 
 // ─── Rate Limiting ──────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10000, // Generous ceiling for dynamic e-commerce catalog browsing & admin management
+  max: 10000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again in a few moments.' },
@@ -67,9 +79,8 @@ const limiter = rateLimit({
     );
   },
   skip: (req) => {
-    // Never throttle admin dashboard operations or localhost
-    const path = req.originalUrl || req.url || '';
-    if (path.includes('/api/admin') || path.includes('/api/settings')) {
+    const p = req.originalUrl || req.url || '';
+    if (p.includes('/api/admin') || p.includes('/api/settings')) {
       return true;
     }
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
@@ -90,11 +101,15 @@ if (process.env.NODE_ENV !== 'test') {
 
 // ─── Health Check ───────────────────────────────────────
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    mode: 'nodejs-web-app',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
 });
 
 // ─── Dynamic Favicon Direct Fallback ────────────────────
-const fs = require('fs');
 const prisma = require('./config/database');
 
 app.get(['/favicon.ico', '/favicon.png', '/apple-touch-icon.png'], async (req, res, next) => {
@@ -112,7 +127,7 @@ app.get(['/favicon.ico', '/favicon.png', '/apple-touch-icon.png'], async (req, r
       }
     }
   } catch (err) {
-    // Fall back to next middleware / static
+    // Fall back to static
   }
   next();
 });
@@ -121,7 +136,45 @@ app.get(['/favicon.ico', '/favicon.png', '/apple-touch-icon.png'], async (req, r
 const apiRoutes = require('./routes');
 app.use('/api', apiRoutes);
 
-// ─── 404 Handler ────────────────────────────────────────
+// ─── Serve React Frontend (Single Page Application) ─────
+const clientDistCandidates = [
+  path.join(__dirname, '../../client/dist'),
+  path.join(__dirname, '../public'),
+  path.join(__dirname, '../client/dist'),
+  path.join(process.cwd(), 'client/dist'),
+  path.join(process.cwd(), 'public_html'),
+];
+
+let clientDistPath = null;
+for (const cand of clientDistCandidates) {
+  if (fs.existsSync(path.join(cand, 'index.html'))) {
+    clientDistPath = cand;
+    break;
+  }
+}
+
+if (clientDistPath) {
+  console.log(`📦 Serving React frontend from: ${clientDistPath}`);
+  
+  // Static assets with caching
+  app.use(express.static(clientDistPath, {
+    maxAge: '7d',
+    index: false,
+  }));
+
+  // SPA fallback for all non-API and non-upload routes (compatible with Express 4 and Express 5)
+  app.use((req, res, next) => {
+    if (req.method !== 'GET') {
+      return next();
+    }
+    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
+
+// ─── 404 Handler for Unhandled API / Upload Routes ──────
 app.use((req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
 });
@@ -137,33 +190,31 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-// ─── Start Server ───────────────────────────────────────
-if (process.env.NODE_ENV !== 'test') {
-  const fs = require('fs');
-  const socketPath = process.env.SOCKET_PATH || '/home/u739095470/domains/swaradasareecenter.in/node.sock';
-  
-  // Decide whether to listen on UNIX socket or TCP
-  const useSocket = process.env.NODE_ENV === 'production' && !process.env.FORCE_TCP;
-  
-  if (useSocket) {
-    if (fs.existsSync(socketPath)) {
-      try { fs.unlinkSync(socketPath); } catch (e) {}
-    }
-    const server = app.listen(socketPath, () => {
-      try { fs.chmodSync(socketPath, 0o777); } catch (e) {}
-      console.log(`🚀 Server listening on UNIX socket: ${socketPath} in production mode`);
-    });
-    server.on('error', (err) => {
-      console.error('💥 Socket Listen Error:', err);
-    });
-  } else {
-    const server = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server running on http://127.0.0.1:${PORT} and 0.0.0.0:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-    });
-    server.on('error', (err) => {
-      console.error('💥 TCP Listen Error:', err);
-    });
+// ─── Server Startup Function ────────────────────────────
+let serverInstance = null;
+function startServer() {
+  if (serverInstance || process.env.NODE_ENV === 'test') {
+    return serverInstance;
   }
+  const listenPort = process.env.PORT || 5000;
+  serverInstance = app.listen(listenPort, () => {
+    console.log(`🚀 Swarada Saree Center Node.js Web App listening on port ${listenPort}`);
+  });
+  serverInstance.on('error', (err) => {
+    console.error('💥 Server Listen Error:', err);
+  });
+  return serverInstance;
 }
 
+// Auto-start if run directly or inside Hostinger Passenger / LiteSpeed Node runner
+if (
+  require.main === module ||
+  process.env.PASSENGER_APP_ENV ||
+  process.env.PHUSION_PASSENGER ||
+  process.env.NODE_RUNNER
+) {
+  startServer();
+}
+
+app.startServer = startServer;
 module.exports = app;
